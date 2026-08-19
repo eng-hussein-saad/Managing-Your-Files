@@ -1,18 +1,10 @@
 <!--
 Sync Impact Report
-- Version change: unratified template -> 1.0.0
-- Modified principles:
-  - Template Principle 1 -> I. Strict TypeScript and Layered Design
-  - Template Principle 2 -> II. Server-Enforced Security
-  - Template Principle 3 -> III. Stable Contracts and Replaceable Infrastructure
-  - Template Principle 4 -> IV. Reusable, Complete User Experiences
-  - Template Principle 5 -> V. Environment Configuration Is a Verified Contract
+- Version change: 1.0.0 -> 1.1.0
+- Modified principles: none
 - Added principles:
-  - VI. Audit Important State Changes
-  - VII. Spec-Driven, Tested, Incremental Delivery
-- Added sections:
-  - Project-Wide Technical Constraints
-  - Delivery Workflow and Quality Gates
+  - VIII. Comment Every Function and Method
+- Added sections: none
 - Removed sections: none
 - Follow-up TODOs: none
 -->
@@ -83,6 +75,15 @@ Implementation MUST remain aligned with approved artifacts. A discovered require
 update the specification and dependent artifacts before code silently diverges. Every phase MUST
 leave the repository runnable, internally consistent, and independently verifiable.
 
+### VIII. Comment Every Function and Method
+Every project-authored function or method implemented in client or server application code MUST
+have a short comment immediately above it that explains its purpose or responsibility. This rule
+applies to function declarations, class and object methods, arrow-function assignments, and inline
+callbacks. Comments MUST describe intent rather than restate the implementation and MUST be updated
+whenever the function's responsibility changes. Code review MUST reject new or changed functions
+and methods that lack an accurate comment. This requirement keeps behavior discoverable and makes
+maintenance and review faster across both application layers.
+
 ## Project-Wide Technical Constraints
 
 - The system MUST remain a TypeScript monorepo with a Next.js App Router client and Express REST API.
@@ -114,8 +115,9 @@ reject a phase when any applicable item below lacks evidence:
    fixtures, Docker configuration, and deployment settings synchronized.
 5. **Analyze**: compare the specification, plan, and tasks; verify that all referenced environment
    keys are named consistently and that no required key or security test is missing.
-6. **Implement**: access configuration only through validated configuration modules, update
-   `.env.example` in the same change, and never commit usable secrets.
+6. **Implement**: access configuration only through validated configuration modules, add an
+   accurate short comment above every client and server function or method, update `.env.example`
+   in the same change, and never commit usable secrets.
 7. **Verify and Converge**: scan source, schemas, scripts, containers, and docs for environment-key
    usage; compare the result with `.env.example`; run relevant lint, type, test, migration, build,
    authorization, and clean-setup checks; append and complete any uncovered work.
@@ -147,4 +149,4 @@ principles, MINOR for new principles or materially expanded obligations, and PAT
 that do not change obligations. The ratification date remains the date of initial adoption; the last
 amended date changes whenever constitutional content changes.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-19
+**Version**: 1.1.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-20
