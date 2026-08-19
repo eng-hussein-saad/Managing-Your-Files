@@ -1,0 +1,85 @@
+erDiagram
+
+    USER {
+        uuid id PK
+        string name
+        string email UK
+        string passwordHash
+        string role
+        boolean isEmailVerified
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    VERIFICATION_CODE {
+        uuid id PK
+        uuid userId FK
+        string codeHash
+        datetime expiresAt
+        datetime usedAt "nullable"
+        datetime invalidatedAt "nullable"
+        datetime createdAt
+    }
+
+    REFRESH_TOKEN {
+        uuid id PK
+        uuid userId FK
+        string tokenHash
+        datetime expiresAt
+        datetime revokedAt "nullable"
+        datetime createdAt
+    }
+
+    FOLDER {
+        uuid id PK
+        uuid ownerId FK
+        uuid parentId FK "nullable, references FOLDER.id"
+        string name
+        datetime deletedAt "nullable"
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    FILE {
+        uuid id PK
+        uuid ownerId FK
+        uuid folderId FK "nullable"
+        string originalName
+        string storageKey
+        string mimeType
+        bigint size
+        text extractedContent "nullable"
+        datetime deletedAt "nullable"
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    AUDIT_LOG {
+        uuid id PK
+        uuid actorId FK "nullable"
+        string action
+        string entityType "nullable"
+        string entityId "nullable"
+        json metadata "nullable"
+        datetime createdAt
+    }
+
+    USER ||--o{ VERIFICATION_CODE : has
+    USER ||--o{ REFRESH_TOKEN : has
+    USER ||--o{ FOLDER : owns
+    USER ||--o{ FILE : owns
+    USER o|--o{ AUDIT_LOG : performs
+
+    FOLDER o|--o{ FOLDER : parent_of
+    FOLDER o|--o{ FILE : contains
+
+
+%% Relationship symbols:
+%% || = exactly one
+%% o| = zero or one
+%% o{ = zero or many
+%%
+%% Examples:
+%% USER ||--o{ FILE
+%% One User can own zero or many Files.
+%% Each File belongs to exactly one User.
