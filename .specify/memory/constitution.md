@@ -1,9 +1,14 @@
 <!--
 Sync Impact Report
-- Version change: 1.0.0 -> 1.1.0
-- Modified principles: none
+- Version change: 1.1.0 -> 1.2.0
+- Modified principles:
+  - III. Stable Contracts and Replaceable Infrastructure (schema governance cross-reference added)
 - Added principles:
-  - VIII. Comment Every Function and Method
+  - IX. Database Schema Is a Maintainer-Approved Contract
+- Modified sections:
+  - Project-Wide Technical Constraints
+  - Delivery Workflow and Quality Gates
+  - Governance
 - Added sections: none
 - Removed sections: none
 - Follow-up TODOs: none
@@ -36,7 +41,8 @@ through narrow service abstractions; controllers MUST NOT couple directly to a p
 path. User and administrator collections MUST use server-driven search, filtering, sorting, and
 pagination. Data models, indexes, soft-deletion behavior, and migrations MUST preserve ownership,
 authorization, query correctness, and a safe upgrade path. Breaking contract or schema changes MUST
-be specified with migration and compatibility consequences before implementation.
+be specified with migration and compatibility consequences before implementation and MUST follow
+the database approval process in Principle IX.
 
 ### IV. Reusable, Complete User Experiences
 Shared interaction patterns MUST be implemented through reusable React components and React Query
@@ -84,12 +90,29 @@ whenever the function's responsibility changes. Code review MUST reject new or c
 and methods that lack an accurate comment. This requirement keeps behavior discoverable and makes
 maintenance and review faster across both application layers.
 
+### IX. Database Schema Is a Maintainer-Approved Contract (NON-NEGOTIABLE)
+`database-schema.mmd` MUST be the canonical approved baseline for database entities, table and field
+names, data types, keys, nullability, and relationships. Every phase specification, plan, task set,
+runtime schema, and migration MUST conform to that baseline. During planning, the proposed data
+design MUST be compared explicitly with `database-schema.mmd`. If any difference is proposed, the
+plan MUST identify the exact difference, rationale, migration and compatibility effects, then pause
+for explicit project-maintainer confirmation before adopting the difference or finalizing the plan.
+Silence, prior assumptions, and implementation convenience MUST NOT be treated as approval. After a
+difference is confirmed, `database-schema.mmd` and every affected specification, plan, task set,
+migration, fixture, and document MUST be updated together before implementation proceeds. An
+unconfirmed or undocumented database deviation is prohibited. This rule keeps the diagram,
+approved product design, and deployed database from silently diverging across phases.
+
 ## Project-Wide Technical Constraints
 
 - The system MUST remain a TypeScript monorepo with a Next.js App Router client and Express REST API.
 - The approved core stack is Tailwind CSS, Framer Motion, TanStack React Query, Axios, Prisma ORM,
-  PostgreSQL, JWT access/refresh authentication, and Multer for upload intake. Replacements require a
-  documented architectural reason and a constitution-compliant migration plan.
+  PostgreSQL, JWT access-token authentication with opaque stored refresh tokens, and Multer for
+  upload intake. Replacements require a documented architectural reason and a
+  constitution-compliant migration plan.
+- The Prisma schema, migrations, seed data, and database-facing application contracts MUST match
+  `database-schema.mmd` unless an exact deviation has received explicit maintainer confirmation
+  during planning and the diagram has been updated to record that confirmed design.
 - Prisma migrations MUST be reviewable, reproducible, and safe for the supported deployment path.
 - Uploaded filenames MUST never be trusted as storage paths; storage keys MUST be generated safely.
 - File preview and download MUST enforce authorization before content or signed access is exposed.
@@ -105,25 +128,32 @@ maintenance and review faster across both application layers.
 Every phase MUST use its specification and completion gate as acceptance criteria. Reviewers MUST
 reject a phase when any applicable item below lacks evidence:
 
-1. **Specify**: identify user-visible behavior, security boundaries, and every configuration key the
-   phase introduces, consumes, renames, or retires.
+1. **Specify**: identify user-visible behavior, security boundaries, database impact relative to
+   `database-schema.mmd`, and every configuration key the phase introduces, consumes, renames, or
+   retires.
 2. **Clarify**: resolve ambiguous ownership, authorization, retention, deletion, provider, and
    configuration semantics before planning.
 3. **Plan**: define layer boundaries, API/data contracts, migration impact, threat controls, tests,
    and environment-variable validation, secrecy classification, defaults, and deployment mapping.
-4. **Tasks**: include explicit work to keep runtime schemas, `.env.example`, documentation, test
-   fixtures, Docker configuration, and deployment settings synchronized.
-5. **Analyze**: compare the specification, plan, and tasks; verify that all referenced environment
-   keys are named consistently and that no required key or security test is missing.
+   The plan MUST compare its data design with `database-schema.mmd`; any difference MUST be shown to
+   the maintainer and explicitly confirmed before the plan is finalized.
+4. **Tasks**: include explicit work to keep `database-schema.mmd`, runtime schemas, migrations,
+   `.env.example`, documentation, test fixtures, Docker configuration, and deployment settings
+   synchronized for every confirmed change.
+5. **Analyze**: compare the specification, plan, tasks, and `database-schema.mmd`; verify that the
+   database design matches or has recorded maintainer confirmation, all environment keys are named
+   consistently, and no required migration, compatibility action, or security test is missing.
 6. **Implement**: access configuration only through validated configuration modules, add an
    accurate short comment above every client and server function or method, update `.env.example`
-   in the same change, and never commit usable secrets.
+   in the same change, never commit usable secrets, and implement no database deviation that lacks
+   prior planning approval and a corresponding `database-schema.mmd` update.
 7. **Verify and Converge**: scan source, schemas, scripts, containers, and docs for environment-key
-   usage; compare the result with `.env.example`; run relevant lint, type, test, migration, build,
-   authorization, and clean-setup checks; append and complete any uncovered work.
+   usage; compare the result with `.env.example`; compare the deployed/runtime database design with
+   `database-schema.mmd`; run relevant lint, type, test, migration, build, authorization, and
+   clean-setup checks; append and complete any uncovered work.
 8. **Phase Completion**: demonstrate the phase completion gate, confirm both client and server start
-   from documented non-secret example configuration, and record any accepted risk with an owner and
-   resolution condition.
+   from documented non-secret example configuration, prove database-schema alignment, and record
+   any accepted risk with an owner and resolution condition.
 
 Code review MUST verify the applicable principles and cite test or runtime evidence. Complexity,
 new dependencies, duplicated abstractions, and exceptions MUST be justified in the relevant plan or
@@ -142,11 +172,14 @@ maintainer acceptance and corresponding updates to dependent feature artifacts o
 Compliance MUST be reviewed during planning, before merging implementation, at every phase completion
 gate, and during production-readiness review. Any temporary exception MUST be written, narrowly
 scoped, time-bounded, owned, and accompanied by a remediation task; security-boundary and secret-
-handling requirements cannot be waived without a formal constitutional amendment.
+handling requirements cannot be waived without a formal constitutional amendment. A database
+design change additionally requires the explicit planning-time confirmation and synchronized
+`database-schema.mmd` update mandated by Principle IX; general approval of a feature or plan does
+not substitute for confirmation of an undisclosed schema difference.
 
 Constitution versions use semantic versioning: MAJOR for incompatible governance changes or removed
 principles, MINOR for new principles or materially expanded obligations, and PATCH for clarifications
 that do not change obligations. The ratification date remains the date of initial adoption; the last
 amended date changes whenever constitutional content changes.
 
-**Version**: 1.1.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-20
+**Version**: 1.2.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-20

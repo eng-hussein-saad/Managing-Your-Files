@@ -56,8 +56,8 @@ An authenticated user continues working when the short-lived session credential 
 
 **Acceptance Scenarios**:
 
-1. **Given** a valid renewal session and an expired short-lived credential, **When** one protected request is rejected for expiration, **Then** one renewal succeeds and the original request is retried once with the replacement credential.
-2. **Given** a valid renewal session, **When** the user reloads the application, **Then** authenticated state is restored without asking for credentials again and without exposing the renewal credential to browser-readable storage or responses.
+1. **Given** a valid refresh token and an expired short-lived credential, **When** one protected request is rejected for expiration, **Then** one renewal succeeds and the original request is retried once with the replacement credential.
+2. **Given** a valid refresh token, **When** the user reloads the application, **Then** authenticated state is restored without asking for credentials again and without exposing the refresh token to browser-readable storage or responses.
 3. **Given** several protected requests receive an authentication rejection concurrently, **When** renewal begins, **Then** they share one renewal attempt rather than creating competing credential rotations.
 4. **Given** an invalid, expired, revoked, or already-rotated renewal credential, **When** renewal is attempted, **Then** renewal fails safely, authenticated client state is cleared, the browser renewal cookie is removed where possible, and the user is asked to sign in.
 5. **Given** a renewal succeeds, **When** the new credential pair is issued, **Then** the prior renewal credential can no longer establish a new session.
@@ -66,7 +66,7 @@ An authenticated user continues working when the short-lived session credential 
 
 ### User Story 4 - Log Out and End the Session (Priority: P1)
 
-An authenticated user logs out and can trust that the current renewal session is no longer usable.
+An authenticated user logs out and can trust that the current refresh token is no longer usable.
 
 **Why this priority**: Users need a reliable way to terminate access, especially on shared or lost devices.
 
@@ -116,8 +116,8 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 - Verification resend and code submission overlap; only the current, valid, unused code can verify the account.
 - A verification or renewal credential expires exactly as it is submitted; the authoritative server time determines validity and the request fails closed.
 - The email delivery provider is unavailable after registration or resend; the account remains consistent, the user sees a retryable error, and no verification code is exposed.
-- A user signs in from multiple devices; each renewal session is independently identifiable so logout of one session does not silently corrupt another session.
-- An old renewal credential is replayed after rotation; it is rejected and the affected renewal lineage is revoked according to the session-security policy.
+- A user signs in from multiple devices; each sign-in has a distinct active refresh-token record so logout revokes only the presented token and does not invalidate another device's token.
+- An old refresh token is replayed after rotation; its revoked record is rejected without requiring session-family or rotation-lineage persistence.
 - The authentication authority succeeds but the browser-facing gateway cannot set or replace the renewal cookie; sign-in or renewal is treated as incomplete and no misleading authenticated state remains.
 - A protected request fails for a reason other than expired or invalid authentication; it is not sent through the renewal loop.
 - The administrator bootstrap runs repeatedly or concurrently; it remains idempotent and cannot downgrade or duplicate the configured administrator.
@@ -139,7 +139,7 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 - **FR-010**: Only a verified account with valid credentials MUST be able to sign in; failed sign-in responses MUST avoid revealing which credential was incorrect and attempts MUST be subject to abuse controls.
 - **FR-011**: Successful sign-in MUST return only safe user data and a short-lived JWT access token to browser JavaScript while placing an opaque refresh token in a first-party cookie that browser JavaScript cannot read.
 - **FR-012**: JWT access tokens MUST be short-lived, held only in client memory, attached to protected service requests, and never persisted in browser storage by the application.
-- **FR-013**: Refresh tokens MUST be cryptographically random opaque values rather than JWTs or other self-contained credentials. They MUST be generated, looked up through a non-reversible stored hash or identifier, rotated, and revoked exclusively by the authentication authority; reusable raw refresh tokens MUST NOT be retained in persistence.
+- **FR-013**: Refresh tokens MUST be cryptographically random opaque values rather than JWTs or other self-contained credentials. Each issued token MUST have one `Refresh Token` record associated with its user, containing only a non-reversible token hash plus expiry, revocation, and creation timestamps. Rotation MUST atomically revoke the presented record and create a replacement record; reusable raw refresh tokens and separate refresh-session records MUST NOT be retained in persistence.
 - **FR-014**: The browser-facing authentication gateway MUST be limited to sign-in, renewal, and logout coordination: it MAY store, replace, clear, and forward the renewal cookie but MUST NOT create credentials or make authentication or authorization decisions.
 - **FR-015**: Raw renewal credentials MUST NOT appear in browser-readable response bodies, browser-readable persistent storage, URLs, application logs, error details, analytics, or audit metadata.
 - **FR-016**: Any authority response containing raw renewal material MUST require a server-only trust credential and MUST be inaccessible to an untrusted direct browser request.
@@ -147,12 +147,12 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 - **FR-018**: When access expires, the client MUST perform at most one renewal for concurrent authentication failures, replace the in-memory access credential after success, and retry each eligible original request no more than once.
 - **FR-019**: On application reload, the client MUST attempt to restore authenticated state through the renewal cookie without exposing that credential to browser JavaScript.
 - **FR-020**: Invalid, expired, revoked, reused, or otherwise rejected renewal credentials MUST fail closed, clear authenticated client state, clear the renewal cookie where possible, and require a new sign-in.
-- **FR-021**: Logout MUST revoke the presented renewal session at the authentication authority and clear both the first-party renewal cookie and in-memory authenticated state; repeating logout MUST remain safe.
+- **FR-021**: Logout MUST revoke the presented refresh-token record at the authentication authority and clear both the first-party renewal cookie and in-memory authenticated state; repeating logout MUST remain safe.
 - **FR-022**: An authenticated user MUST be able to retrieve and view only their own safe profile fields; profile editing and password reset are outside Phase 1.
 - **FR-023**: Every protected service operation MUST validate the access credential server-side before returning protected data or performing a protected action.
 - **FR-024**: The system MUST support `USER` and `ADMIN` roles and MUST enforce administrator authorization at the server; client route guards MUST NOT be treated as the security boundary.
 - **FR-025**: Initialization MUST idempotently establish one verified administrator from validated secret configuration when the configured account is absent, without logging or returning the bootstrap password.
-- **FR-026**: The Phase 1 data contract MUST establish users, verification codes, independently revocable renewal sessions, file records, nested folders, and audit events with ownership and lifecycle relationships sufficient for later phases without exposing later file-management behavior now.
+- **FR-026**: The Phase 1 data contract MUST establish users, verification codes, refresh-token records, file records, nested folders, and audit events with ownership and lifecycle relationships sufficient for later phases without exposing later file-management behavior now. It MUST NOT introduce a separate refresh-session entity.
 - **FR-027**: Security-relevant registration, successful verification, successful sign-in, renewal rotation, logout, and authorization-denial outcomes MUST be sent through one audit capability with actor when known, action, target, outcome, timestamp, and sanitized metadata.
 - **FR-028**: Audit and diagnostic records MUST exclude passwords, verification-code values, raw access or renewal credentials, server-only trust credentials, connection strings, and private content.
 - **FR-029**: Normal protected operations MUST remain directly accessible with a valid access credential; the browser-facing authentication gateway MUST NOT become a duplicate proxy for non-authentication application operations in this phase.
@@ -166,15 +166,15 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 |-------------------|---------------------|
 | FR-001–FR-004, FR-030–FR-032 | Clean-setup demonstration plus contract, accessibility, validation, origin-policy, and configuration checks |
 | FR-005–FR-010 | User Story 1 scenarios and failed/sign-in abuse-boundary tests |
-| FR-011–FR-21, FR-029 | User Stories 2–4 scenarios, browser storage inspection, direct-access denial, rotation/replay tests, and concurrent-expiry test |
+| FR-011–FR-021, FR-029 | User Stories 2–4 scenarios, browser storage inspection, direct-access denial, rotation/replay tests, and concurrent-expiry test |
 | FR-022–FR-025 | User Stories 2 and 5 scenarios plus direct protected-operation authorization tests |
 | FR-026–FR-028 | Data-contract review and User Story 6 audit/redaction scenarios |
 
 ### Key Entities
 
-- **User**: A person's account and identity status, including normalized email, display name, non-recoverable password representation, verification state, role (`USER` or `ADMIN`), lifecycle timestamps, and relationships to renewal sessions, owned folders, owned files, and attributable audit events.
+- **User**: A person's account and identity status, including normalized email, display name, non-recoverable password representation, verification state, role (`USER` or `ADMIN`), lifecycle timestamps, and relationships to refresh tokens, owned folders, owned files, and attributable audit events.
 - **Verification Code**: A one-time, purpose-bound proof associated with one user, including a non-recoverable code representation, issue and expiry times, consumption status, and replacement lineage sufficient to reject expired, used, or superseded codes.
-- **Refresh Session**: An independently revocable long-lived sign-in session associated with one user. Its browser credential is a cryptographically random opaque token—not a JWT—while persistence retains only a non-reversible token hash or identifier plus issue and expiry times, rotation lineage, revocation status and reason, and safe device/session context where available.
+- **Refresh Token**: One opaque, independently revocable renewal credential associated with one user. Persistence contains one record per issued token with `id`, `userId`, a non-reversible `tokenHash`, `expiresAt`, nullable `revokedAt`, and `createdAt`, matching `database-schema.mmd`. Rotation revokes the old record and inserts a new record; there is no separate refresh-session entity or persisted rotation family.
 - **File**: The Phase 1 ownership and lifecycle contract for a future uploaded item, including owner, optional folder, name and content metadata, storage reference, extraction status, and soft-deletion timestamps. Upload, browsing, preview, download, and deletion behavior are deferred to Phase 2.
 - **Folder**: The Phase 1 ownership and hierarchy contract for future organization, including owner, name, optional parent folder, and soft-deletion timestamps. Folder operations are deferred to Phase 2.
 - **Audit Event**: An immutable record of an important action, containing actor when known, action, target type and identifier, outcome, timestamp, and sanitized metadata; audit-log viewing is deferred to Phase 3.
@@ -188,7 +188,7 @@ The following names are the Phase 1 configuration contract. Planning MAY refine 
 | `DATABASE_URL` | Secret | Valid database connection value required by the server |
 | `JWT_ACCESS_SECRET` | Secret | High-entropy access-credential signing secret; required and never client-exposed |
 | `ACCESS_TOKEN_TTL` | Non-secret | Positive duration; default 15 minutes |
-| `REFRESH_TOKEN_TTL` | Non-secret | Positive lifetime for opaque refresh sessions; default 30 days and aligned with cookie lifetime |
+| `REFRESH_TOKEN_TTL` | Non-secret | Positive lifetime for opaque refresh tokens; default 30 days and aligned with cookie lifetime |
 | `BFF_SHARED_SECRET` | Secret | High-entropy trust credential accepted only on server-to-server authentication exchanges |
 | `AUTH_BFF_SHARED_SECRET` | Secret | Gateway-side value corresponding to `BFF_SHARED_SECRET`; server-only and never public-prefixed |
 | `NEXT_PUBLIC_API_BASE_URL` | Public | Absolute browser-reachable service origin |
@@ -214,7 +214,7 @@ The following names are the Phase 1 configuration contract. Planning MAY refine 
 
 - **SC-001**: At least 90% of first-time test participants can register, obtain a verification message, verify, and reach sign-in without assistance in under 3 minutes, excluding external email delivery time.
 - **SC-002**: 100% of acceptance tests deny protected data to anonymous and unverified users and deny administrator-only operations to regular users, including direct requests that bypass page navigation.
-- **SC-003**: In a test burst of at least 20 simultaneous protected requests after access expiry, exactly one renewal operation occurs, every eligible request is retried no more than once, and at least 95% complete successfully when the renewal session is valid.
+- **SC-003**: In a test burst of at least 20 simultaneous protected requests after access expiry, exactly one renewal operation occurs, every eligible request is retried no more than once, and at least 95% complete successfully when the refresh token is valid.
 - **SC-004**: 100% of tested expired, revoked, malformed, and replayed renewal credentials fail to establish authenticated access and leave no usable authenticated browser state.
 - **SC-005**: Inspection across sign-in, renewal, reload, logout, logs, errors, audit records, URLs, and browser storage finds zero raw renewal credentials exposed to browser JavaScript or retained in prohibited locations.
 - **SC-006**: A verified user can sign in, open a protected page, retrieve their profile, survive one access-credential expiry, reload the page, and log out successfully in one end-to-end test on both local and production-like domain arrangements.
@@ -227,14 +227,14 @@ The following names are the Phase 1 configuration contract. Planning MAY refine 
 
 - Email and password are the only end-user sign-in method in Phase 1; social sign-in, multi-factor authentication, password reset, and account recovery are deferred.
 - Email addresses are compared using one documented normalization policy, and an email address identifies at most one account.
-- Verification codes expire after 10 minutes; access credentials default to 15 minutes and renewal sessions to 30 days unless planning documents a security-reviewed reason to change them.
+- Verification codes expire after 10 minutes; access credentials default to 15 minutes and refresh tokens to 30 days unless planning documents a security-reviewed reason to change them.
 - Resend and credential-attempt limits use reasonable security defaults finalized during planning and present a retryable response without revealing protective thresholds unnecessarily.
-- Each browser or device sign-in creates an independently revocable renewal session. Phase 1 logout ends the presented session, not every session owned by the user.
+- Each browser or device sign-in creates a distinct refresh-token record. Phase 1 logout revokes the presented token record, not every refresh token owned by the user.
 - The profile is read-only in Phase 1 and contains only safe identity fields such as display name, email, verification state, role, and account timestamps.
 - Administrator bootstrap is initialization behavior, not an administrator-management interface; role changes and administration workflows are deferred to Phase 3.
 - File and folder entities are data-contract foundations only in this phase. Upload, query, organization, preview, download, and deletion experiences remain Phase 2 work.
 - Audit events are recorded in Phase 1, but audit search, retention management, export, and user interface are deferred to Phase 3.
-- Only access tokens use JWT. Refresh tokens are opaque random values backed by hashed server-side session records; no refresh-token signing secret or JWT refresh-token validation is part of this feature.
+- Only access tokens use JWT. Refresh tokens are opaque random values backed directly by hashed `Refresh Token` records; no refresh-session table, refresh-token signing secret, or JWT refresh-token validation is part of this feature.
 - The required client, server, data, mail, and deployment technologies named in the implementation plan and constitution remain planning constraints, with any generic reference to “JWT access/refresh authentication” interpreted as JWT access-token authentication plus opaque refresh-token authentication—not JWT-formatted refresh tokens.
 - The application will be deployed with the browser-facing application and authentication authority on unrelated origins, so the design cannot depend on a shared third-party renewal cookie.
 
