@@ -8,6 +8,16 @@
 
 **Input**: User description: "Read IMPLEMENTATION_PLAN.md and create a specification for phase 1 ONLY."
 
+## Clarifications
+
+### Session 2026-08-20
+
+- Q: How should email addresses be normalized before registration uniqueness checks and sign-in lookup? → A: Trim surrounding whitespace and lowercase the entire email address.
+- Q: What should the user experience when registration succeeds in persistence but the verification email cannot be delivered? → A: Keep the unverified account, show a delivery-pending error, and offer resend.
+- Q: What should initialization do if `ADMIN_EMAIL` already belongs to a regular user? → A: Refuse startup and report a sanitized administrator-email conflict.
+- Q: What should happen if the authentication gateway cannot store a newly issued or rotated refresh-token cookie? → A: Return an authentication error and do not return the access token.
+- Q: How should Phase 1 respond to repeated failed sign-in attempts? → A: Do not apply sign-in throttling or account lockout in Phase 1.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Create and Verify an Account (Priority: P1)
@@ -25,6 +35,7 @@ A visitor creates an account with an email address and password, receives a one-
 3. **Given** an expired, incorrect, already-used, or superseded code, **When** the visitor submits it, **Then** verification is denied with a safe, actionable error and the account remains unverified.
 4. **Given** an unverified account, **When** the visitor requests another code within allowed limits, **Then** a new code is sent and all earlier unused codes for that verification purpose become invalid.
 5. **Given** an email address that is already registered, **When** a visitor attempts registration, **Then** the system does not create a duplicate account or disclose sensitive account details.
+6. **Given** registration has persisted an unverified account but verification-email delivery fails, **When** the result is shown, **Then** the visitor is told that delivery is pending and is offered a path to resend without registering again.
 
 ---
 
@@ -43,6 +54,7 @@ A verified user signs in, reaches the protected application area, views their ow
 3. **Given** invalid credentials, **When** sign-in is attempted, **Then** access is denied using a response that does not reveal whether the email or password was incorrect.
 4. **Given** an authenticated user, **When** the user opens their profile, **Then** only that user's safe profile fields and role are displayed.
 5. **Given** an anonymous visitor, **When** the visitor requests a protected page or protected operation, **Then** access is denied and the visitor is offered a path to sign in.
+6. **Given** Express issues credentials during sign-in but the authentication gateway cannot store the refresh-token cookie, **When** sign-in completes, **Then** no access token or authenticated state is returned to the browser and an authentication error is shown.
 
 ---
 
@@ -61,6 +73,7 @@ An authenticated user continues working when the short-lived session credential 
 3. **Given** several protected requests receive an authentication rejection concurrently, **When** renewal begins, **Then** they share one renewal attempt rather than creating competing credential rotations.
 4. **Given** an invalid, expired, revoked, or already-rotated renewal credential, **When** renewal is attempted, **Then** renewal fails safely, authenticated client state is cleared, the browser renewal cookie is removed where possible, and the user is asked to sign in.
 5. **Given** a renewal succeeds, **When** the new credential pair is issued, **Then** the prior renewal credential can no longer establish a new session.
+6. **Given** Express rotates credentials but the authentication gateway cannot replace the refresh-token cookie, **When** renewal completes, **Then** no replacement access token or authenticated state is returned to the browser and an authentication error is shown.
 
 ---
 
@@ -93,6 +106,7 @@ An administrator signs in through the same identity flow and can enter administr
 2. **Given** an authenticated administrator, **When** an administrator-only page or operation is requested, **Then** access is allowed through the normal authentication system.
 3. **Given** an authenticated regular user, **When** an administrator-only page or operation is requested directly, **Then** the server denies it as forbidden regardless of any client-side navigation guard.
 4. **Given** an unauthenticated visitor, **When** an administrator-only operation is requested, **Then** the server denies it as unauthenticated.
+5. **Given** the configured administrator email already belongs to a regular user, **When** initialization runs, **Then** startup is refused with a sanitized conflict error and the existing user is not promoted automatically.
 
 ---
 
@@ -115,12 +129,12 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 - Two registration requests for the same normalized email arrive at nearly the same time; at most one account is created.
 - Verification resend and code submission overlap; only the current, valid, unused code can verify the account.
 - A verification or renewal credential expires exactly as it is submitted; the authoritative server time determines validity and the request fails closed.
-- The email delivery provider is unavailable after registration or resend; the account remains consistent, the user sees a retryable error, and no verification code is exposed.
+- The email delivery provider is unavailable after registration; the unverified account remains persisted, the user sees a delivery-pending error with a resend path, and no verification code is exposed. If delivery fails during resend, the account remains unchanged and the user sees the same retryable delivery outcome.
 - A user signs in from multiple devices; each sign-in has a distinct active refresh-token record so logout revokes only the presented token and does not invalidate another device's token.
 - An old refresh token is replayed after rotation; its revoked record is rejected without requiring session-family or rotation-lineage persistence.
-- The authentication authority succeeds but the browser-facing gateway cannot set or replace the renewal cookie; sign-in or renewal is treated as incomplete and no misleading authenticated state remains.
+- The authentication authority succeeds but the browser-facing gateway cannot set or replace the renewal cookie; sign-in or renewal fails with an authentication error and no access token or authenticated state is returned to the browser.
 - A protected request fails for a reason other than expired or invalid authentication; it is not sent through the renewal loop.
-- The administrator bootstrap runs repeatedly or concurrently; it remains idempotent and cannot downgrade or duplicate the configured administrator.
+- The administrator bootstrap runs repeatedly or concurrently; it remains idempotent and cannot downgrade or duplicate the configured administrator. If the configured email belongs to a regular user, startup fails with a sanitized conflict instead of promoting that account.
 - Account, verification, renewal, or audit persistence is temporarily unavailable; security-sensitive operations fail closed with the common error contract.
 
 ## Requirements *(mandatory)*
@@ -131,16 +145,16 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 - **FR-002**: The system MUST provide distinct public-authentication, protected-user, and administrator presentation areas, with responsive and keyboard-operable loading, validation, success, unauthorized, forbidden, and failure states.
 - **FR-003**: The system MUST apply one documented success envelope and one documented error envelope to every Phase 1 service response, including stable error identifiers and safe field-level validation details where applicable.
 - **FR-004**: The system MUST validate every externally supplied authentication value, route value, request parameter, and configuration value at its authoritative boundary and MUST deny the operation when validation or identity is uncertain.
-- **FR-005**: A visitor MUST be able to register one account per normalized email address using a valid email and a password of at least 12 characters; passwords MUST be stored only in a non-recoverable, salted form.
-- **FR-006**: Registration MUST create an unverified regular-user account, initiate verification-code delivery, and MUST NOT grant protected access before verification succeeds.
+- **FR-005**: A visitor MUST be able to register one account per normalized email address using a valid email and a password of at least 12 characters. The system MUST normalize email addresses before uniqueness checks and sign-in lookup by trimming surrounding whitespace and lowercasing the entire address; passwords MUST be stored only in a non-recoverable, salted form.
+- **FR-006**: Registration MUST create an unverified regular-user account, initiate verification-code delivery, and MUST NOT grant protected access before verification succeeds. If delivery fails after persistence succeeds, the system MUST retain the unverified account, return a distinct delivery-pending outcome, and allow the user to retry through verification-code resend without registering again.
 - **FR-007**: Verification codes MUST be unpredictable, expire 10 minutes after issuance, be usable once, and be stored in a form that does not reveal the submitted code if persistence is exposed.
 - **FR-008**: An unverified user MUST be able to request a replacement verification code; issuance MUST invalidate prior unused codes for the same purpose and MUST be rate-limited to prevent abuse.
 - **FR-009**: The system MUST verify an account only when the submitted code is current, unexpired, unused, and associated with that account, then consume it atomically.
-- **FR-010**: Only a verified account with valid credentials MUST be able to sign in; failed sign-in responses MUST avoid revealing which credential was incorrect and attempts MUST be subject to abuse controls.
+- **FR-010**: Only a verified account with valid credentials MUST be able to sign in, and failed sign-in responses MUST avoid revealing which credential was incorrect. Phase 1 MUST NOT throttle failed sign-in attempts or lock accounts because of repeated sign-in failures.
 - **FR-011**: Successful sign-in MUST return only safe user data and a short-lived JWT access token to browser JavaScript while placing an opaque refresh token in a first-party cookie that browser JavaScript cannot read.
 - **FR-012**: JWT access tokens MUST be short-lived, held only in client memory, attached to protected service requests, and never persisted in browser storage by the application.
 - **FR-013**: Refresh tokens MUST be cryptographically random opaque values rather than JWTs or other self-contained credentials. Each issued token MUST have one `Refresh Token` record associated with its user, containing only a non-reversible token hash plus expiry, revocation, and creation timestamps. Rotation MUST atomically revoke the presented record and create a replacement record; reusable raw refresh tokens and separate refresh-session records MUST NOT be retained in persistence.
-- **FR-014**: The browser-facing authentication gateway MUST be limited to sign-in, renewal, and logout coordination: it MAY store, replace, clear, and forward the renewal cookie but MUST NOT create credentials or make authentication or authorization decisions.
+- **FR-014**: The browser-facing authentication gateway MUST be limited to sign-in, renewal, and logout coordination: it MAY store, replace, clear, and forward the renewal cookie but MUST NOT create credentials or make authentication or authorization decisions. If it cannot store a newly issued or rotated refresh-token cookie, it MUST return an authentication error without returning the access token or authenticated state.
 - **FR-015**: Raw renewal credentials MUST NOT appear in browser-readable response bodies, browser-readable persistent storage, URLs, application logs, error details, analytics, or audit metadata.
 - **FR-016**: Any authority response containing raw renewal material MUST require a server-only trust credential and MUST be inaccessible to an untrusted direct browser request.
 - **FR-017**: Production renewal cookies MUST be first-party, HTTP-only, secure in transit, restricted to the intended same-site behavior and narrowest practical path, and have an intentional lifetime; local plain-HTTP development MAY disable only the secure-transport flag.
@@ -151,7 +165,7 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 - **FR-022**: An authenticated user MUST be able to retrieve and view only their own safe profile fields; profile editing and password reset are outside Phase 1.
 - **FR-023**: Every protected service operation MUST validate the access credential server-side before returning protected data or performing a protected action.
 - **FR-024**: The system MUST support `USER` and `ADMIN` roles and MUST enforce administrator authorization at the server; client route guards MUST NOT be treated as the security boundary.
-- **FR-025**: Initialization MUST idempotently establish one verified administrator from validated secret configuration when the configured account is absent, without logging or returning the bootstrap password.
+- **FR-025**: Initialization MUST idempotently establish one verified administrator from validated secret configuration when the configured account is absent, without logging or returning the bootstrap password. If the configured normalized email belongs to an existing regular user, initialization MUST refuse startup with a sanitized conflict error and MUST NOT promote the account automatically.
 - **FR-026**: The Phase 1 data contract MUST establish users, verification codes, refresh-token records, file records, nested folders, and audit events with ownership and lifecycle relationships sufficient for later phases without exposing later file-management behavior now. It MUST NOT introduce a separate refresh-session entity.
 - **FR-027**: Security-relevant registration, successful verification, successful sign-in, renewal rotation, logout, and authorization-denial outcomes MUST be sent through one audit capability with actor when known, action, target, outcome, timestamp, and sanitized metadata.
 - **FR-028**: Audit and diagnostic records MUST exclude passwords, verification-code values, raw access or renewal credentials, server-only trust credentials, connection strings, and private content.
@@ -175,7 +189,7 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 - **User**: A person's account and identity status, including normalized email, display name, non-recoverable password representation, verification state, role (`USER` or `ADMIN`), lifecycle timestamps, and relationships to refresh tokens, owned folders, owned files, and attributable audit events.
 - **Verification Code**: A one-time, purpose-bound proof associated with one user, including a non-recoverable code representation, issue and expiry times, consumption status, and replacement lineage sufficient to reject expired, used, or superseded codes.
 - **Refresh Token**: One opaque, independently revocable renewal credential associated with one user. Persistence contains one record per issued token with `id`, `userId`, a non-reversible `tokenHash`, `expiresAt`, nullable `revokedAt`, and `createdAt`, matching `database-schema.mmd`. Rotation revokes the old record and inserts a new record; there is no separate refresh-session entity or persisted rotation family.
-- **File**: The Phase 1 ownership and lifecycle contract for a future uploaded item, including owner, optional folder, name and content metadata, storage reference, extraction status, and soft-deletion timestamps. Upload, browsing, preview, download, and deletion behavior are deferred to Phase 2.
+- **File**: The Phase 1 ownership and lifecycle contract for a future uploaded item, including owner, optional folder, name and content metadata, storage reference, nullable extracted content, and soft-deletion timestamps. Upload, extraction-status design, browsing, preview, download, and deletion behavior are deferred to Phase 2.
 - **Folder**: The Phase 1 ownership and hierarchy contract for future organization, including owner, name, optional parent folder, and soft-deletion timestamps. Folder operations are deferred to Phase 2.
 - **Audit Event**: An immutable record of an important action, containing actor when known, action, target type and identifier, outcome, timestamp, and sanitized metadata; audit-log viewing is deferred to Phase 3.
 
@@ -185,6 +199,7 @@ The following names are the Phase 1 configuration contract. Planning MAY refine 
 
 | Setting | Classification | Purpose / validation |
 |---------|----------------|----------------------|
+| `PORT` | Non-secret, server-only | Integer from 1 through 65535; defaults to 3001 locally and accepts the deployment platform's injected listener port |
 | `DATABASE_URL` | Secret | Valid database connection value required by the server |
 | `JWT_ACCESS_SECRET` | Secret | High-entropy access-credential signing secret; required and never client-exposed |
 | `ACCESS_TOKEN_TTL` | Non-secret | Positive duration; default 15 minutes |
@@ -226,9 +241,9 @@ The following names are the Phase 1 configuration contract. Planning MAY refine 
 ## Assumptions
 
 - Email and password are the only end-user sign-in method in Phase 1; social sign-in, multi-factor authentication, password reset, and account recovery are deferred.
-- Email addresses are compared using one documented normalization policy, and an email address identifies at most one account.
+- Email addresses are normalized before comparison by trimming surrounding whitespace and lowercasing the entire address, and each normalized email address identifies at most one account.
 - Verification codes expire after 10 minutes; access credentials default to 15 minutes and refresh tokens to 30 days unless planning documents a security-reviewed reason to change them.
-- Resend and credential-attempt limits use reasonable security defaults finalized during planning and present a retryable response without revealing protective thresholds unnecessarily.
+- Verification-code resend limits use reasonable security defaults finalized during planning and present a retryable response without revealing protective thresholds unnecessarily. Failed sign-in attempts are not throttled and do not lock accounts in Phase 1.
 - Each browser or device sign-in creates a distinct refresh-token record. Phase 1 logout revokes the presented token record, not every refresh token owned by the user.
 - The profile is read-only in Phase 1 and contains only safe identity fields such as display name, email, verification state, role, and account timestamps.
 - Administrator bootstrap is initialization behavior, not an administrator-management interface; role changes and administration workflows are deferred to Phase 3.
