@@ -72,6 +72,14 @@
 
 **Alternatives considered**: Sending mail inside a transaction holds locks across an external call. Best-effort auditing for successful privilege changes cannot prove FR-027. Refusing logout because telemetry failed can leave a known credential active.
 
+## Audit access, retention, and theme phasing
+
+**Decision**: Adopt Constitution v2.0.0 without a feature-specific exception. Phase 1 keeps the audit application capability write-only, exposes no audit read API or UI, introduces no automated deletion or retention cleanup, retains all audit records, and restricts direct database access to authorized operational roles. Phase 1 delivers a complete accessible light theme; Phase 3 owns dark and system theme support.
+
+**Rationale**: The constitutional defaults provide concrete Phase 1 access and retention behavior without adding schema fields or prematurely designing the Phase 3 audit-management experience. Staged theme delivery keeps the authentication foundation focused while preserving an explicit mandatory Phase 3 completion point.
+
+**Alternatives considered**: An application audit reader in Phase 1 expands authorization and privacy scope; an unapproved deletion schedule risks evidence loss; leaving retention implicit fails the planning gate; assigning dark mode to Phase 4 conflicts with Constitution v2.0.0.
+
 ## Canonical database mapping
 
 **Decision**: Map precisely the six diagram entities and their exact camelCase fields: UUID IDs, PostgreSQL text for diagram strings, `timestamptz(3)` for datetimes, `bigint` for file size, `jsonb` for metadata, nullable fields exactly as labeled, and only the declared primary keys, unique email, and foreign keys. Keep `role` as a validated string. Add no extra field, enum, constraint, or index in Phase 1.

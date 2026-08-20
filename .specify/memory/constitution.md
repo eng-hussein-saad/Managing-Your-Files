@@ -1,14 +1,12 @@
 <!--
 Sync Impact Report
-- Version change: 1.1.0 -> 1.2.0
+- Version change: 1.2.0 -> 2.0.0
 - Modified principles:
-  - III. Stable Contracts and Replaceable Infrastructure (schema governance cross-reference added)
-- Added principles:
-  - IX. Database Schema Is a Maintainer-Approved Contract
+  - IV. Reusable, Complete User Experiences (theme support staged by delivery phase)
+  - VI. Audit Important State Changes (default access and retention policy added)
+- Added principles: none
 - Modified sections:
-  - Project-Wide Technical Constraints
   - Delivery Workflow and Quality Gates
-  - Governance
 - Added sections: none
 - Removed sections: none
 - Follow-up TODOs: none
@@ -49,8 +47,10 @@ Shared interaction patterns MUST be implemented through reusable React component
 hooks rather than duplicated page logic. Every user-facing asynchronous workflow MUST provide
 appropriate loading, success, empty, validation, and error states; destructive actions MUST require
 clear confirmation. Interfaces MUST be responsive, keyboard-operable, accessibly labeled, and
-usable in supported light, dark, and system themes. Motion MUST clarify state or interaction and
-MUST NOT obstruct access or mask latency.
+usable in the themes required by the current approved phase. Phases 1 and 2 MAY ship a complete,
+accessible light theme without dark-mode controls. Phase 3 MUST add dark and system theme support
+across all existing user-facing interfaces without regressing accessibility or responsive behavior.
+Motion MUST clarify state or interaction and MUST NOT obstruct access or mask latency.
 
 ### V. Environment Configuration Is a Verified Contract (NON-NEGOTIABLE)
 Sensitive and deployment-specific configuration MUST come from environment variables and MUST be
@@ -68,8 +68,13 @@ Security-relevant and important data-changing operations MUST emit audit events 
 service. At minimum, authentication milestones, uploads, downloads, deletions, folder mutations,
 role changes, and administrator actions MUST record actor, action, target, timestamp, and only safe,
 useful metadata. Audit failure behavior MUST be consciously defined per operation, and audit records
-MUST obey access control, retention, and privacy requirements. Logs MUST be structured enough for
-operational investigation without becoming a secondary store of credentials or private file data.
+MUST obey access control, retention, and privacy requirements. Until an approved phase defines a
+more specific retention schedule and application access surface, audit records MUST have no
+application-facing read API or UI, MUST be restricted to authorized operational database access,
+and MUST be retained without automated deletion. A later retention policy MUST specify duration,
+disposition, migration impact, and verification before it replaces this default. Logs MUST be
+structured enough for operational investigation without becoming a secondary store of credentials
+or private file data.
 
 ### VII. Spec-Driven, Tested, Incremental Delivery
 Each implementation-plan phase MUST proceed through specification, clarification when needed,
@@ -132,7 +137,8 @@ reject a phase when any applicable item below lacks evidence:
    `database-schema.mmd`, and every configuration key the phase introduces, consumes, renames, or
    retires.
 2. **Clarify**: resolve ambiguous ownership, authorization, retention, deletion, provider, and
-   configuration semantics before planning.
+   configuration semantics before planning. An audit-producing phase MAY adopt the default audit
+   access and retention policy in Principle VI explicitly instead of defining a replacement policy.
 3. **Plan**: define layer boundaries, API/data contracts, migration impact, threat controls, tests,
    and environment-variable validation, secrecy classification, defaults, and deployment mapping.
    The plan MUST compare its data design with `database-schema.mmd`; any difference MUST be shown to
@@ -182,4 +188,4 @@ principles, MINOR for new principles or materially expanded obligations, and PAT
 that do not change obligations. The ratification date remains the date of initial adoption; the last
 amended date changes whenever constitutional content changes.
 
-**Version**: 1.2.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-20
+**Version**: 2.0.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-20

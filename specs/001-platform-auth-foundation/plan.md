@@ -26,7 +26,7 @@ The design matches `database-schema.mmd` exactly at the entity, field, type, key
 
 **Performance Goals**: Meet SC-003 with exactly one renewal for at least 20 concurrent expired-access requests, no request retried more than once, and at least 95% success with a valid refresh token; meet the three-minute first-time verification usability target in SC-001 excluding mail latency
 
-**Constraints**: Unrelated production origins; no browser-readable refresh token; memory-only access token; transactional token rotation and verification consumption; fail-closed validation and authorization; no Phase 1 sign-in throttling or lockout; rate-limited verification resend; no secrets in responses, logs, analytics, or audit metadata; every project-authored function and method has an intent comment
+**Constraints**: Unrelated production origins; no browser-readable refresh token; memory-only access token; transactional token rotation and verification consumption; fail-closed validation and authorization; no Phase 1 sign-in throttling or lockout; rate-limited verification resend; no secrets in responses, logs, analytics, or audit metadata; accessible light-only Phase 1 presentation with dark/system themes deferred to Phase 3; no application audit-read surface or automated audit deletion; operational-only audit database access; every project-authored function and method has an intent comment
 
 **Scale/Scope**: Two deployables, one shared contract package, six user stories, six canonical entities, three browser-facing gateway operations, public and trusted Express authentication/profile operations, two roles, and one administrator bootstrap path
 
@@ -39,16 +39,16 @@ The design matches `database-schema.mmd` exactly at the entity, field, type, key
 | I. Strict TypeScript and layered design | Strict shared configuration; route handlers/controllers coordinate; services own rules; repositories own Prisma; mail, token, clock, and audit ports isolate infrastructure | PASS |
 | II. Server-enforced security | Express authenticates and authorizes protected operations; the gateway cannot mint or validate credentials; all boundaries use runtime schemas; denial is the default | PASS |
 | III. Stable contracts and replaceable infrastructure | Versioned OpenAPI contracts, shared envelope schemas, a mail abstraction, and repository boundaries are defined in `contracts/` and `research.md` | PASS |
-| IV. Complete reusable UX | Route groups, reusable status/form components, React Query hooks, keyboard operation, focus management, reduced motion, and all required async states are planned | PASS |
+| IV. Complete reusable UX | Route groups, reusable status/form components, React Query hooks, accessible light-theme presentation, keyboard operation, focus management, reduced motion, and all required async states are planned; dark/system themes are assigned to Phase 3 as permitted by Constitution v2.0.0 | PASS |
 | V. Verified environment contract | The specification includes every consumed key; server and gateway schemas validate before startup; both application `.env.example` files, deployment mapping, and clean-start checks move together | PASS |
-| VI. Audit important changes | One audit service records FR-027 events; required successful state changes include audit writes transactionally; denial stays denied on audit failure and emits a sanitized fallback | PASS |
+| VI. Audit important changes | One write-only audit service records FR-027 events; required successful state changes include audit writes transactionally; denial stays denied on audit failure and emits a sanitized fallback; Phase 1 explicitly adopts the constitutional default of no application read surface, no automated deletion, retained records, and authorized operational database access only | PASS |
 | VII. Spec-driven tests | Contract, unit, integration, browser, concurrency, authorization, redaction, configuration, and clean-start evidence map to FR-001–FR-032 and SC-001–SC-010 | PASS |
 | VIII. Comment every function | Lint/review convention requires a short intent comment immediately above each project-authored function, method, callback, and route handler | PASS |
 | IX. Canonical database schema | `data-model.md` compares all entities, fields, types, keys, nullability, and relations with `database-schema.mmd`; no deviation is proposed | PASS |
 
 ### Post-design re-check
 
-Phase 1 adds no database entity, field, constraint, or index beyond the canonical diagram. `AuditLog.metadata.outcome` carries the required outcome without a column. `VerificationCode.invalidatedAt` represents supersession; email verification is the only Phase 1 code purpose. Nullable `File.extractedContent` is only the later-phase foundation; a distinct extraction-status field is not part of Phase 1. Index additions requested for later query scale require a future planning-time schema proposal and explicit maintainer confirmation. The constitution gate remains **PASS**.
+Phase 1 adds no database entity, field, constraint, or index beyond the canonical diagram. `AuditLog.metadata.outcome` carries the required outcome without a column. `VerificationCode.invalidatedAt` represents supersession; email verification is the only Phase 1 code purpose. Nullable `File.extractedContent` is only the later-phase foundation; a distinct extraction-status field is not part of Phase 1. Index additions requested for later query scale require a future planning-time schema proposal and explicit maintainer confirmation. Constitution v2.0.0 permits the accessible light-only Phase 1 scope and requires dark/system themes in Phase 3. Phase 1 adopts the default audit access and retention policy without adding a read surface, deletion workflow, or schema deviation. The constitution gate remains **PASS**.
 
 ## Project Structure
 
@@ -156,6 +156,7 @@ Browser ── same-origin ──> Next.js Route Handler
 - Resend rate-checks, invalidates earlier eligible codes, creates one replacement, and records the event atomically; SMTP work follows commit.
 - Sign-in persists a refresh record and audit event before the trusted response. Rotation conditionally revokes the old row, creates the new row, and audits in one transaction.
 - Logout prioritizes removal of access: it revokes idempotently and attempts its audit record; audit failure cannot keep a known token active. Role-denial remains denied if its audit write fails and emits a sanitized critical operational record.
+- The Phase 1 audit capability is write-only from application code. No audit read controller, route, user interface, scheduled deletion, or retention cleanup is introduced; records remain retained, and deployment documentation limits direct database access to authorized operational roles. Phase 3 must specify duration, disposition, migration impact, and verification before replacing this default.
 - Password/code hashing and network calls never execute inside database transactions; serializable conflicts receive bounded retries.
 
 ## Configuration and Deployment Mapping
@@ -168,9 +169,9 @@ Vercel receives the values documented by `client/.env.example`: `AUTH_API_BASE_U
 
 - **Contract**: validate all public and trusted operations against the OpenAPI envelopes, status codes, safe DTOs, and stable errors.
 - **Service/integration**: cover normalized-email races, code expiry/use/resend overlap, mail failure, unverified sign-in, rotation/replay, idempotent logout, bootstrap conflicts, profile isolation, role denial, audit behavior, and persistence failure against PostgreSQL.
-- **Client**: prove memory-only access state, complete route states, single-flight renewal for 20 concurrent `401`s, one retry per eligible request, no retry for other failures, no access-token return when cookie creation fails, and state clearing on renewal failure.
+- **Client**: prove memory-only access state, complete accessible light-theme route states, single-flight renewal for 20 concurrent `401`s, one retry per eligible request, no retry for other failures, no access-token return when cookie creation fails, and state clearing on renewal failure.
 - **Browser/end-to-end**: inspect cookies and storage; exercise local and unrelated-origin production-like arrangements; verify sign-in, reload restoration, logout, keyboard/focus behavior, direct trusted-endpoint denial, and clean startup.
-- **Redaction/configuration**: scan responses, errors, logs, audit metadata, built client assets, and example configuration for prohibited values; fail when required or malformed settings are accepted.
+- **Redaction/configuration/audit policy**: scan responses, errors, logs, audit metadata, built client assets, and example configuration for prohibited values; fail when required or malformed settings are accepted; inspect application routes, UI, scheduled work, and deployment documentation to prove the default audit access and retention policy.
 
 See [quickstart.md](./quickstart.md) for runnable validation scenarios.
 

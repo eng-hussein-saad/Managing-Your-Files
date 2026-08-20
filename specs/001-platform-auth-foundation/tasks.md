@@ -57,7 +57,7 @@ description: "Dependency-ordered implementation tasks for the Platform Authentic
 - [ ] T021 [P] Implement Argon2id password/code hashing, SHA-256 refresh hashing, random code/token generation, and constant-time trust comparison in server/src/infrastructure/security/password-hasher.ts, server/src/infrastructure/security/code-hasher.ts, server/src/infrastructure/security/refresh-tokens.ts, and server/src/infrastructure/security/trust-secret.ts
 - [ ] T022 [P] Implement pinned-algorithm JWT issue/verify behavior with issuer, audience, subject, role, issued-at, and expiry validation in server/src/infrastructure/security/access-tokens.ts
 - [ ] T023 [P] Define the mail port, verification message DTO, SMTP adapter, and fake adapter in server/src/modules/auth/ports/mail.port.ts, server/src/infrastructure/mail/smtp-mailer.ts, and server/tests/fakes/fake-mailer.ts
-- [ ] T024 Implement the allowlisted audit event API, repository, transactional writer, and sanitized operational fallback in server/src/modules/audit/audit.types.ts, server/src/modules/audit/audit.repository.ts, server/src/modules/audit/audit.service.ts, and server/src/infrastructure/observability/logger.ts
+- [ ] T024 Implement the allowlisted write-only audit event API, repository, transactional writer, and sanitized operational fallback without application read or deletion capabilities in server/src/modules/audit/audit.types.ts, server/src/modules/audit/audit.repository.ts, server/src/modules/audit/audit.service.ts, and server/src/infrastructure/observability/logger.ts
 - [ ] T025 Implement request IDs, exact-origin credentialless CORS, JSON parsing limits, validation middleware, common response helpers, not-found handling, and redacted error handling in server/src/http/middleware/request-id.ts, server/src/http/middleware/cors.ts, server/src/http/middleware/validate.ts, server/src/http/respond.ts, and server/src/http/middleware/errors.ts
 - [ ] T026 Create disposable PostgreSQL migration/reset helpers, canonical fixtures, and shared Express test harnesses in server/tests/helpers/database.ts, server/tests/fixtures/canonical.ts, and server/tests/helpers/app.ts
 
@@ -219,7 +219,7 @@ description: "Dependency-ordered implementation tasks for the Platform Authentic
 - [ ] T090 [P] [US6] Add an audit completeness matrix for registration, verification, sign-in, rotation, logout, bootstrap, delivery failure, and role denial in server/tests/integration/audit-matrix.integration.test.ts
 - [ ] T091 [P] [US6] Add prohibited-secret scanners for responses, errors, structured logs, audit metadata, fixtures, URLs, traces, environment examples, and built client assets in tests/security/secret-redaction.test.ts and tests/security/prohibited-patterns.ts
 - [ ] T092 [P] [US6] Add server and client configuration matrix tests for missing/malformed values, wildcard CORS, production-insecure cookies, mismatched classifications, and browser-exposed secrets in server/tests/unit/config.test.ts and client/tests/unit/config.test.ts
-- [ ] T093 [P] [US6] Add accessibility and reduced-motion tests covering public, protected, administrator, loading, validation, success, unauthorized, forbidden, empty, and failure states in client/tests/component/auth-accessibility.test.tsx
+- [ ] T093 [P] [US6] Add accessible light-theme contrast, keyboard, labeling, and reduced-motion tests covering public, protected, administrator, loading, validation, success, unauthorized, forbidden, empty, and failure states in client/tests/component/auth-accessibility.test.tsx
 
 ### Implementation for User Story 6
 
@@ -239,14 +239,15 @@ description: "Dependency-ordered implementation tasks for the Platform Authentic
 **Purpose**: Synchronize documentation and deployment contracts, validate canonical schema alignment, and run the complete clean-start and production-like acceptance gate.
 
 - [ ] T100 [P] Document prerequisites, configuration classification, clean setup, migration, bootstrap, development, test, and deployment commands in README.md
-- [ ] T101 [P] Document Vercel client and Render server environment mappings, matching BFF secrets, matching refresh lifetimes, migration-before-release, and unrelated-origin CORS in docs/deployment.md
+- [ ] T101 [P] Document Vercel client and Render server environment mappings, matching BFF secrets, matching refresh lifetimes, migration-before-release, unrelated-origin CORS, and authorized operational-only database access for retained audit records in docs/deployment.md
 - [ ] T102 Compare server/prisma/schema.prisma and server/prisma/migrations/001_platform_auth_foundation/migration.sql field-by-field with database-schema.mmd and record the no-deviation review in specs/001-platform-auth-foundation/evidence/schema-alignment.md
 - [ ] T103 Run the missing/malformed configuration matrix and clean setup from both .env.example files and record startup-under-15-minutes evidence in specs/001-platform-auth-foundation/evidence/clean-start.md
 - [ ] T104 Run typecheck, lint, unit, contract, PostgreSQL integration, Playwright, and production build commands and record results in specs/001-platform-auth-foundation/evidence/automated-verification.md
 - [ ] T105 Run the full local and unrelated-origin production-like verified-user journey from registration through logout and record SC-001/SC-002/SC-006 evidence in specs/001-platform-auth-foundation/evidence/end-to-end.md
-- [ ] T106 [P] Inspect keyboard navigation, labels, focus movement, responsive layouts, reduced motion, and user comprehension states and record SC-010 evidence in specs/001-platform-auth-foundation/evidence/usability-accessibility.md
+- [ ] T106 [P] Inspect accessible light-theme contrast, keyboard navigation, labels, focus movement, responsive layouts, reduced motion, and user comprehension states and record SC-010 evidence in specs/001-platform-auth-foundation/evidence/usability-accessibility.md
 - [ ] T107 Run secret scans over responses, logs, audit rows, URLs, browser storage, Playwright traces, built assets, and example configuration and record zero-exposure evidence in specs/001-platform-auth-foundation/evidence/secret-scan.md
-- [ ] T108 Reconcile implemented environment keys, OpenAPI contracts, Prisma schema, fixtures, scripts, and documentation against spec.md, plan.md, quickstart.md, and database-schema.mmd in specs/001-platform-auth-foundation/evidence/final-convergence.md
+- [ ] T108 Reconcile implemented environment keys, OpenAPI contracts, Prisma schema, fixtures, scripts, and documentation against the constitution, spec.md, plan.md, quickstart.md, and database-schema.mmd in specs/001-platform-auth-foundation/evidence/final-convergence.md
+- [ ] T109 Verify FR-033 by inspecting application routes, user interfaces, scheduled work, deployment documentation, and database access guidance for no audit-read surface, no automated deletion, retained records, and authorized operational-only access in specs/001-platform-auth-foundation/evidence/audit-access-retention.md
 
 **Checkpoint**: All Phase 1 acceptance evidence is reproducible from a clean environment and no artifact diverges from the approved contracts.
 
@@ -364,5 +365,7 @@ After the shared Foundation is complete, separate contributors can prepare US1 a
 - Tests must fail for the intended missing behavior before implementation begins.
 - The gateway remains limited to login, refresh, and logout; protected profile and administrator requests go directly to Express.
 - No task may add a database field, enum, key, index, constraint, refresh-session entity, or extraction-status field absent from database-schema.mmd.
+- Phase 1 ships a complete accessible light theme; dark and system themes remain Phase 3 work.
+- Phase 1 audit support remains write-only and retains records without automated deletion under authorized operational database access.
 - Use `prisma migrate deploy`, never schema push, for deployment evidence.
 - Commit after each task or cohesive task group and validate at every checkpoint.

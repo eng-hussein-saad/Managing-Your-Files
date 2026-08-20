@@ -126,6 +126,9 @@ Expected browser evidence: host-only cookie, `HttpOnly`, configured `SameSite`, 
 4. Inject database/audit failures into privilege-granting operations; confirm no partial authenticated state or credentials are returned.
 5. Scan response fixtures, browser traces, application logs, audit rows, URLs, built assets, and both application `.env.example` files for passwords, code values/hashes, raw access/refresh credentials, trust secrets, connection strings, and private content; expect zero findings.
 6. Start each process with one required variable absent or malformed; confirm failure before serving traffic. Confirm production rejects insecure cookie settings and wildcard CORS.
+7. Inspect Express and Next.js routes, application navigation, and scheduled work; confirm Phase 1 exposes no audit-read API or UI and contains no automated audit-deletion or retention-cleanup job.
+8. Review deployment and database-access guidance; confirm audit records remain retained and direct access is limited to authorized operational roles.
+9. Inspect every Phase 1 presentation state in the accessible light theme; confirm contrast, labels, keyboard operation, focus behavior, responsiveness, and reduced-motion behavior. Confirm dark and system theme controls are absent and explicitly assigned to Phase 3.
 
 ## Schema alignment review
 
@@ -142,4 +145,4 @@ Expected result: exact entity, field, type, key, nullability, and relationship a
 
 ## Completion evidence
 
-Phase 1 is ready for convergence only when all commands and scenarios above pass, both applications start from the documented non-secret example configuration in under the SC-008 target, and the end-to-end verified-user journey works in local and unrelated-origin production-like arrangements.
+Phase 1 is ready for convergence only when all commands and scenarios above pass, both applications start from the documented non-secret example configuration in under the SC-008 target, the default audit access and retention policy is evidenced, the accessible light-theme states pass review, and the end-to-end verified-user journey works in local and unrelated-origin production-like arrangements.

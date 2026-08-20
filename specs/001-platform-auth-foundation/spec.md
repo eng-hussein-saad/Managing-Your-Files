@@ -123,6 +123,7 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 1. **Given** invalid external input, **When** any Phase 1 operation is submitted, **Then** the response uses the common error contract, identifies correctable fields when safe, and contains no implementation details or secrets.
 2. **Given** a registration, successful verification, successful sign-in, credential rotation, logout, or denied role access, **When** the event completes, **Then** an audit event records the actor when known, action, target, outcome, timestamp, and safe metadata.
 3. **Given** any audit event or application log produced by this phase, **When** it is inspected, **Then** it contains no password, verification code, raw access credential, raw renewal credential, server-only shared secret, or connection string.
+4. **Given** the Phase 1 audit capability, **When** application routes, user interfaces, scheduled work, and deployment access are inspected, **Then** no application-facing audit read surface or automated deletion exists, records remain retained, and database access is limited to authorized operational access.
 
 ### Edge Cases
 
@@ -142,7 +143,7 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 ### Functional Requirements
 
 - **FR-001**: The system MUST provide runnable client and server application foundations with documented clean-setup commands and validated startup configuration.
-- **FR-002**: The system MUST provide distinct public-authentication, protected-user, and administrator presentation areas, with responsive and keyboard-operable loading, validation, success, unauthorized, forbidden, and failure states.
+- **FR-002**: The system MUST provide distinct public-authentication, protected-user, and administrator presentation areas, with responsive and keyboard-operable loading, validation, success, unauthorized, forbidden, and failure states in a complete accessible light theme. Dark and system theme support are deferred to Phase 3.
 - **FR-003**: The system MUST apply one documented success envelope and one documented error envelope to every Phase 1 service response, including stable error identifiers and safe field-level validation details where applicable.
 - **FR-004**: The system MUST validate every externally supplied authentication value, route value, request parameter, and configuration value at its authoritative boundary and MUST deny the operation when validation or identity is uncertain.
 - **FR-005**: A visitor MUST be able to register one account per normalized email address using a valid email and a password of at least 12 characters. The system MUST normalize email addresses before uniqueness checks and sign-in lookup by trimming surrounding whitespace and lowercasing the entire address; passwords MUST be stored only in a non-recoverable, salted form.
@@ -172,17 +173,18 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 - **FR-029**: Normal protected operations MUST remain directly accessible with a valid access credential; the browser-facing authentication gateway MUST NOT become a duplicate proxy for non-authentication application operations in this phase.
 - **FR-030**: The system MUST document every required environment setting with a non-secret example, secrecy classification, purpose, and startup validation rule, and MUST refuse startup when a required setting is absent or invalid.
 - **FR-031**: Cross-origin browser access to protected service operations MUST be limited to explicitly configured trusted application origins and headers; credentialed cross-origin renewal cookies MUST NOT be required.
-- **FR-032**: Phase 1 MUST include verification evidence for registration, code lifecycle, sign-in, profile isolation, renewal rotation and replay, single-renewal concurrency, logout, unauthenticated denial, role denial, secret redaction, configuration validation, and clean startup.
+- **FR-032**: Phase 1 MUST include verification evidence for registration, code lifecycle, sign-in, profile isolation, renewal rotation and replay, single-renewal concurrency, logout, unauthenticated denial, role denial, secret redaction, audit access and retention policy, accessible light-theme presentation, configuration validation, and clean startup.
+- **FR-033**: Phase 1 MUST adopt the constitution's default audit access and retention policy: audit records MUST have no application-facing read API or user interface, MUST be accessible only through authorized operational database access, and MUST be retained without automated deletion. Any later replacement policy MUST specify duration, disposition, migration impact, and verification before adoption.
 
 ### Requirement Verification Map
 
 | Requirement group | Acceptance evidence |
 |-------------------|---------------------|
-| FR-001–FR-004, FR-030–FR-032 | Clean-setup demonstration plus contract, accessibility, validation, origin-policy, and configuration checks |
+| FR-001–FR-004, FR-030–FR-032 | Clean-setup demonstration plus contract, light-theme accessibility, validation, origin-policy, configuration, and audit-policy checks |
 | FR-005–FR-010 | User Story 1 scenarios and failed/sign-in abuse-boundary tests |
 | FR-011–FR-021, FR-029 | User Stories 2–4 scenarios, browser storage inspection, direct-access denial, rotation/replay tests, and concurrent-expiry test |
 | FR-022–FR-025 | User Stories 2 and 5 scenarios plus direct protected-operation authorization tests |
-| FR-026–FR-028 | Data-contract review and User Story 6 audit/redaction scenarios |
+| FR-026–FR-028, FR-033 | Data-contract review and User Story 6 audit, redaction, access-surface, and retention scenarios |
 
 ### Key Entities
 
@@ -248,7 +250,8 @@ The following names are the Phase 1 configuration contract. Planning MAY refine 
 - The profile is read-only in Phase 1 and contains only safe identity fields such as display name, email, verification state, role, and account timestamps.
 - Administrator bootstrap is initialization behavior, not an administrator-management interface; role changes and administration workflows are deferred to Phase 3.
 - File and folder entities are data-contract foundations only in this phase. Upload, query, organization, preview, download, and deletion experiences remain Phase 2 work.
-- Audit events are recorded in Phase 1, but audit search, retention management, export, and user interface are deferred to Phase 3.
+- Phase 1 adopts the constitutional default audit policy: it exposes no application audit-read API or user interface, permits only authorized operational database access, and retains audit records without automated deletion. Audit search, export, and any replacement retention policy are deferred to Phase 3 and require an approved duration, disposition, migration impact, and verification plan.
+- Phase 1 and Phase 2 provide a complete accessible light theme. Dark and system theme support, including theme controls and cross-interface verification, are delivered in Phase 3.
 - Only access tokens use JWT. Refresh tokens are opaque random values backed directly by hashed `Refresh Token` records; no refresh-session table, refresh-token signing secret, or JWT refresh-token validation is part of this feature.
 - The required client, server, data, mail, and deployment technologies named in the implementation plan and constitution remain planning constraints, with any generic reference to “JWT access/refresh authentication” interpreted as JWT access-token authentication plus opaque refresh-token authentication—not JWT-formatted refresh tokens.
 - The application will be deployed with the browser-facing application and authentication authority on unrelated origins, so the design cannot depend on a shared third-party renewal cookie.
@@ -264,5 +267,6 @@ The following names are the Phase 1 configuration contract. Planning MAY refine 
 
 - File upload, listing, search, filtering, sorting, preview, download, folders, file deletion, and user file statistics (Phase 2).
 - User administration, global file administration, operational dashboards, audit-log viewing, and role-change interfaces (Phase 3).
-- Dark mode, containerization, full production-hardening documentation, extended performance work, and the complete cross-phase automated test suite beyond Phase 1 verification (Phase 4).
+- Dark and system theme support, including user controls and cross-interface theme verification (Phase 3).
+- Containerization, full production-hardening documentation, extended performance work, and the complete cross-phase automated test suite beyond Phase 1 verification (Phase 4).
 - Password reset, account recovery, social sign-in, multi-factor authentication, user-controlled session listing/revocation, and profile editing unless added through a later approved specification.
