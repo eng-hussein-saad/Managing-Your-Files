@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                String             @id @default(uuid()) @db.Uuid
+  name              String
+  email             String             @unique
+  passwordHash      String
+  role              String
+  isEmailVerified   Boolean
+  createdAt         DateTime           @db.Timestamptz(3)
+  updatedAt         DateTime           @db.Timestamptz(3)
+  verificationCodes VerificationCode[]
+  refreshTokens     RefreshToken[]
+  folders           Folder[]
+  files             File[]
+  auditLogs         AuditLog[]
+
+  @@map("USER")
+}
+
+model VerificationCode {
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String    @db.Uuid
+  codeHash      String
+  expiresAt     DateTime  @db.Timestamptz(3)
+  usedAt        DateTime? @db.Timestamptz(3)
+  invalidatedAt DateTime? @db.Timestamptz(3)
+  createdAt     DateTime  @db.Timestamptz(3)
+  user          User      @relation(fields: [userId], references: [id], onDelete: NoAction)
+
+  @@map("VERIFICATION_CODE")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String
+  expiresAt DateTime  @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @db.Timestamptz(3)
+  user      User      @relation(fields: [userId], references: [id], onDelete: NoAction)
+
+  @@map("REFRESH_TOKEN")
+}
+
+model Folder {
+  id        String    @id @default(uuid()) @db.Uuid
+  ownerId   String    @db.Uuid
+  parentId  String?   @db.Uuid
+  name      String
+  deletedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @db.Timestamptz(3)
+  updatedAt DateTime  @db.Timestamptz(3)
+  owner     User      @relation(fields: [ownerId], references: [id], onDelete: NoAction)
+  parent    Folder?   @relation("FolderTree", fields: [parentId], references: [id], onDelete: NoAction)
+  children  Folder[]  @relation("FolderTree")
+  files     File[]
+
+  @@map("FOLDER")
+}
+
+model File {
+  id               String    @id @default(uuid()) @db.Uuid
+  ownerId          String    @db.Uuid
+  folderId         String?   @db.Uuid
+  originalName     String
+  storageKey       String
+  mimeType         String
+  size             BigInt    @db.BigInt
+  extractedContent String?
+  deletedAt        DateTime? @db.Timestamptz(3)
+  createdAt        DateTime  @db.Timestamptz(3)
+  updatedAt        DateTime  @db.Timestamptz(3)
+  owner            User      @relation(fields: [ownerId], references: [id], onDelete: NoAction)
+  folder           Folder?   @relation(fields: [folderId], references: [id], onDelete: NoAction)
+
+  @@map("FILE")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorId    String?  @db.Uuid
+  action     String
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @db.Timestamptz(3)
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: NoAction)
+
+  @@map("AUDIT_LOG")
+}
+

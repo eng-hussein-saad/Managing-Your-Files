@@ -1,0 +1,6 @@
+{
+  "extends": "@gold-era/typescript-config/tsconfig.json",
+  "compilerOptions": { "rootDir": "src" },
+  "include": ["src/**/*.ts"]
+}
+

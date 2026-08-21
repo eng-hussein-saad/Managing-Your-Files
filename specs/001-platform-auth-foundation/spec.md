@@ -18,7 +18,7 @@
 - Q: What should happen if the authentication gateway cannot store a newly issued or rotated refresh-token cookie? → A: Return an authentication error and do not return the access token.
 - Q: How should Phase 1 respond to repeated failed sign-in attempts? → A: Do not apply sign-in throttling or account lockout in Phase 1.
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Create and Verify an Account (Priority: P1)
 
@@ -138,7 +138,7 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 - The administrator bootstrap runs repeatedly or concurrently; it remains idempotent and cannot downgrade or duplicate the configured administrator. If the configured email belongs to a regular user, startup fails with a sanitized conflict instead of promoting that account.
 - Account, verification, renewal, or audit persistence is temporarily unavailable; security-sensitive operations fail closed with the common error contract.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -146,7 +146,7 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 - **FR-002**: The system MUST provide distinct public-authentication, protected-user, and administrator presentation areas, with responsive and keyboard-operable loading, validation, success, unauthorized, forbidden, and failure states in a complete accessible light theme. Dark and system theme support are deferred to Phase 3.
 - **FR-003**: The system MUST apply one documented success envelope and one documented error envelope to every Phase 1 service response, including stable error identifiers and safe field-level validation details where applicable.
 - **FR-004**: The system MUST validate every externally supplied authentication value, route value, request parameter, and configuration value at its authoritative boundary and MUST deny the operation when validation or identity is uncertain.
-- **FR-005**: A visitor MUST be able to register one account per normalized email address using a valid email and a password of at least 12 characters. The system MUST normalize email addresses before uniqueness checks and sign-in lookup by trimming surrounding whitespace and lowercasing the entire address; passwords MUST be stored only in a non-recoverable, salted form.
+- **FR-005**: A visitor MUST be able to register one account per normalized email address using a valid email and a password of at least 8 characters. The system MUST normalize email addresses before uniqueness checks and sign-in lookup by trimming surrounding whitespace and lowercasing the entire address; passwords MUST be stored only in a non-recoverable, salted form.
 - **FR-006**: Registration MUST create an unverified regular-user account, initiate verification-code delivery, and MUST NOT grant protected access before verification succeeds. If delivery fails after persistence succeeds, the system MUST retain the unverified account, return a distinct delivery-pending outcome, and allow the user to retry through verification-code resend without registering again.
 - **FR-007**: Verification codes MUST be unpredictable, expire 10 minutes after issuance, be usable once, and be stored in a form that does not reveal the submitted code if persistence is exposed.
 - **FR-008**: An unverified user MUST be able to request a replacement verification code; issuance MUST invalidate prior unused codes for the same purpose and MUST be rate-limited to prevent abuse.
@@ -178,13 +178,13 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 
 ### Requirement Verification Map
 
-| Requirement group | Acceptance evidence |
-|-------------------|---------------------|
+| Requirement group            | Acceptance evidence                                                                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | FR-001–FR-004, FR-030–FR-032 | Clean-setup demonstration plus contract, light-theme accessibility, validation, origin-policy, configuration, and audit-policy checks |
-| FR-005–FR-010 | User Story 1 scenarios and failed/sign-in abuse-boundary tests |
-| FR-011–FR-021, FR-029 | User Stories 2–4 scenarios, browser storage inspection, direct-access denial, rotation/replay tests, and concurrent-expiry test |
-| FR-022–FR-025 | User Stories 2 and 5 scenarios plus direct protected-operation authorization tests |
-| FR-026–FR-028, FR-033 | Data-contract review and User Story 6 audit, redaction, access-surface, and retention scenarios |
+| FR-005–FR-010                | User Story 1 scenarios and failed/sign-in abuse-boundary tests                                                                        |
+| FR-011–FR-021, FR-029        | User Stories 2–4 scenarios, browser storage inspection, direct-access denial, rotation/replay tests, and concurrent-expiry test       |
+| FR-022–FR-025                | User Stories 2 and 5 scenarios plus direct protected-operation authorization tests                                                    |
+| FR-026–FR-028, FR-033        | Data-contract review and User Story 6 audit, redaction, access-surface, and retention scenarios                                       |
 
 ### Key Entities
 
@@ -199,33 +199,33 @@ Users receive understandable loading, validation, success, unauthorized, forbidd
 
 The following names are the Phase 1 configuration contract. Planning MAY refine non-security defaults but MUST update this specification before renaming, adding, or removing a key.
 
-| Setting | Classification | Purpose / validation |
-|---------|----------------|----------------------|
-| `PORT` | Non-secret, server-only | Integer from 1 through 65535; defaults to 3001 locally and accepts the deployment platform's injected listener port |
-| `DATABASE_URL` | Secret | Valid database connection value required by the server |
-| `JWT_ACCESS_SECRET` | Secret | High-entropy access-credential signing secret; required and never client-exposed |
-| `ACCESS_TOKEN_TTL` | Non-secret | Positive duration; default 15 minutes |
-| `REFRESH_TOKEN_TTL` | Non-secret | Positive lifetime for opaque refresh tokens; default 30 days and aligned with cookie lifetime |
-| `BFF_SHARED_SECRET` | Secret | High-entropy trust credential accepted only on server-to-server authentication exchanges |
-| `AUTH_BFF_SHARED_SECRET` | Secret | Gateway-side value corresponding to `BFF_SHARED_SECRET`; server-only and never public-prefixed |
-| `NEXT_PUBLIC_API_BASE_URL` | Public | Absolute browser-reachable service origin |
-| `AUTH_API_BASE_URL` | Non-secret, server-only | Absolute service origin used by the authentication gateway |
-| `CORS_ALLOWED_ORIGINS` | Non-secret | Explicit comma-separated browser origins; wildcard is invalid when credentials or authorization headers are accepted |
-| `REFRESH_COOKIE_NAME` | Non-secret, server-only | Valid cookie name; one centralized default |
-| `REFRESH_COOKIE_PATH` | Non-secret, server-only | Narrow path covering sign-in, renewal, and logout handlers |
-| `REFRESH_COOKIE_SAME_SITE` | Non-secret, server-only | Valid environment-appropriate same-site policy |
-| `REFRESH_COOKIE_SECURE` | Non-secret, server-only | Must be true in production; false allowed only for plain-HTTP local development |
-| `EMAIL_FROM` | Non-secret | Valid sender identity used for verification messages |
-| `SMTP_HOST` | Non-secret | Required mail delivery host |
-| `SMTP_PORT` | Non-secret | Valid port number |
-| `SMTP_SECURE` | Non-secret | Boolean transport-security mode consistent with the configured port |
-| `SMTP_USER` | Secret | Mail-service credential |
-| `SMTP_PASSWORD` | Secret | Mail-service credential |
-| `ADMIN_EMAIL` | Secret | Valid normalized bootstrap administrator email |
-| `ADMIN_PASSWORD` | Secret | Bootstrap password satisfying the account password policy |
-| `ADMIN_NAME` | Non-secret | Non-empty bootstrap administrator display name |
+| Setting                    | Classification          | Purpose / validation                                                                                                 |
+| -------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `PORT`                     | Non-secret, server-only | Integer from 1 through 65535; defaults to 3001 locally and accepts the deployment platform's injected listener port  |
+| `DATABASE_URL`             | Secret                  | Valid database connection value required by the server                                                               |
+| `JWT_ACCESS_SECRET`        | Secret                  | High-entropy access-credential signing secret; required and never client-exposed                                     |
+| `ACCESS_TOKEN_TTL`         | Non-secret              | Positive duration; default 15 minutes                                                                                |
+| `REFRESH_TOKEN_TTL`        | Non-secret              | Positive lifetime for opaque refresh tokens; default 30 days and aligned with cookie lifetime                        |
+| `BFF_SHARED_SECRET`        | Secret                  | High-entropy trust credential accepted only on server-to-server authentication exchanges                             |
+| `AUTH_BFF_SHARED_SECRET`   | Secret                  | Gateway-side value corresponding to `BFF_SHARED_SECRET`; server-only and never public-prefixed                       |
+| `NEXT_PUBLIC_API_BASE_URL` | Public                  | Absolute browser-reachable service origin                                                                            |
+| `AUTH_API_BASE_URL`        | Non-secret, server-only | Absolute service origin used by the authentication gateway                                                           |
+| `CORS_ALLOWED_ORIGINS`     | Non-secret              | Explicit comma-separated browser origins; wildcard is invalid when credentials or authorization headers are accepted |
+| `REFRESH_COOKIE_NAME`      | Non-secret, server-only | Valid cookie name; one centralized default                                                                           |
+| `REFRESH_COOKIE_PATH`      | Non-secret, server-only | Narrow path covering sign-in, renewal, and logout handlers                                                           |
+| `REFRESH_COOKIE_SAME_SITE` | Non-secret, server-only | Valid environment-appropriate same-site policy                                                                       |
+| `REFRESH_COOKIE_SECURE`    | Non-secret, server-only | Must be true in production; false allowed only for plain-HTTP local development                                      |
+| `EMAIL_FROM`               | Non-secret              | Valid sender identity used for verification messages                                                                 |
+| `SMTP_HOST`                | Non-secret              | Required mail delivery host                                                                                          |
+| `SMTP_PORT`                | Non-secret              | Valid port number                                                                                                    |
+| `SMTP_SECURE`              | Non-secret              | Boolean transport-security mode consistent with the configured port                                                  |
+| `SMTP_USER`                | Secret                  | Mail-service credential                                                                                              |
+| `SMTP_PASSWORD`            | Secret                  | Mail-service credential                                                                                              |
+| `ADMIN_EMAIL`              | Secret                  | Valid normalized bootstrap administrator email                                                                       |
+| `ADMIN_PASSWORD`           | Secret                  | Bootstrap password satisfying the account password policy                                                            |
+| `ADMIN_NAME`               | Non-secret              | Non-empty bootstrap administrator display name                                                                       |
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

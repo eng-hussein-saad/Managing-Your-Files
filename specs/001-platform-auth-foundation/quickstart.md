@@ -72,7 +72,7 @@ Expected outcomes:
 
 ## Scenario 1: Registration, delivery failure, verification, and resend
 
-1. Register a mixed-case, whitespace-padded email and a password of at least 12 characters.
+1. Register a mixed-case, whitespace-padded email and a password of at least 8 characters.
 2. Confirm one normalized lowercase `USER` row and one eligible verification row exist, with only Argon2id hashes persisted.
 3. Submit the delivered eight-digit code before ten minutes elapse.
 4. Confirm the user becomes verified and the code receives `usedAt` atomically.

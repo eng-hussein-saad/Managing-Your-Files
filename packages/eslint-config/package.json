@@ -1,0 +1,17 @@
+{
+  "name": "@gold-era/eslint-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.mjs"
+  },
+  "dependencies": {
+    "@eslint/js": "9.35.0",
+    "@typescript-eslint/eslint-plugin": "8.42.0",
+    "@typescript-eslint/parser": "8.42.0",
+    "eslint": "9.35.0",
+    "eslint-plugin-jsdoc": "54.7.0",
+    "typescript-eslint": "8.42.0"
+  }
+}

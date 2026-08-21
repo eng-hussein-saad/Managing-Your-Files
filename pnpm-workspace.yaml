@@ -1,0 +1,11 @@
+packages:
+  - client
+  - server
+  - packages/*
+
+onlyBuiltDependencies:
+  - '@prisma/engines'
+  - '@tailwindcss/oxide'
+  - esbuild
+  - prisma
+  - sharp
