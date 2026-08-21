@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthForm } from "../../../components/auth/auth-form";
 import { FormStatus } from "../../../components/auth/form-status";
+import { useToast } from "../../../components/toast/toast-provider";
 import { VerificationCodeInput } from "../../../components/auth/verification-code-input";
 import { apiErrorMessage } from "../../../lib/api/api-error";
 import {
@@ -13,6 +14,7 @@ import {
 export function VerifyEmailForm() {
   const search = useSearchParams();
   const router = useRouter();
+  const { notify } = useToast();
   const [email, setEmail] = useState(search.get("email") ?? "");
   const [code, setCode] = useState("");
   const verification = useVerifyEmail();
@@ -22,8 +24,12 @@ export function VerifyEmailForm() {
     verification.mutate(
       { email, code },
       {
-        onSuccess: () =>
-          window.setTimeout(() => router.replace("/login?verified=true"), 700),
+        onSuccess: () => {
+          window.setTimeout(() => {
+            notify("Email verified. You can sign in now.", { kind: "success" });
+            router.replace("/login");
+          }, 700);
+        },
       },
     );
   };
@@ -76,19 +82,17 @@ export function VerifyEmailForm() {
         className="text-button"
         type="button"
         disabled={resend.isPending || !email}
-        onClick={() => resend.mutate(email)}
+        onClick={() =>
+          resend.mutate(email, {
+            onSuccess: (result) => notify(result.message, { kind: "success" }),
+          })
+        }
       >
         {resend.isPending ? "Sending…" : "Send a new code"}
       </button>
       <FormStatus
-        message={
-          resend.isSuccess
-            ? resend.data.message
-            : resend.error
-              ? apiErrorMessage(resend.error)
-              : undefined
-        }
-        kind={resend.error ? "error" : "info"}
+        message={resend.error ? apiErrorMessage(resend.error) : undefined}
+        kind="error"
       />
     </AuthForm>
   );

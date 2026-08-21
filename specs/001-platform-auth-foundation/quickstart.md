@@ -122,7 +122,7 @@ Expected browser evidence: host-only cookie, `HttpOnly`, configured `SameSite`, 
 
 1. Run bootstrap repeatedly and concurrently with a new configured email; confirm exactly one verified administrator.
 2. Configure `ADMIN_EMAIL` to an existing regular user; confirm startup refuses with a sanitized conflict and does not promote or overwrite the account.
-3. Exercise registration, verification, sign-in, rotation, logout, and role denial; confirm structurally complete audit events with actor when known, action, target, `metadata.outcome`, and timestamp.
+3. Exercise registration, verification, sign-in, rotation, logout, and role denial; confirm structurally complete audit events for the auditable actions and no audit event for routine rotation.
 4. Inject database/audit failures into privilege-granting operations; confirm no partial authenticated state or credentials are returned.
 5. Scan response fixtures, browser traces, application logs, audit rows, URLs, built assets, and both application `.env.example` files for passwords, code values/hashes, raw access/refresh credentials, trust secrets, connection strings, and private content; expect zero findings.
 6. Start each process with one required variable absent or malformed; confirm failure before serving traffic. Confirm production rejects insecure cookie settings and wildcard CORS.

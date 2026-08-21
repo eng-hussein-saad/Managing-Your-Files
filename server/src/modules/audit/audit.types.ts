@@ -3,7 +3,6 @@ export const auditActions = [
   "auth.verification",
   "auth.verification_delivery_failed",
   "auth.login",
-  "auth.refresh",
   "auth.logout",
   "admin.bootstrap",
   "auth.authorization_denied",

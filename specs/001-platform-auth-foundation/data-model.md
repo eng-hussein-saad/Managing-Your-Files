@@ -176,7 +176,7 @@ Successful privilege/state changes include their audit insert in the same transa
 | Verification | Conditional eligibility checks in serializable transaction | Consume current code, verify user, invalidate competitors, audit |
 | Resend | Per-user serializable transaction | Check rate, invalidate old, create one current code, audit |
 | Sign-in | Transaction | Create refresh record and success audit before issue |
-| Rotation | Conditional revoke in serializable transaction | Revoke exactly one old row, create one replacement, audit |
+| Rotation | Conditional revoke in serializable transaction | Revoke exactly one old row and create one replacement without audit noise |
 | Logout | Conditional idempotent revoke | Presented row revoked; repeated requests safe |
 
 ## Migration and compatibility impact

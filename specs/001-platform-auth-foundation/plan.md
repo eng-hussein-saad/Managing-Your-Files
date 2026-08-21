@@ -154,7 +154,7 @@ Browser ── same-origin ──> Next.js Route Handler
 - Registration commits `User`, `VerificationCode`, and audit event in one short serializable transaction, then sends mail. Delivery failure retains the unverified account/current code and returns the delivery-pending outcome.
 - Verification conditionally consumes the current code, verifies the user, invalidates other eligible codes, and records the audit event atomically.
 - Resend rate-checks, invalidates earlier eligible codes, creates one replacement, and records the event atomically; SMTP work follows commit.
-- Sign-in persists a refresh record and audit event before the trusted response. Rotation conditionally revokes the old row, creates the new row, and audits in one transaction.
+- Sign-in persists a refresh record and audit event before the trusted response. Rotation conditionally revokes the old row and creates the new row in one transaction without producing a routine audit event.
 - Logout prioritizes removal of access: it revokes idempotently and attempts its audit record; audit failure cannot keep a known token active. Role-denial remains denied if its audit write fails and emits a sanitized critical operational record.
 - The Phase 1 audit capability is write-only from application code. No audit read controller, route, user interface, scheduled deletion, or retention cleanup is introduced; records remain retained, and deployment documentation limits direct database access to authorized operational roles. Phase 3 must specify duration, disposition, migration impact, and verification before replacing this default.
 - Password/code hashing and network calls never execute inside database transactions; serializable conflicts receive bounded retries.

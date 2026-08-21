@@ -8,7 +8,6 @@ import {
   hashRefreshToken,
 } from "../../infrastructure/security/refresh-tokens.js";
 import { serializable } from "../../infrastructure/persistence/transactions.js";
-import { AuditRepository } from "../audit/audit.repository.js";
 import { toSafeUser } from "../users/user.mapper.js";
 import { AppError } from "./auth.errors.js";
 
@@ -22,7 +21,6 @@ export class RefreshService {
     private readonly accessTokens: AccessTokenService,
     private readonly accessTtl: number,
     private readonly refreshTtl: number,
-    private readonly audit = new AuditRepository(),
   ) {}
   /** Conditionally revokes one active token and creates exactly one replacement. */
   async refresh(rawToken: string): Promise<TrustedAuthResult> {
@@ -65,17 +63,6 @@ export class RefreshService {
           createdAt: now,
         },
       });
-      await this.audit.append(
-        transaction,
-        {
-          actorId: persisted.userId,
-          action: "auth.refresh",
-          entityType: "REFRESH_TOKEN",
-          entityId: persisted.id,
-          metadata: { outcome: "SUCCESS" },
-        },
-        now,
-      );
       return persisted.user;
     });
     const safeUser = toSafeUser(user);

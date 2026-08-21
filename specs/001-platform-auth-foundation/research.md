@@ -66,7 +66,7 @@
 
 ## Transaction and audit behavior
 
-**Decision**: Keep transactions short and retry bounded serialization conflicts. Registration persists user, current code, and audit atomically before sending mail. Verification consumes the current code, verifies the user, invalidates competitors, and audits atomically. Sign-in persists the refresh row and audit together; rotation revokes/inserts/audits together. Logout always prioritizes revocation even if audit insertion fails. A denied request remains denied if its audit write fails and emits a sanitized critical operational record.
+**Decision**: Keep transactions short and retry bounded serialization conflicts. Registration persists user, current code, and audit atomically before sending mail. Verification consumes the current code, verifies the user, invalidates competitors, and audits atomically. Sign-in persists the refresh row and audit together; routine rotation only revokes the presented token and inserts its replacement. Logout always prioritizes revocation even if audit insertion fails. A denied request remains denied if its audit write fails and emits a sanitized critical operational record.
 
 **Rationale**: This makes privilege-granting operations fail closed and preserves the registration account when SMTP fails. External network calls and expensive hashing stay outside transactions. Prisma supports interactive transactions but advises keeping them short; see [Prisma transactions](https://www.prisma.io/docs/orm/prisma-client/queries/transactions).
 

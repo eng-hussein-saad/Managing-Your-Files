@@ -23,7 +23,16 @@ export function createSmtpMailer(options: {
           from: options.from,
           to: message.recipient,
           subject: "Verify your Gold Era account",
-          text: `Hello ${message.name}, your verification code is ${message.code}. It expires at ${message.expiresAt.toISOString()}.`,
+          text: `Hello ${message.name},
+
+Thank you for creating your Gold Era account. Please use the verification code below to confirm your email address:
+
+${message.code}
+
+This code expires in 10 minutes. If you did not create this account, you can safely ignore this message.
+
+Best,
+The Gold Era team`,
         });
       },
   };

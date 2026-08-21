@@ -144,7 +144,7 @@ description: "Dependency-ordered implementation tasks for the Platform Authentic
 
 ### Implementation for User Story 3
 
-- [x] T064 [US3] Implement conditional active-token rotation with serializable revoke/replace/audit semantics and replay-safe failure in server/src/modules/auth/refresh.service.ts
+- [x] T064 [US3] Implement conditional active-token rotation with serializable revoke/replace semantics, no routine refresh audit entry, and replay-safe failure in server/src/modules/auth/refresh.service.ts
 - [x] T065 [US3] Add the trusted refresh controller and route with safe failures and no raw-token logging in server/src/http/controllers/trusted-auth.controller.ts and server/src/http/routes/auth-internal.routes.ts
 - [x] T066 [US3] Implement the same-origin refresh Route Handler with cookie rotation, invalid-cookie clearing, raw-token stripping, and no access state on cookie failure in client/src/app/api/auth/refresh/route.ts
 - [x] T067 [US3] Implement the single-flight Axios renewal interceptor with typed one-retry marking and authentication-error eligibility in client/src/lib/api/renewal-interceptor.ts
@@ -215,7 +215,7 @@ description: "Dependency-ordered implementation tasks for the Platform Authentic
 ### Tests for User Story 6
 
 - [x] T089 [P] [US6] Add a cross-operation contract matrix asserting documented success/error envelopes, stable codes, safe field issues, and request IDs in server/tests/contract/envelope-matrix.contract.test.ts
-- [x] T090 [P] [US6] Add an audit completeness matrix for registration, verification, sign-in, rotation, logout, bootstrap, delivery failure, and role denial in server/tests/integration/audit-matrix.integration.test.ts
+- [x] T090 [P] [US6] Add an audit completeness matrix for registration, verification, sign-in, logout, bootstrap, delivery failure, and role denial, and verify rotation creates no audit entry, in server/tests/integration/audit-matrix.integration.test.ts
 - [x] T091 [P] [US6] Add prohibited-secret scanners for responses, errors, structured logs, audit metadata, fixtures, URLs, traces, environment examples, and built client assets in tests/security/secret-redaction.test.ts and tests/security/prohibited-patterns.ts
 - [x] T092 [P] [US6] Add server and client configuration matrix tests for missing/malformed values, wildcard CORS, production-insecure cookies, mismatched classifications, and browser-exposed secrets in server/tests/unit/config.test.ts and client/tests/unit/config.test.ts
 - [x] T093 [P] [US6] Add accessible light-theme contrast, keyboard, labeling, and reduced-motion tests covering public, protected, administrator, loading, validation, success, unauthorized, forbidden, empty, and failure states in client/tests/component/auth-accessibility.test.tsx
@@ -223,7 +223,7 @@ description: "Dependency-ordered implementation tasks for the Platform Authentic
 ### Implementation for User Story 6
 
 - [x] T094 [US6] Audit all controllers and Route Handlers against the shared envelopes and centralize safe error translation in server/src/http/middleware/errors.ts and client/src/lib/api/api-error.ts
-- [x] T095 [US6] Integrate allowlisted transactional audit events and defined failure behavior across registration, verification, resend, login, rotation, logout, bootstrap, and authorization in server/src/modules/audit/auth-audit.ts
+- [x] T095 [US6] Integrate allowlisted transactional audit events and defined failure behavior across registration, verification, resend, login, logout, bootstrap, and authorization in server/src/modules/audit/auth-audit.ts
 - [x] T096 [US6] Add structured redaction rules for credentials, codes, secrets, connection strings, authorization/cookie headers, and private content in server/src/infrastructure/observability/redaction.ts
 - [x] T097 [US6] Build reusable full-page loading, empty, unauthorized, forbidden, and failure presentations with focus management and reduced-motion support in client/src/components/status/page-state.tsx and client/src/components/status/error-panel.tsx
 - [x] T098 [US6] Apply the shared status presentations and accessible announcements across authentication, protected, and administrator route error boundaries in client/src/app/(auth)/error.tsx, client/src/app/(protected)/error.tsx, and client/src/app/admin/error.tsx

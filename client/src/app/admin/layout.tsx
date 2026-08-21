@@ -1,7 +1,7 @@
 "use client";
 import type { PropsWithChildren } from "react";
 import { useAuthState } from "../../features/auth/auth-store";
-import { LogoutButton } from "../../components/auth/logout-button";
+import { AppNavigation } from "../../components/navigation/app-navigation";
 import { PageState } from "../../components/status/page-state";
 /** Provides an administrator UX guard without replacing server authorization. */
 export default function AdminLayout({ children }: PropsWithChildren) {
@@ -24,17 +24,7 @@ export default function AdminLayout({ children }: PropsWithChildren) {
     );
   return (
     <>
-      <header className="app-header">
-        <a className="brand" href="/admin">
-          Gold Era<span>.</span>
-        </a>
-        <nav aria-label="Account">
-          <a href="/admin">Admin</a>
-          <a href="/dashboard">Dashboard</a>
-          <a href="/profile">Profile</a>
-          <LogoutButton />
-        </nav>
-      </header>
+      <AppNavigation role={auth.session.user.role} />
       {children}
     </>
   );

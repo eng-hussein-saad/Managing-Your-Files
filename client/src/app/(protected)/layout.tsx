@@ -3,7 +3,7 @@ import type { PropsWithChildren } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuthState } from "../../features/auth/auth-store";
-import { LogoutButton } from "../../components/auth/logout-button";
+import { AppNavigation } from "../../components/navigation/app-navigation";
 import { PageState } from "../../components/status/page-state";
 /** Provides a UX guard while Express remains the protected-data authority. */
 export default function ProtectedLayout({ children }: PropsWithChildren) {
@@ -28,16 +28,7 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
     );
   return (
     <>
-      <header className="app-header">
-        <a className="brand" href="/dashboard">
-          Gold Era<span>.</span>
-        </a>
-        <nav aria-label="Account">
-          <a href="/dashboard">Dashboard</a>
-          <a href="/profile">Profile</a>
-          <LogoutButton />
-        </nav>
-      </header>
+      <AppNavigation role={auth.session.user.role} />
       {children}
     </>
   );

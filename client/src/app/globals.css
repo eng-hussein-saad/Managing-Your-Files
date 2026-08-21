@@ -60,5 +60,14 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid var
 .profile-card dt { color:var(--muted); }
 .profile-card dd { margin:0; font-weight:700; }
 .error-panel h2 { font-family:Georgia,serif; font-size:2rem; }
+.toast-region { position:fixed; z-index:200; top:1rem; right:1rem; width:min(calc(100vw - 2rem),24rem); display:grid; gap:.75rem; pointer-events:none; }
+.toast { --toast-accent:var(--gold); display:grid; grid-template-columns:.45rem 1fr auto; align-items:start; gap:.8rem; padding:1rem; border:1px solid var(--line); background:var(--card); box-shadow:0 16px 45px rgba(46,41,26,.18); pointer-events:auto; animation:toast-enter .2s ease-out; }
+.toast.success { --toast-accent:#377457; }
+.toast.error { --toast-accent:#9d382e; }
+.toast-mark { width:.45rem; min-height:2.25rem; background:var(--toast-accent); }
+.toast p { margin:0; padding:.2rem 0; font-size:.92rem; font-weight:650; }
+.toast-dismiss { border:0; background:transparent; color:var(--muted); padding:0 .15rem; font-size:1.45rem; line-height:1; cursor:pointer; }
+.toast-dismiss:hover { color:var(--ink); }
+@keyframes toast-enter { from { opacity:0; transform:translateY(-.5rem); } to { opacity:1; transform:translateY(0); } }
 @media (max-width:760px) { .hero { grid-template-columns:1fr; gap:3rem; } .hero aside { border-left:0; border-top:1px solid var(--line); padding:2rem 0 0; } .app-header nav a { display:none; } .profile-card div { grid-template-columns:1fr; gap:.2rem; } }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }

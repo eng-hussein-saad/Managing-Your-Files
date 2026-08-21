@@ -28,11 +28,11 @@ describeDatabase("authentication audit matrix", () => {
           "auth.registration",
           "auth.verification",
           "auth.login",
-          "auth.refresh",
           "auth.logout",
         ]),
       ),
     );
+    expect(rows.map((row) => row.action)).not.toContain("auth.refresh");
     expect(JSON.stringify(rows)).not.toContain("correct-password");
     expect(
       rows.every(

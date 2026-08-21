@@ -3,20 +3,26 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { AuthForm } from "../../../components/auth/auth-form";
 import { FormStatus } from "../../../components/auth/form-status";
+import { useToast } from "../../../components/toast/toast-provider";
 import { apiErrorCode, apiErrorMessage } from "../../../lib/api/api-error";
 import { useRegistration } from "../hooks/use-registration";
 /** Captures registration fields and routes persisted accounts into verification. */
 export function RegisterForm() {
   const registration = useRegistration();
   const router = useRouter();
+  const { notify } = useToast();
   const [values, setValues] = useState({ name: "", email: "", password: "" });
   const verificationUrl = (deliveryPending = false) =>
     `/verify-email?email=${encodeURIComponent(values.email)}${deliveryPending ? "&delivery=pending" : ""}`;
   const submit = (event: FormEvent) => {
     event.preventDefault();
     registration.mutate(values, {
-      onSuccess: (result) =>
-        router.push(`/verify-email?email=${encodeURIComponent(result.email)}`),
+      onSuccess: (result) => {
+        notify("Account created. Check your email for the verification code.", {
+          kind: "success",
+        });
+        router.push(`/verify-email?email=${encodeURIComponent(result.email)}`);
+      },
       onError: (error) => {
         if (apiErrorCode(error) === "AUTH_VERIFICATION_DELIVERY_PENDING")
           router.push(verificationUrl(true));

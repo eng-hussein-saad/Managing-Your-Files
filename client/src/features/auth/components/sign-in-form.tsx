@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthForm } from "../../../components/auth/auth-form";
 import { FormStatus } from "../../../components/auth/form-status";
+import { useToast } from "../../../components/toast/toast-provider";
 import { apiErrorCode, apiErrorMessage } from "../../../lib/api/api-error";
 import { useSignIn } from "../hooks/use-sign-in";
 /** Authenticates a verified user through the same-origin credential gateway. */
@@ -10,12 +11,15 @@ export function SignInForm() {
   const signIn = useSignIn();
   const router = useRouter();
   const search = useSearchParams();
+  const { notify } = useToast();
   const [values, setValues] = useState({ email: "", password: "" });
   const submit = (event: FormEvent) => {
     event.preventDefault();
     signIn.mutate(values, {
-      onSuccess: (session) =>
-        router.replace(session.user.role === "ADMIN" ? "/admin" : "/dashboard"),
+      onSuccess: (session) => {
+        notify(`Welcome back, ${session.user.name}.`, { kind: "success" });
+        router.replace(session.user.role === "ADMIN" ? "/admin" : "/dashboard");
+      },
       onError: (error) => {
         if (apiErrorCode(error) === "AUTH_VERIFICATION_REQUIRED")
           router.push(
