@@ -8,6 +8,16 @@
 
 **Input**: User description: "Read IMPLEMENTATION_PLAN.md and create a specification for phase 2 ONLY. Use Supabase Storage for object/file storage only. Limit each file to 5 MB and each user to 100 MB of total stored file content because the Supabase Free plan provides 1 GB of file storage. Do not soft-delete files or folders; soft deletion applies only to users."
 
+## Clarifications
+
+### Session 2026-08-22
+
+- Q: Which file formats must Phase 2 accept at launch? → A: PDF, plain text, JPEG, PNG, WebP, and DOCX.
+- Q: How should DOCX files be previewed in Phase 2? → A: Show preview unavailable and provide download only.
+- Q: What period and grouping should the Phase 2 upload-history chart use? → A: Last 30 local calendar days, grouped daily.
+- Q: How deeply may users nest folders in Phase 2? → A: Maximum 10 folder levels beneath the root.
+- Q: How many files may a user submit in one upload batch? → A: Maximum 10 files per batch.
+
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Upload Files with Clear Feedback (Priority: P1)
@@ -29,6 +39,8 @@ An authenticated user adds one or several files by dragging them into the applic
 7. **Given** a file of exactly 5 MB, **When** an eligible user uploads it, **Then** it passes the size boundary; a file even one byte larger is rejected before storage with a clear per-file message.
 8. **Given** an upload would raise the user's currently stored content above 100 MB, **When** quota admission is evaluated, **Then** that file is rejected without storing content or metadata and the user sees current usage, remaining capacity, and the 100 MB limit.
 9. **Given** a multi-file batch is individually valid but cannot fit entirely within the user's remaining quota, **When** it is processed, **Then** files are admitted in the user's displayed selection order while capacity remains and every remaining file receives an individual quota-exceeded result.
+10. **Given** a PDF, plain-text, JPEG, PNG, WebP, or DOCX file that satisfies the size and content checks, **When** the user uploads it, **Then** the format is accepted; every other format is rejected as unsupported at launch.
+11. **Given** a user selects up to 10 files, **When** the batch is submitted, **Then** each file is processed independently; selecting more than 10 files is rejected before upload with a clear batch-limit message.
 
 ---
 
@@ -65,6 +77,7 @@ An authenticated user previews supported content and downloads an owned file wit
 3. **Given** an owned file whose format cannot be previewed, **When** the preview area opens, **Then** it explains that preview is unavailable and keeps the download action available.
 4. **Given** an owned file, **When** the user downloads it, **Then** the complete content is returned with the original filename and correct content metadata and a sanitized download audit event is recorded.
 5. **Given** another user's, deleted, or nonexistent file, **When** preview or download is requested directly, **Then** access is denied before any content or storage location is exposed.
+6. **Given** an owned DOCX file, **When** the user opens its preview area, **Then** an explicit unsupported-preview state is shown and the original file remains available to download.
 
 ---
 
@@ -83,6 +96,7 @@ An authenticated user creates a personal folder hierarchy, browses it with bread
 3. **Given** nested owned folders, **When** the user browses into one or selects a breadcrumb ancestor, **Then** the correct child folders and files are shown and every breadcrumb segment resolves to an owned existing folder.
 4. **Given** an owned file, **When** the user moves it to the root or another owned folder, **Then** it disappears from the old location, appears in the destination, and remains owned by the same user.
 5. **Given** a request involving another user's folder, **When** the user attempts to read, rename, delete, create a child beneath it, or move a file into it, **Then** the operation is denied without disclosing the other folder's details.
+6. **Given** an owned folder at level ten beneath the virtual root, **When** the user attempts to create a child folder, **Then** creation is rejected with a clear nesting-limit message and the hierarchy remains unchanged.
 
 ---
 
@@ -117,7 +131,7 @@ An authenticated user opens a dashboard to understand current file count, curren
 
 1. **Given** an authenticated user with stored files and files that were permanently deleted, **When** the dashboard loads, **Then** total file count and storage usage include exactly that user's currently stored file records.
 2. **Given** stored files of several content types, **When** file-type distribution is shown, **Then** every existing file is counted once in a clear normalized type category.
-3. **Given** uploads across the dashboard's displayed date range, **When** upload history is shown, **Then** counts are grouped by upload date, include zero-value periods needed for continuity, and use the user's displayed local dates.
+3. **Given** uploads within and before the rolling 30-day window, **When** upload history is shown, **Then** it contains one daily bucket for each of the last 30 local calendar dates including today, counts files by original upload date, includes zero-value days, and excludes earlier uploads.
 4. **Given** a user with no files, **When** the dashboard loads, **Then** all totals show zero and charts present a clear empty state rather than an error.
 5. **Given** dashboard data is unavailable, **When** the user opens the dashboard, **Then** a safe error and retry path appear without stale values being presented as current.
 6. **Given** an authenticated user, **When** storage quota status is shown, **Then** it displays current stored-file usage, remaining capacity, and the 100 MB limit; after permanent deletion succeeds, usage decreases by the deleted file's byte size.
@@ -138,6 +152,7 @@ An authenticated user opens a dashboard to understand current file count, curren
 - Search text is empty, whitespace-only, very long, or contains special characters; it is safely normalized or rejected and cannot alter authorization boundaries.
 - Folder names differ only by surrounding whitespace or letter case; sibling-name comparison uses trimmed, case-insensitive names to prevent confusing duplicates.
 - A parent folder is permanently deleted concurrently with a child operation; the empty-folder rule prevents any existing item from being stranded and the hierarchy remains acyclic.
+- A user attempts to create a folder beneath a level-ten folder; authoritative validation rejects the operation without creating a partial folder or changing the existing hierarchy.
 - Stored content is missing or unavailable for an otherwise active record; preview and download fail safely with an actionable message and no storage internals.
 - Audit recording fails during an important state change; the operation fails without committing the state change so required audit history and business state cannot diverge.
 
@@ -147,9 +162,9 @@ An authenticated user opens a dashboard to understand current file count, curren
 
 - **FR-001**: Every Phase 2 operation MUST require an authenticated user and MUST enforce ownership at the authoritative service boundary for files, folders, previews, downloads, queries, and statistics.
 - **FR-002**: File and folder operations involving another user's, deleted, malformed, or nonexistent identifier MUST fail without returning protected metadata, content, storage references, hierarchy details, or existence-sensitive distinctions.
-- **FR-003**: Users MUST be able to select files through drag-and-drop and a traditional picker and submit one or multiple files in one interaction.
+- **FR-003**: Users MUST be able to select files through drag-and-drop and a traditional picker and submit between 1 and 10 files in one interaction. A selection above 10 files MUST be rejected before content upload with a clear batch-limit message.
 - **FR-004**: The upload experience MUST show validation, progress, success, and failure independently for every selected file and MUST allow successful items in a partial batch to remain successful.
-- **FR-005**: Every uploaded file MUST be authoritatively limited to 5 MB, defined as 5,242,880 bytes. Files at exactly that size MAY pass other validation, while any larger file MUST be rejected before storage. Allowed verified content types remain configurable; immediate validation MAY provide earlier feedback but MUST NOT authorize storage.
+- **FR-005**: Every uploaded file MUST be authoritatively limited to 5 MB, defined as 5,242,880 bytes. Files at exactly that size MAY pass other validation, while any larger file MUST be rejected before storage. The launch allowlist MUST accept PDF, plain text, JPEG, PNG, WebP, and DOCX files after authoritative content-type verification and MUST reject every other format; immediate validation MAY provide earlier feedback but MUST NOT authorize storage.
 - **FR-006**: The system MUST safely normalize display filenames and MUST generate storage identifiers that cannot be controlled as paths by a submitted filename.
 - **FR-007**: A successful upload MUST atomically result in accessible stored content and an active metadata record containing owner, optional folder, original display name, storage reference, verified content type, size, and lifecycle timestamps; failures MUST leave no active dangling record or accessible partial content.
 - **FR-008**: Supported text-bearing formats MUST make extracted text available from file details. The final upload outcome MUST distinguish available and unavailable extraction, and extraction failure MUST NOT invalidate an otherwise successful upload.
@@ -157,10 +172,10 @@ An authenticated user opens a dashboard to understand current file count, curren
 - **FR-010**: File collections MUST support combined server-evaluated search by original filename, filtering by normalized file-type category and folder location, sorting by original filename, size, or upload date in either direction, and pagination.
 - **FR-011**: Collection requests MUST validate query values, use documented defaults and maximum page size, return total matching count and page information, and apply a stable secondary order so records do not unpredictably repeat or disappear between pages of unchanged data.
 - **FR-012**: Users MUST be able to view an owned file's original filename, verified content type, size, upload date, current folder path, extracted-content state and content when available, preview availability, download action, and deletion action.
-- **FR-013**: The system MUST preview owned active images, browser-previewable PDFs or documents, and available text content through accessible reusable experiences; every other type MUST show an explicit unsupported-preview state.
+- **FR-013**: The system MUST preview owned active JPEG, PNG, and WebP images, PDFs, and plain-text content through accessible reusable experiences. DOCX files and every other unsupported type MUST show an explicit unsupported-preview state while preserving the download action; Phase 2 MUST NOT convert DOCX files into another preview format.
 - **FR-014**: Preview access MUST be time-limited or request-bound, MUST recheck current authorization and lifecycle state before content is exposed, and MUST NOT reveal reusable storage credentials or internal storage locations.
 - **FR-015**: Users MUST be able to download an owned file in full with a safely encoded original filename, correct content type, and correct content length when known.
-- **FR-016**: Users MUST be able to create nested owned folders at the root or beneath another owned folder, browse folder contents, and navigate to existing ancestors through breadcrumbs.
+- **FR-016**: Users MUST be able to create nested owned folders at the root or beneath another owned folder, browse folder contents, and navigate to existing ancestors through breadcrumbs. A hierarchy MUST contain no more than 10 persisted folder levels beneath the virtual root, and attempts to create level 11 MUST be rejected without mutation.
 - **FR-017**: Active sibling folders MUST have non-empty names that are unique after trimming surrounding whitespace and comparing without letter-case differences.
 - **FR-018**: Users MUST be able to rename an owned folder without changing its contents or parent, subject to the same folder-name rules as creation.
 - **FR-019**: Users MUST be able to move an owned file between the root and any owned folder without changing ownership or file metadata unrelated to location.
@@ -170,7 +185,7 @@ An authenticated user opens a dashboard to understand current file count, curren
 - **FR-023**: Folder deletion MUST require explicit irreversible-action confirmation and MUST permanently remove only an owned folder with no child folders and no files; deletion MUST NOT cascade.
 - **FR-024**: Files and folders MUST NOT have soft-delete markers, trash states, restore operations, or retained deleted records. After successful deletion, their identifiers MUST no longer resolve through lists, searches, navigation, details, previews, downloads, destination choices, or statistics.
 - **FR-025**: File deletion MUST be idempotent and MUST not be reported as successful until metadata, stored-object, quota, and audit outcomes are consistent. Partial provider or persistence failures MUST produce a safe retryable outcome and MUST be reconciled without exposing a usable orphaned object, leaving an accessible metadata record that points to missing content, or reclaiming quota more than once.
-- **FR-026**: The dashboard MUST return ownership-scoped aggregate data for total file count, total stored bytes, file-type distribution, upload counts over a documented date range and interval, total quota usage, remaining quota capacity, and the fixed 100 MB quota.
+- **FR-026**: The dashboard MUST return ownership-scoped aggregate data for total file count, total stored bytes, file-type distribution, upload counts in daily buckets for the rolling 30 local calendar days including the current day, total quota usage, remaining quota capacity, and the fixed 100 MB quota.
 - **FR-027**: Dashboard aggregates and quota usage MUST be calculated from authoritative currently stored file records, MUST exclude permanently deleted files and every other user's data, and MUST return zero-valued results and continuity periods where needed for a useful empty or time-series display.
 - **FR-028**: User-facing asynchronous workflows MUST provide responsive, keyboard-operable, accessibly labeled loading, success, empty, validation, confirmation, and error states in the existing complete light theme.
 - **FR-029**: Upload, download, file deletion, folder creation, folder rename, folder deletion, and file move outcomes MUST produce audit events through the shared audit capability with actor, action, target, outcome, timestamp, and sanitized useful metadata.
@@ -214,8 +229,8 @@ The following names are the Phase 2 configuration contract. Planning MAY refine 
 | --- | --- | --- |
 | `UPLOAD_MAX_FILE_SIZE_BYTES` | Non-secret, server-only | Required value `5242880`, representing the fixed inclusive 5 MB per-file limit; any other value is invalid unless this specification is revised |
 | `USER_STORAGE_QUOTA_BYTES` | Non-secret, server-only | Required value `104857600`, representing the fixed 100 MB currently stored-content quota per user; any other value is invalid unless this specification is revised |
-| `UPLOAD_ALLOWED_MIME_TYPES` | Non-secret, server-only | Non-empty explicit list of verified content types accepted for upload; the client may receive the effective public list for immediate feedback |
-| `UPLOAD_MAX_FILES_PER_BATCH` | Non-secret, server-only | Positive integer limiting one multi-file submission; the client may receive the effective public limit for immediate feedback |
+| `UPLOAD_ALLOWED_MIME_TYPES` | Non-secret, server-only | Required explicit allowlist matching the launch formats PDF, plain text, JPEG, PNG, WebP, and DOCX; the client may receive the effective public list for immediate feedback, and changing the supported format set requires revising this specification |
+| `UPLOAD_MAX_FILES_PER_BATCH` | Non-secret, server-only | Required value `10`; the client may receive the effective public limit for immediate feedback, and any other value is invalid unless this specification is revised |
 | `SUPABASE_URL` | Non-secret, server-only | Required absolute project API URL used only by the server-side Supabase Storage integration |
 | `SUPABASE_SECRET_KEY` | Secret, server-only | Required current-format `sb_secret_...` credential used only by the trusted server for Storage operations; must never enter browser code, responses, URLs, logs, or public-prefixed configuration |
 | `SUPABASE_STORAGE_BUCKET` | Non-secret, server-only | Required existing private bucket name dedicated to application file objects; startup verification must reject a missing or public bucket |
@@ -230,12 +245,12 @@ The following names are the Phase 2 configuration contract. Planning MAY refine 
 - **SC-001**: At least 90% of first-time test participants can upload a valid three-file batch through either drag-and-drop or the picker and correctly identify each file's progress and final outcome without assistance in under 2 minutes.
 - **SC-002**: In ownership-isolation testing across at least two users and every file and folder read or mutation path, 100% of cross-user attempts are denied with zero protected metadata, content, hierarchy, or storage references disclosed.
 - **SC-003**: At least 95% of file collection requests containing up to 10,000 owned records present the first page or a clear failure state within 2 seconds under the agreed verification environment, and unchanged ordered results contain no duplicates across consecutive pages.
-- **SC-004**: In a mixed batch of at least 20 files containing valid, oversized, disallowed, and operationally failed items, 100% receive an individual final status and 100% of successful files remain usable without an active dangling record for failed files.
+- **SC-004**: In a mixed batch of 10 files containing valid, oversized, disallowed, and operationally failed items, 100% receive an individual final status and 100% of successful files remain usable without an active dangling record for failed files; an 11-file selection is rejected before upload.
 - **SC-005**: Users can locate a known file by search or type/folder filter, open its details, and initiate preview or download in no more than 5 user actions from My Files in at least 90% of usability trials.
 - **SC-006**: 100% of supported preview samples render an appropriate representation, 100% of unsupported samples show a clear fallback, and every tested owned existing file remains downloadable with the expected filename and content.
-- **SC-007**: In hierarchy tests at least three levels deep, 100% of valid folder creation, rename, navigation, breadcrumb, and file-move actions preserve ownership and reachability, while 100% of folder-parent changes, deleted-ancestor access, cross-user access, and non-empty-folder deletion attempts are rejected without data loss.
+- **SC-007**: In hierarchy tests through the ten-level boundary, 100% of valid folder creation, rename, navigation, breadcrumb, and file-move actions preserve ownership and reachability, while 100% of level-eleven creation, folder-parent changes, deleted-ancestor access, cross-user access, and non-empty-folder deletion attempts are rejected without data loss.
 - **SC-008**: After successful file or empty-folder deletion, 100% of tested lists, searches, details, previews, downloads, destination choices, breadcrumbs, and dashboard aggregates exclude the item; its metadata record is absent, deleted file content is absent from storage, and quota decreases by exactly the deleted file size.
-- **SC-009**: Dashboard totals and distributions match a known verification dataset exactly, and every time-series bucket differs from its expected active-upload count by zero.
+- **SC-009**: Dashboard totals and distributions match a known verification dataset exactly, and each of the 30 daily upload-history buckets differs from its expected original-upload count by zero, including days with no uploads and records on local-date boundaries.
 - **SC-010**: 100% of required successful Phase 2 state changes and downloads produce structurally complete audit events, with zero prohibited secrets, file content, extracted text, or storage locations found in audit and error-output scans.
 - **SC-011**: At least 90% of usability participants correctly understand upload rejection, no-results, unsupported-preview, non-empty-folder deletion, and retryable failure states without assistance.
 - **SC-012**: In boundary and concurrency tests, 100% of files larger than 5,242,880 bytes are rejected, files exactly at the boundary remain eligible, and no user's currently stored content exceeds 104,857,600 bytes even when at least 20 uploads are submitted concurrently.
@@ -244,16 +259,18 @@ The following names are the Phase 2 configuration contract. Planning MAY refine 
 
 - Phase 1 authentication, authorization, common response contracts, application shells, user identity, file/folder data foundations, and audit capability are complete and available to Phase 2.
 - Phase 2 provides a complete accessible light theme; dark and system theme controls remain Phase 3 work.
-- The per-file limit is fixed at 5 MB (5,242,880 bytes), and the per-user currently stored-content quota is fixed at 100 MB (104,857,600 bytes). Allowed upload types, maximum batch count, extraction size, and page sizes remain environment-configured and are surfaced to users where they affect interaction.
-- Text extraction is required for plain-text-compatible content and PDFs whose text can be safely extracted within configured limits. Other formats may be added during planning only if they preserve the same available and unavailable user contract.
+- The per-file limit is fixed at 5 MB (5,242,880 bytes), the per-user currently stored-content quota is fixed at 100 MB (104,857,600 bytes), the launch format allowlist is fixed, and the maximum batch count is fixed at 10. Extraction size and page sizes remain environment-configured and are surfaced to users where they affect interaction.
+- One upload batch contains at most 10 files; the client may surface this server-enforced limit before submission.
+- Text extraction is required for plain text and PDFs whose text can be safely extracted within configured limits. Images remain usable with extraction unavailable. DOCX files are accepted for storage and download but have extraction and preview unavailable in Phase 2. Additional upload formats require a specification revision and must preserve the same available and unavailable user contract.
 - Multiple files may have the same original filename, including in the same folder. Folder names, unlike file display names, are unique among active siblings after trimming and case-insensitive comparison.
 - Search matches original filenames case-insensitively. File-type filters use a documented normalized category derived from the verified content type rather than trusting the filename extension.
 - The default file order is newest upload first with a stable identifier as a tie-breaker. Default and maximum page sizes are finalized through the configuration contract during planning.
 - The user's virtual root is not a persisted folder and cannot be renamed or deleted.
+- Folder depth counts persisted folders beneath the virtual root; levels one through ten are allowed, and level eleven is rejected.
 - Users move files during Phase 2, but moving folders is deferred; nested folder placement is selected at creation.
 - Deleting a folder requires it to contain no child folder and no file. Files and folders are permanently deleted and have no deleted state or restore path.
 - Dashboard storage usage and quota usage are both the sum of authoritative byte sizes for currently stored owned files; upload history is based on original upload timestamps, not move or update time.
-- Displayed upload-history dates use the user's browser-displayed local timezone while authoritative timestamps remain unambiguous.
+- Upload history covers the rolling 30 local calendar days including today, uses one bucket per day, and uses the user's browser-displayed local timezone while authoritative timestamps remain unambiguous.
 - Required Phase 2 audit failure prevents the associated important state change from committing. Successful download is considered complete only when its required audit event is recorded before content delivery begins.
 - Audit records continue to follow the constitutional default: no application-facing read API or UI and no automated deletion. Audit viewing remains Phase 3 work.
 - Supabase is used only for object/file storage. The existing application server remains responsible for authentication, authorization, metadata persistence, audit decisions, and generation of any narrowly time-limited file access. Supabase Authentication, Supabase Database, and direct browser use of privileged Supabase credentials are not part of Phase 2.
@@ -274,6 +291,8 @@ The following names are the Phase 2 configuration contract. Planning MAY refine 
 - Dark and system theme support and the theme selector (Phase 3).
 - File/folder trash browsing, restore, retention after deletion, or soft deletion. These entities are permanently deleted in Phase 2.
 - Moving folders after creation, folder sharing, file sharing, collaboration, version history, editing file contents, and public links.
+- DOCX text extraction, visual conversion, and preview rendering; accepted DOCX files remain downloadable.
 - Docker support, deployment hardening, the complete cross-phase automated test suite, and final developer documentation beyond Phase 2 configuration changes (Phase 4). Supabase Storage provider selection and integration are Phase 2 responsibilities, not a deferred Phase 4 migration.
 - Supabase Authentication, Supabase Database, Supabase Realtime, and any Supabase product other than Storage.
+- Upload formats other than PDF, plain text, JPEG, PNG, WebP, and DOCX.
 - Further changes to the approved database schema beyond the explicitly approved move of nullable `deletedAt` from `FILE` and `FOLDER` to `USER`; any additional difference must follow the constitution's planning-time comparison and maintainer-approval process.
