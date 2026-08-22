@@ -32,4 +32,7 @@
 ## Notes
 
 - Validation passed on the first review iteration. The specification uses the approved data-contract names and required configuration-key names only where project governance requires explicit alignment; it does not prescribe implementation structure or technology choices.
-- Phase 2 is limited to authenticated end-user file management, folders, soft deletion, and user analytics. Administration, audit viewing, dark mode, permanent deletion, deployment hardening, and other later-phase work remain explicitly out of scope.
+- Phase 2 is limited to authenticated end-user file management, folders, permanent file/folder deletion, and user analytics. User soft deletion, administration, audit viewing, dark mode, deployment hardening, and other later-phase work remain explicitly out of scope.
+- Revalidated on 2026-08-22 after fixing Supabase Storage as the sole object/file-storage provider. Provider-specific details are limited to the user-mandated storage and configuration contract; user journeys and measurable outcomes remain implementation-independent.
+- Revalidated on 2026-08-22 after fixing the per-file limit at 5 MB and the per-user stored-content quota at 100 MB. Boundary, multi-file ordering, concurrent admission, failed-upload release, permanent-deletion quota reclamation, dashboard feedback, and measurable verification are specified without unresolved clarifications.
+- Revalidated on 2026-08-22 after restricting soft deletion to users. Phase 2 permanently deletes files and empty folders, removes file objects from Supabase Storage, preserves audit history, and explicitly records the approved `database-schema.mmd` field changes.

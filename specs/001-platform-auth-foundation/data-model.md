@@ -10,10 +10,21 @@ Source of truth: [`database-schema.mmd`](../../database-schema.mmd).
 | `VERIFICATION_CODE` | `VerificationCode` mapped to `VERIFICATION_CODE` | Exact fields; use and supersession use `usedAt` and `invalidatedAt` |
 | `REFRESH_TOKEN` | `RefreshToken` mapped to `REFRESH_TOKEN` | Exact fields; one row per issued opaque token; no session/family model |
 | `FOLDER` | `Folder` mapped to `FOLDER` | Exact owner and nullable parent self-relation; behavior deferred |
-| `FILE` | `File` mapped to `FILE` | Exact owner, nullable folder/content/deletion fields; behavior deferred |
+| `FILE` | `File` mapped to `FILE` | Exact owner and nullable folder/content fields; behavior deferred |
 | `AUDIT_LOG` | `AuditLog` mapped to `AUDIT_LOG` | Exact fields; required event outcome is an allowlisted metadata property |
 
-There is no proposed entity, field, type, key, nullability, or relationship difference. Phase 1 creates only the primary keys, `USER.email` unique constraint, and foreign keys shown in the canonical diagram. Additional indexes or constraints—including on token hashes, active codes, folder names, storage keys, soft-deletion queries, or audit history—must be proposed against the canonical diagram and explicitly approved before a later migration adds them.
+There is no proposed entity, field, type, key, nullability, or relationship difference. Phase 1 creates only the primary keys, `USER.email` unique constraint, and foreign keys shown in the canonical diagram. Additional indexes or constraints—including on token hashes, active codes, folder names, storage keys, user soft-deletion queries, or audit history—must be proposed against the canonical diagram and explicitly approved before a later migration adds them.
+
+### Maintainer-approved lifecycle schema revision (2026-08-22)
+
+The maintainer explicitly approved moving soft deletion exclusively to users. Relative to the earlier runtime schema, the approved canonical change is exactly:
+
+- add nullable `USER.deletedAt` with no backfill so existing users remain active;
+- remove nullable `FOLDER.deletedAt`;
+- remove nullable `FILE.deletedAt`;
+- preserve all existing entities, keys, types, and relationships.
+
+The implementation plan for Phase 2 MUST include a reviewable migration that adds the user field and drops the two file/folder fields after confirming no deployed behavior depends on their values. Authentication queries, fixtures, and tests must treat non-null `USER.deletedAt` as inactive. File/folder deletion logic, fixtures, and tests must use permanent deletion. Until that migration is applied, the existing runtime schema is not aligned with this revised canonical design.
 
 ## PostgreSQL and Prisma mapping rules
 
@@ -25,7 +36,7 @@ There is no proposed entity, field, type, key, nullability, or relationship diff
 - `bigint` → Prisma `BigInt @db.BigInt`; public JSON contracts serialize file size as a decimal string to avoid JavaScript precision loss.
 - `json` → Prisma `Json` backed by PostgreSQL `jsonb`.
 - Canonical camelCase column names are retained. Prisma model names map to the uppercase canonical table names.
-- Required relations use restrictive/no-action deletion behavior in Phase 1. Hard-deletion behavior is deferred; normal file/folder lifecycle will use `deletedAt`.
+- Required relations use restrictive/no-action deletion behavior in Phase 1. User deletion is later implemented by setting `USER.deletedAt`; file and folder deletion is permanent and its safe relation/storage behavior is deferred to Phase 2.
 
 ## User
 
@@ -39,6 +50,7 @@ Represents a regular or administrator identity.
 | `passwordHash` | String | Argon2id encoded hash only; never returned or audited |
 | `role` | String | Service-level allowlist: `USER` or `ADMIN`; no unapproved database enum |
 | `isEmailVerified` | Boolean | `false` for registration, `true` after atomic verification; bootstrap administrator is verified |
+| `deletedAt` | Nullable DateTime | Sole soft-deletion marker; null for active accounts and set by the Phase 3 administrator workflow |
 | `createdAt` | DateTime | Set once on insertion |
 | `updatedAt` | DateTime | Updated on persisted account changes |
 
@@ -50,6 +62,7 @@ State transitions:
 absent ──register──> USER / unverified ──valid current code──> USER / verified
 absent ──bootstrap─> ADMIN / verified
 existing USER + configured ADMIN_EMAIL ──bootstrap──> startup conflict (no mutation)
+active user ──Phase 3 administrator deletion──> soft-deleted user / authentication denied
 ```
 
 There is no Phase 1 role change, profile edit, password reset, lockout, or user deletion.
@@ -123,7 +136,6 @@ Phase 1 establishes only the later ownership/hierarchy contract.
 | `ownerId` | UUID, foreign key | Required owning `USER` |
 | `parentId` | Nullable UUID, self foreign key | Optional parent `FOLDER`; hierarchy behavior deferred |
 | `name` | String | Behavior/validation deferred to Phase 2 |
-| `deletedAt` | Nullable DateTime | Future soft-deletion marker |
 | `createdAt` | DateTime | Set on insertion |
 | `updatedAt` | DateTime | Updated on mutation |
 
@@ -143,7 +155,6 @@ Phase 1 establishes only the later ownership/storage metadata contract.
 | `mimeType` | String | Future authoritative upload metadata |
 | `size` | BigInt | Future byte count |
 | `extractedContent` | Nullable Text | Future extracted text; no distinct Phase 1 extraction status |
-| `deletedAt` | Nullable DateTime | Future soft-deletion marker |
 | `createdAt` | DateTime | Set on insertion |
 | `updatedAt` | DateTime | Updated on mutation |
 

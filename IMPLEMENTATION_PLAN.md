@@ -4,9 +4,9 @@
 
 Managing Your Files is a full-stack file management platform that allows authenticated users to securely upload, organize, inspect, preview, download, search, and manage their files while providing administrators with user management, global file management, operational statistics, and audit visibility.
 
-The application will be built as a TypeScript monorepo with a Next.js App Router frontend and an Express.js REST API backend. PostgreSQL will be accessed through Prisma ORM. Authentication will use JWT access tokens with refresh-token support, email OTP verification, protected routes, and role-based authorization for users and administrators. File uploads will use Multer, while file persistence will be isolated behind a storage service so local and hosted storage implementations can be changed without coupling the rest of the application to a provider.
+The application will be built as a TypeScript monorepo with a Next.js App Router frontend and an Express.js REST API backend. PostgreSQL will be accessed through Prisma ORM. Authentication will use JWT access tokens with refresh-token support, email OTP verification, protected routes, and role-based authorization for users and administrators. File uploads will use Multer, and Phase 2 will establish Supabase Storage as the object/file-storage provider behind a dedicated storage service abstraction. Supabase is used for object/file storage only; application authentication, authorization, metadata persistence, and audit decisions remain owned by the existing application architecture.
 
-The implementation intentionally includes the complete extended feature set: dark mode, folder management, file and image preview, file downloads, soft deletion, audit logs, refresh-token authentication, Docker support, and automated testing.
+The implementation intentionally includes the complete extended feature set: dark mode, folder management, file and image preview, file downloads, user-only soft deletion, permanent file/folder deletion, audit logs, refresh-token authentication, Docker support, and automated testing.
 
 Development will follow GitHub Spec Kit's spec-driven workflow. The project constitution should be established once before implementation begins. Each phase below should then be treated as a separate Spec Kit feature and taken through specification, clarification where needed, planning, task generation, analysis, implementation, and verification before proceeding to the next phase.
 
@@ -31,7 +31,7 @@ The project constitution should enforce the following principles across every ph
 - Server-side authorization is the security boundary; frontend route guards are additional UX protection only.
 - All external input is validated on the backend, including authentication payloads, query parameters, route parameters, and uploaded files.
 - API errors follow one predictable response format.
-- File storage is accessed through a storage abstraction instead of directly from controllers.
+- Supabase Storage is the object/file-storage provider from Phase 2 onward and is accessed through a storage abstraction instead of directly from controllers.
 - Reusable React components and reusable React Query hooks are preferred over duplicated page-level logic.
 - Search, filtering, sorting, and pagination for data sets are server-driven.
 - Sensitive configuration is supplied through environment variables only.
@@ -90,7 +90,7 @@ Core entities should include:
 - `Folder`
 - `AuditLog`
 
-Relations and indexes should support ownership, role-based access, nested folders, soft deletion, refresh-token revocation/rotation, file queries, and audit history.
+Relations and indexes should support ownership, role-based access, nested folders, user-only soft deletion, permanent file/folder deletion, refresh-token revocation/rotation, file queries, and audit history.
 
 The `RefreshToken` model should support secure rotation and revocation. Stored refresh-token material should not require keeping reusable raw refresh tokens in plaintext when a hashed/token-identifier strategy can be used.
 
@@ -265,7 +265,7 @@ Build the platform foundation and complete identity system for Managing Your Fil
 
 ### `/speckit.plan` constraints
 
-Use the required project stack: Next.js App Router, TypeScript, Tailwind CSS, Framer Motion, TanStack React Query, Axios, Express.js, TypeScript, Prisma ORM, PostgreSQL, JWT authentication, and a monorepo with `client/` and `server/`. Include refresh-token authentication, email OTP delivery, backend input validation, secure password hashing, admin bootstrap through environment variables, consistent error handling, and an audit logging foundation. Implement a narrow Next.js BFF using Route Handlers for login, refresh, and logout cookie/token operations. Express must remain the sole authority for generating and validating access/refresh tokens and for refresh-token rotation, revocation, persistence, and authorization. Store the refresh token only in a first-party HttpOnly cookie managed by Next.js; keep the access token in frontend memory; never return raw refresh-token material to browser JavaScript. Protect any Express BFF-only token response with a server-only trust mechanism such as a shared secret/header or an equivalent design, and keep that secret out of all `NEXT_PUBLIC_*` variables. Include an Axios refresh interceptor with single-refresh coordination for concurrent `401` responses, safe retry behavior, authentication restoration after reload, environment-aware cookie settings, and appropriate CORS for direct browser-to-Express bearer-token API requests. Design the Prisma schema with later file, folder, soft-delete, and audit requirements in mind.
+Use the required project stack: Next.js App Router, TypeScript, Tailwind CSS, Framer Motion, TanStack React Query, Axios, Express.js, TypeScript, Prisma ORM, PostgreSQL, JWT authentication, and a monorepo with `client/` and `server/`. Include refresh-token authentication, email OTP delivery, backend input validation, secure password hashing, admin bootstrap through environment variables, consistent error handling, and an audit logging foundation. Implement a narrow Next.js BFF using Route Handlers for login, refresh, and logout cookie/token operations. Express must remain the sole authority for generating and validating access/refresh tokens and for refresh-token rotation, revocation, persistence, and authorization. Store the refresh token only in a first-party HttpOnly cookie managed by Next.js; keep the access token in frontend memory; never return raw refresh-token material to browser JavaScript. Protect any Express BFF-only token response with a server-only trust mechanism such as a shared secret/header or an equivalent design, and keep that secret out of all `NEXT_PUBLIC_*` variables. Include an Axios refresh interceptor with single-refresh coordination for concurrent `401` responses, safe retry behavior, authentication restoration after reload, environment-aware cookie settings, and appropriate CORS for direct browser-to-Express bearer-token API requests. Design the Prisma schema with user-only soft deletion, permanent file/folder deletion, and audit requirements in mind.
 
 ---
 
@@ -292,7 +292,8 @@ Implement:
 - Allowed file-type/MIME validation.
 - Clear handling of rejected or failed uploads.
 - File metadata persistence in PostgreSQL.
-- Storage through a dedicated storage service abstraction.
+- Object/file storage in a private Supabase Storage bucket through a dedicated storage service abstraction.
+- Backend-only Supabase Storage configuration and credentials; Supabase Authentication, Database, Realtime, and other Supabase products remain outside the storage integration.
 - Safe generated storage keys/names rather than trusting uploaded filenames as storage paths.
 - Extracted content for supported file formats.
 - A clear unsupported/unavailable state when textual extraction cannot be performed.
@@ -362,16 +363,19 @@ Implement user-owned folders with:
 - Protection against users reading or mutating another user's folders.
 - Sensible behavior when folders contain files or child folders.
 
-### Soft deletion
+### Permanent file and folder deletion
 
-Implement soft deletion for files and, where appropriate, folders so normal deletion does not immediately remove the database record.
+Implement permanent deletion for files and empty folders. Soft deletion applies only to users and is introduced with user administration in Phase 3.
 
-The implementation should define:
+Apply the maintainer-approved lifecycle migration during Phase 2: add nullable `User.deletedAt`, remove `File.deletedAt`, and remove `Folder.deletedAt`. Existing users remain active because the new user field is null by default. The migration and runtime schema must be compared with the updated `database-schema.mmd`, and no other schema change is authorized by this decision.
 
-- How deleted records are excluded from normal queries.
-- How file storage cleanup is handled.
-- Whether restore/permanent-delete operations are exposed now or reserved for admin/future functionality.
-- How soft-deletion events are audited.
+File and folder deletion must define:
+
+- How a confirmed file deletion permanently removes both its PostgreSQL metadata and Supabase Storage object.
+- How successful file deletion immediately reclaims the deleted file's share of the user's 100 MB quota.
+- How partial storage or persistence failures are retried or reconciled without exposing orphaned objects or dangling accessible records.
+- How empty-folder-only permanent deletion prevents cascading data loss.
+- How permanent deletion events remain available in immutable audit history after the target record is gone.
 
 ### User dashboard
 
@@ -402,14 +406,14 @@ Phase 2 is complete only when an authenticated user can:
 
 - Upload one or many valid files using drag/drop or a picker and observe upload progress.
 - Receive useful validation errors for invalid files.
-- Browse only their own active files.
+- Browse only their own existing files.
 - Search, filter, sort, and paginate files through server-backed queries.
 - Open a file and inspect its metadata and extracted content.
 - Preview supported files and images.
 - Download a file securely.
 - Create and navigate nested folders.
 - Move files between folders.
-- Delete files through the defined soft-delete behavior.
+- Permanently delete files and reclaim their storage quota through the defined deletion behavior.
 - View accurate user dashboard statistics.
 
 Authorization tests must demonstrate that one user cannot access another user's files or folders by manipulating IDs or URLs.
@@ -418,11 +422,11 @@ Authorization tests must demonstrate that one user cannot access another user's 
 
 ### `/speckit.specify` seed
 
-Build the complete authenticated user file-management experience. Users need to upload one or multiple files with drag-and-drop and progress feedback, browse and query their own files, view metadata and extracted content, preview supported files and images, download files securely, organize files into nested folders, and delete files safely. Users also need a dashboard showing their total files, storage usage, file-type distribution, and upload history. All file and folder access must enforce ownership and provide polished loading, empty, success, validation, and error states.
+Build the complete authenticated user file-management experience. Users need to upload one or multiple files with drag-and-drop and progress feedback, browse and query their own files, view metadata and extracted content, preview supported files and images, download files securely, organize files into nested folders, and delete files safely. Users also need a dashboard showing their total files, storage usage, file-type distribution, and upload history. Use a private Supabase Storage bucket for object/file storage only, behind the application storage abstraction. All file and folder access must enforce ownership and provide polished loading, empty, success, validation, and error states.
 
 ### `/speckit.plan` constraints
 
-Use Express REST APIs with Multer for upload intake, Prisma/PostgreSQL for metadata, TanStack React Query and Axios for client data access, and a provider-independent file storage service. Search/filter/sort/pagination must be server-driven. Include extracted-content handling, folder hierarchy, secure download/preview endpoints or equivalent authorized access, soft deletion, audit events, responsive UI, toast notifications, and Framer Motion interaction polish. Preserve strict authorization checks for every file/folder operation.
+Use Express REST APIs with Multer for upload intake, Prisma/PostgreSQL for metadata, TanStack React Query and Axios for client data access, and Supabase Storage as the object/file-storage provider behind a provider-isolating storage service. Use a private bucket and backend-only credentials; do not use Supabase Authentication or Supabase Database. Search/filter/sort/pagination must be server-driven. Include extracted-content handling, folder hierarchy, secure download/preview endpoints or equivalent authorized access, permanent file and empty-folder deletion, quota reclamation, audit events, responsive UI, toast notifications, and Framer Motion interaction polish. Preserve strict authorization checks for every file/folder operation. Do not add file or folder soft-delete fields.
 
 ---
 
@@ -431,6 +435,8 @@ Use Express REST APIs with Multer for upload intake, Prisma/PostgreSQL for metad
 ## Objective
 
 Complete administrator capabilities, global operational visibility, audit inspection, and the remaining cross-application user experience features.
+
+Phase 3 must reuse the Supabase Storage integration established in Phase 2. It must not introduce, migrate to, or replace the object/file-storage provider; administrator file operations must go through the same application storage abstraction and authorization boundaries.
 
 ## Scope
 
@@ -443,7 +449,8 @@ Administrator-only user management should provide:
 - Pagination.
 - Relevant user metadata.
 - Role editing.
-- User deletion according to the project's deletion policy.
+- User soft deletion by setting the user deletion timestamp, revoking active refresh tokens, and immediately denying sign-in, renewal, and protected access while retaining the user's owned file/folder records.
+- Clear administrator visibility of soft-deleted user status. User restore and permanent user deletion remain outside this phase unless separately specified.
 - Protection against unsafe administrative actions such as accidental self-removal or invalid role transitions where applicable.
 - Audit events for administrative changes.
 
@@ -457,7 +464,7 @@ Administrators should be able to:
 - Filter files.
 - Paginate files.
 - Inspect relevant file metadata.
-- Delete files according to the defined deletion policy.
+- Permanently delete files using the Phase 2 metadata, Supabase object-removal, quota-reclamation, and audit policy.
 
 Administrator access must be enforced by the backend regardless of what the frontend displays.
 
@@ -547,6 +554,8 @@ Reuse the existing authentication, role middleware, Prisma data model, audit ser
 
 Turn the functionally complete application into a reproducible, tested, deployable, and well-documented system.
 
+Phase 4 must verify and document the Supabase Storage integration delivered in Phase 2. It must not add, migrate, or replace the object/file-storage provider unless a separately approved requirement change first updates the Phase 2 specification and its dependent artifacts.
+
 ## Scope
 
 ### Automated testing
@@ -572,7 +581,8 @@ File/folder coverage should include cases such as:
 - Multiple-file behavior where relevant.
 - Ownership enforcement.
 - Search/filter/pagination behavior for important cases.
-- Soft deletion.
+- Permanent file and empty-folder deletion, including Supabase object removal and quota reclamation.
+- User soft deletion, refresh-token revocation, and deleted-user access denial.
 - Secure download/preview authorization.
 - Folder ownership and mutation rules.
 
@@ -601,7 +611,7 @@ Prepare the application for independent frontend/backend deployment:
 - Production CORS configuration.
 - Secure authentication-cookie/token settings according to the selected implementation.
 - Correct proxy/header handling where applicable.
-- Production file-storage implementation.
+- Production verification and deployment configuration for the existing Phase 2 Supabase Storage integration, including its private bucket and backend-only credentials.
 - Database migrations/deployment migration strategy.
 - Admin initialization strategy.
 - Email delivery configuration.
@@ -620,7 +630,7 @@ Perform a final review for:
 - CORS configuration.
 - Environment-secret handling.
 - Accidental sensitive data in API responses or audit logs.
-- Soft-deleted record leakage.
+- Soft-deleted user leakage or continued authentication, and residual file/folder records or objects after successful permanent deletion.
 - Error messages that expose implementation details.
 
 ### Performance review
@@ -652,11 +662,11 @@ Create a complete `README.md` containing:
 - Running the frontend and backend locally.
 - Docker instructions.
 - Testing instructions.
-- File-storage configuration.
+- Existing Supabase Storage configuration established in Phase 2.
 - Deployment instructions.
 - Assumptions and notable design decisions.
 
-The README should explicitly surface the extended functionality implemented by the application, including folders, previews, downloads, soft deletion, audit logs, refresh tokens, dark mode, Docker support, and tests.
+The README should explicitly surface the extended functionality implemented by the application, including folders, previews, downloads, user-only soft deletion, permanent file/folder deletion, audit logs, refresh tokens, dark mode, Docker support, and tests.
 
 ### Final verification
 
@@ -673,7 +683,7 @@ Perform a clean-environment smoke test covering the complete application journey
 9. Browse/search/filter/sort/paginate files.
 10. Inspect extracted content and previews.
 11. Create folders and move files.
-12. Download and soft-delete files.
+12. Download and permanently delete files, confirming metadata/object removal and reclaimed quota.
 13. Inspect user statistics.
 14. Log in as administrator.
 15. Manage users and roles.
@@ -689,7 +699,7 @@ Phase 4 is complete only when:
 - The automated test suite passes consistently.
 - The application can be started from documented clean-setup instructions.
 - Docker configuration works for the intended local workflow.
-- Production frontend, backend, database, email, and file-storage configuration work together.
+- Production frontend, backend, database, email, and the existing Phase 2 Supabase Storage configuration work together without introducing another storage provider.
 - Database migrations can be applied reliably.
 - No known critical authorization or file-access issue remains.
 - README instructions have been verified rather than only written.
@@ -703,7 +713,7 @@ Make Managing Your Files production-ready and reproducible. The complete applica
 
 ### `/speckit.plan` constraints
 
-Build on the existing architecture rather than restructuring working feature domains without a demonstrated need. Prioritize integration/API tests for security-critical behavior, targeted unit tests for complex logic, Docker support for reproducible local execution, environment-driven production configuration, verified Prisma migration procedures, production object/file storage, CORS/auth security, database indexes, React Query cache behavior, and a README whose setup/deployment instructions are validated against a clean run.
+Build on the existing architecture rather than restructuring working feature domains without a demonstrated need. Prioritize integration/API tests for security-critical behavior, targeted unit tests for complex logic, Docker support for reproducible local execution, environment-driven production configuration, verified Prisma migration procedures, verification and documentation of the existing Phase 2 Supabase Storage integration, CORS/auth security, database indexes, React Query cache behavior, and a README whose setup/deployment instructions are validated against a clean run. Do not add, migrate, or replace the object/file-storage provider in Phase 4.
 
 ---
 

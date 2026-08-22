@@ -37,3 +37,4 @@
 - Validation iteration 4: all checklist items remain passing after adopting the Constitution v2.0.0 audit access and retention default, defining Phase 1 as accessible light-only, and assigning dark and system themes to Phase 3.
 - The security architecture is expressed as observable trust-boundary behavior. Product stack choices remain planning constraints referenced by the implementation plan and constitution rather than being prescribed as solution design here.
 - The explicit configuration-key contract is retained because the project constitution requires every phase specification to identify all configuration introduced or consumed.
+- Revalidated on 2026-08-22 after restricting soft deletion to users. The user lifecycle, authentication denial, canonical schema delta, and permanent file/folder deletion boundary are explicit, with no unresolved clarification markers.

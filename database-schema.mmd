@@ -7,6 +7,7 @@ erDiagram
         string passwordHash
         string role
         boolean isEmailVerified
+        datetime deletedAt "nullable"
         datetime createdAt
         datetime updatedAt
     }
@@ -35,7 +36,6 @@ erDiagram
         uuid ownerId FK
         uuid parentId FK "nullable, references FOLDER.id"
         string name
-        datetime deletedAt "nullable"
         datetime createdAt
         datetime updatedAt
     }
@@ -49,7 +49,6 @@ erDiagram
         string mimeType
         bigint size
         text extractedContent "nullable"
-        datetime deletedAt "nullable"
         datetime createdAt
         datetime updatedAt
     }
