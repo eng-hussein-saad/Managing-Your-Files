@@ -1,12 +1,12 @@
 <!--
 Sync Impact Report
-- Version change: 1.2.0 -> 2.0.0
+- Version change: 2.0.0 -> 3.0.0
 - Modified principles:
-  - IV. Reusable, Complete User Experiences (theme support staged by delivery phase)
-  - VI. Audit Important State Changes (default access and retention policy added)
+  - VI. Audit Important State Changes -> VI. Audit Important Operations
+    (best-effort, fail-open recording; limited administrator visibility; no cross-system atomicity)
 - Added principles: none
 - Modified sections:
-  - Delivery Workflow and Quality Gates
+  - Delivery Workflow and Quality Gates (Clarify adopts the new default audit behavior)
 - Added sections: none
 - Removed sections: none
 - Follow-up TODOs: none
@@ -63,18 +63,35 @@ material. Any change that adds, renames, or removes a configuration key MUST upd
 `.env.example`, setup documentation, tests, Docker/deployment configuration, and the current feature
 artifacts in the same change.
 
-### VI. Audit Important State Changes
-Security-relevant and important data-changing operations MUST emit audit events through one audit
-service. At minimum, authentication milestones, uploads, downloads, deletions, folder mutations,
-role changes, and administrator actions MUST record actor, action, target, timestamp, and only safe,
-useful metadata. Audit failure behavior MUST be consciously defined per operation, and audit records
-MUST obey access control, retention, and privacy requirements. Until an approved phase defines a
-more specific retention schedule and application access surface, audit records MUST have no
-application-facing read API or UI, MUST be restricted to authorized operational database access,
-and MUST be retained without automated deletion. A later retention policy MUST specify duration,
-disposition, migration impact, and verification before it replaces this default. Logs MUST be
-structured enough for operational investigation without becoming a secondary store of credentials
-or private file data.
+### VI. Audit Important Operations
+Important successful security-relevant and data-changing operations MUST attempt to emit audit
+events through one centralized audit service. At minimum, successful authentication, uploads,
+downloads, deletions, folder mutations, role changes, and administrator actions MUST attempt to
+record actor, action, target, timestamp, and only safe, useful metadata. Ordinary failed requests,
+validation failures, and denied operations are not required to generate audit events.
+
+Audit logging MUST remain lightweight and MUST NOT become a secondary store of credentials, tokens,
+OTPs, private file contents, storage keys, or other sensitive data. Audit records MAY be exposed only
+to authorized administrators for limited operational visibility, such as displaying recent activity
+on the administrator dashboard. Normal users MUST NOT have access to audit records. A dedicated
+audit-log management interface, advanced filtering, or audit-specific administration API is not
+required unless introduced by a later approved phase.
+
+Failure to write an audit record MAY allow the primary operation to continue. The audit failure
+SHOULD be recorded through sanitized operational logging so maintainers can investigate it without
+exposing sensitive information. Audit requirements MUST NOT require atomic transactions across
+PostgreSQL and external storage providers. File-storage operations MAY use reasonable best-effort
+compensation when one system succeeds and another fails.
+
+Temporary inconsistencies caused by partial infrastructure failures MAY be tolerated only when they
+do not expose unauthorized file content and the operation uses reasonable compensation or sanitized
+operational logging appropriate to the project's scope. A durable outbox, storage-operation table,
+reconciliation worker, or distributed transaction mechanism is NOT required unless explicitly
+introduced by a later approved phase.
+
+Until a later approved phase defines a specific retention policy, audit records MUST be retained
+without automated deletion. Any future retention policy MUST define its duration, disposition,
+migration impact, and verification requirements before replacing this default.
 
 ### VII. Spec-Driven, Tested, Incremental Delivery
 Each implementation-plan phase MUST proceed through specification, clarification when needed,
@@ -136,9 +153,11 @@ reject a phase when any applicable item below lacks evidence:
 1. **Specify**: identify user-visible behavior, security boundaries, database impact relative to
    `database-schema.mmd`, and every configuration key the phase introduces, consumes, renames, or
    retires.
-2. **Clarify**: resolve ambiguous ownership, authorization, retention, deletion, provider, and
-   configuration semantics before planning. An audit-producing phase MAY adopt the default audit
-   access and retention policy in Principle VI explicitly instead of defining a replacement policy.
+2. **Clarify**: resolve ambiguous ownership, authorization, deletion, provider, and configuration
+   semantics before planning. Audit-producing phases MAY use the default audit behavior defined in
+   Principle VI, including limited administrator dashboard visibility, fail-open audit recording,
+   and best-effort cross-system compensation, unless the phase explicitly requires stronger
+   guarantees.
 3. **Plan**: define layer boundaries, API/data contracts, migration impact, threat controls, tests,
    and environment-variable validation, secrecy classification, defaults, and deployment mapping.
    The plan MUST compare its data design with `database-schema.mmd`; any difference MUST be shown to
@@ -188,4 +207,4 @@ principles, MINOR for new principles or materially expanded obligations, and PAT
 that do not change obligations. The ratification date remains the date of initial adoption; the last
 amended date changes whenever constitutional content changes.
 
-**Version**: 2.0.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-20
+**Version**: 3.0.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-22
