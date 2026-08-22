@@ -49,19 +49,9 @@ const serverEnvSchema = z
         .filter(Boolean),
     ),
     UPLOAD_MAX_FILES_PER_BATCH: z.coerce.number().int().positive(),
-    FILE_QUERY_DEFAULT_PAGE_SIZE: z.coerce.number().int().min(1).max(100),
-    FILE_QUERY_MAX_PAGE_SIZE: z.coerce.number().int().min(1).max(100),
     FILE_EXTRACTION_MAX_BYTES: z.coerce.number().int().positive(),
   })
   .strict()
-  .refine(
-    (value) =>
-      value.FILE_QUERY_DEFAULT_PAGE_SIZE <= value.FILE_QUERY_MAX_PAGE_SIZE,
-    {
-      message:
-        "FILE_QUERY_DEFAULT_PAGE_SIZE must not exceed FILE_QUERY_MAX_PAGE_SIZE",
-    },
-  )
   .refine(
     (value) =>
       value.UPLOAD_MAX_FILE_SIZE_BYTES === 5_242_880 &&
@@ -103,8 +93,6 @@ export function parseServerEnv(input: NodeJS.ProcessEnv): ServerEnv {
     USER_STORAGE_QUOTA_BYTES: input.USER_STORAGE_QUOTA_BYTES,
     UPLOAD_ALLOWED_MIME_TYPES: input.UPLOAD_ALLOWED_MIME_TYPES,
     UPLOAD_MAX_FILES_PER_BATCH: input.UPLOAD_MAX_FILES_PER_BATCH,
-    FILE_QUERY_DEFAULT_PAGE_SIZE: input.FILE_QUERY_DEFAULT_PAGE_SIZE,
-    FILE_QUERY_MAX_PAGE_SIZE: input.FILE_QUERY_MAX_PAGE_SIZE,
     FILE_EXTRACTION_MAX_BYTES: input.FILE_EXTRACTION_MAX_BYTES,
   });
 }

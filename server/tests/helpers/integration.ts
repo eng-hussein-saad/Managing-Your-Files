@@ -42,8 +42,6 @@ export const integrationEnv = parseServerEnv({
   SUPABASE_URL: "https://project.supabase.co",
   SUPABASE_SECRET_KEY: "sb_secret_test-key",
   SUPABASE_STORAGE_BUCKET: "gold-era-private-files",
-  FILE_QUERY_DEFAULT_PAGE_SIZE: "20",
-  FILE_QUERY_MAX_PAGE_SIZE: "100",
   FILE_EXTRACTION_MAX_BYTES: "5242880",
 });
 

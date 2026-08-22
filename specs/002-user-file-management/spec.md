@@ -234,8 +234,6 @@ The following names are the Phase 2 configuration contract. Planning MAY refine 
 | `SUPABASE_URL` | Non-secret, server-only | Required absolute project API URL used only by the server-side Supabase Storage integration |
 | `SUPABASE_SECRET_KEY` | Secret, server-only | Required current-format `sb_secret_...` credential used only by the trusted server for Storage operations; must never enter browser code, responses, URLs, logs, or public-prefixed configuration |
 | `SUPABASE_STORAGE_BUCKET` | Non-secret, server-only | Required existing private bucket name dedicated to application file objects; startup verification must reject a missing or public bucket |
-| `FILE_QUERY_DEFAULT_PAGE_SIZE` | Non-secret, server-only | Positive default number of collection results per page |
-| `FILE_QUERY_MAX_PAGE_SIZE` | Non-secret, server-only | Positive maximum at least as large as the default; larger requests are rejected or safely capped according to the documented contract |
 | `FILE_EXTRACTION_MAX_BYTES` | Non-secret, server-only | Positive maximum content size eligible for text extraction; larger accepted files remain downloadable and show extraction unavailable |
 
 ## Success Criteria _(mandatory)_
@@ -264,12 +262,12 @@ The following names are the Phase 2 configuration contract. Planning MAY refine 
 
 - Phase 1 authentication, authorization, common response contracts, application shells, user identity, file/folder data foundations, and audit capability are complete and available to Phase 2.
 - Phase 2 provides a complete accessible light theme; dark and system theme controls remain Phase 3 work.
-- The per-file limit is fixed at 5 MB (5,242,880 bytes), the per-user currently stored-content quota is fixed at 100 MB (104,857,600 bytes), the launch format allowlist is fixed, and the maximum batch count is fixed at 10. Extraction size and page sizes remain environment-configured and are surfaced to users where they affect interaction.
+- The per-file limit is fixed at 5 MB (5,242,880 bytes), the per-user currently stored-content quota is fixed at 100 MB (104,857,600 bytes), the launch format allowlist is fixed, and the maximum batch count is fixed at 10. Extraction size remains environment-configured. The Files UI offers 5, 10, and 20 results per page, defaulting to 20, and the API rejects other page-size values.
 - One upload batch contains at most 10 files; the client may surface this server-enforced limit before submission.
 - Text extraction is required for plain text and PDFs whose text can be safely extracted within configured limits. Images remain usable with extraction unavailable. DOCX files are accepted for storage and download but have extraction and preview unavailable in Phase 2. Additional upload formats require a specification revision and must preserve the same available and unavailable user contract.
 - Multiple files may have the same original filename, including in the same folder. Folder names, unlike file display names, are unique among active siblings after trimming and case-insensitive comparison.
 - Search matches original filenames case-insensitively. File-type filters use a documented normalized category derived from the verified content type rather than trusting the filename extension.
-- The default file order is newest upload first with a stable identifier as a tie-breaker. Default and maximum page sizes are finalized through the configuration contract during planning.
+- The default file order is newest upload first with a stable identifier as a tie-breaker. The default page size is 20, and the supported page sizes are 5, 10, and 20.
 - The user's virtual root is not a persisted folder and cannot be renamed or deleted.
 - Folder depth counts persisted folders beneath the virtual root; levels one through ten are allowed, and level eleven is rejected.
 - Users move files during Phase 2, but moving folders is deferred; nested folder placement is selected at creation.

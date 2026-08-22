@@ -125,7 +125,7 @@ progress::-webkit-progress-bar { background:var(--soft); } progress::-webkit-pro
 .collection-heading { display:flex; justify-content:space-between; margin-bottom:1.2rem; }
 .collection-heading h2 { display:inline; font:500 1.75rem Georgia,serif; letter-spacing:-.03em; margin:0 .7rem 0 0; }
 .collection-heading span { color:var(--muted); font-size:.75rem; }
-.file-toolbar { display:grid; grid-template-columns:minmax(12rem,1fr) repeat(3,auto) auto; gap:.75rem; align-items:end; padding:1rem; margin:0 -1.7rem; border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:#faf8f2; }
+.file-toolbar { display:grid; grid-template-columns:minmax(12rem,1fr) repeat(4,auto) auto; gap:.75rem; align-items:end; padding:1rem; margin:0 -1.7rem; border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:#faf8f2; }
 .file-toolbar label>span:first-child:not(.sr-only) { display:block; margin-bottom:.3rem; color:var(--muted); font-size:.65rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
 .file-toolbar input,.file-toolbar select { width:100%; height:2.45rem; border:1px solid var(--line); background:white; padding:.4rem .65rem; color:var(--ink); font-size:.8rem; }
 .search-field { display:flex; align-items:center; position:relative; }
@@ -194,7 +194,7 @@ progress::-webkit-progress-bar { background:var(--soft); } progress::-webkit-pro
 @keyframes toast-enter { from { opacity:0; transform:translateY(-.5rem); } to { opacity:1; transform:translateY(0); } }
 @media (max-width:1000px) {
   .files-workspace { grid-template-columns:13rem minmax(0,1fr); }
-  .file-toolbar { grid-template-columns:minmax(12rem,1fr) repeat(2,auto) auto; }
+  .file-toolbar { grid-template-columns:minmax(12rem,1fr) repeat(3,auto) auto; }
   .direction-field { display:none; }
   .file-list li button { grid-template-columns:3rem minmax(9rem,1fr) 7rem 2rem; }
   .file-location { display:none; }
@@ -224,8 +224,8 @@ progress::-webkit-progress-bar { background:var(--soft); } progress::-webkit-pro
   .folders-panel { border-right:0; border-bottom:1px solid var(--line); }
   .folder-list { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .collection-panel { padding:1.2rem; }
-  .file-toolbar { margin:0 -1.2rem; padding:.8rem 1.2rem; grid-template-columns:1fr auto; }
-  .file-toolbar>label:not(.search-field) { display:none; }
+  .file-toolbar { margin:0 -1.2rem; padding:.8rem 1.2rem; grid-template-columns:1fr auto auto; }
+  .file-toolbar>label:not(.search-field):not(.page-size-field) { display:none; }
   .file-list li button { grid-template-columns:2.7rem minmax(0,1fr) 1.5rem; gap:.7rem; }
   .file-date { display:none; }
   .file-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }

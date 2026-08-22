@@ -83,6 +83,24 @@ export function FileQueryToolbar({
           <option value="asc">Ascending</option>
         </select>
       </label>
+      <label className="page-size-field"><span>Files per page</span>
+        <select
+          value={query.pageSize ?? 20}
+          onChange={
+            /** Handles the bound UI event or state projection for this JSX control. */ (
+              event,
+            ) =>
+              onChange({
+                pageSize: Number(event.target.value),
+                page: 1,
+              })
+          }
+        >
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+        </select>
+      </label>
       <div className="view-switch" role="group" aria-label="File view">
         <button
           type="button"

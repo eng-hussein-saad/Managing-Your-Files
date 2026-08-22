@@ -34,13 +34,13 @@ The migration creates exactly the six entities in `database-schema.mmd`. Deploym
 
 ## Phase 2 file management
 
-Keep existing Phase 1 settings and add the ten server-only values in `server/.env`: `UPLOAD_MAX_FILE_SIZE_BYTES=5242880`, `USER_STORAGE_QUOTA_BYTES=104857600`, `UPLOAD_ALLOWED_MIME_TYPES`, `UPLOAD_MAX_FILES_PER_BATCH=10`, `SUPABASE_URL`, secret `SUPABASE_SECRET_KEY`, private `SUPABASE_STORAGE_BUCKET`, `FILE_QUERY_DEFAULT_PAGE_SIZE`, `FILE_QUERY_MAX_PAGE_SIZE`, and `FILE_EXTRACTION_MAX_BYTES`.
+Keep existing Phase 1 settings and add the eight server-only values in `server/.env`: `UPLOAD_MAX_FILE_SIZE_BYTES=5242880`, `USER_STORAGE_QUOTA_BYTES=104857600`, `UPLOAD_ALLOWED_MIME_TYPES`, `UPLOAD_MAX_FILES_PER_BATCH=10`, `SUPABASE_URL`, secret `SUPABASE_SECRET_KEY`, private `SUPABASE_STORAGE_BUCKET`, and `FILE_EXTRACTION_MAX_BYTES`. File page size is selected in the Files UI from 5, 10, or 20 items, defaulting to 20.
 
 Provision the bucket as private before starting Express. Never expose the service key, storage keys, provider URLs, or content through `NEXT_PUBLIC_*`, commits, or logs. The lifecycle migration refuses to discard non-null legacy file/folder soft-delete data; resolve it before `prisma:migrate:deploy`. Provider checks must use a dedicated private test bucket, never production data.
 
 ## Phase 2 file management
 
-Keep the existing Phase 1 settings and add these ten server-only values to `server/.env`:
+Keep the existing Phase 1 settings and add these eight server-only values to `server/.env`:
 
 ```dotenv
 UPLOAD_MAX_FILE_SIZE_BYTES=5242880
@@ -50,8 +50,6 @@ UPLOAD_MAX_FILES_PER_BATCH=10
 SUPABASE_URL=https://project-ref.supabase.co
 SUPABASE_SECRET_KEY=sb_secret_replace_me
 SUPABASE_STORAGE_BUCKET=private-user-files
-FILE_QUERY_DEFAULT_PAGE_SIZE=20
-FILE_QUERY_MAX_PAGE_SIZE=100
 FILE_EXTRACTION_MAX_BYTES=5242880
 ```
 

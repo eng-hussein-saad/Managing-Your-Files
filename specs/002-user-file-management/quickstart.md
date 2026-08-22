@@ -26,8 +26,6 @@ UPLOAD_MAX_FILES_PER_BATCH=10
 SUPABASE_URL=https://project-ref.supabase.co
 SUPABASE_SECRET_KEY=sb_secret_replace_me
 SUPABASE_STORAGE_BUCKET=private-user-files-test
-FILE_QUERY_DEFAULT_PAGE_SIZE=20
-FILE_QUERY_MAX_PAGE_SIZE=100
 FILE_EXTRACTION_MAX_BYTES=5242880
 ```
 
@@ -38,7 +36,7 @@ Expected configuration behavior:
 - `SUPABASE_SECRET_KEY`, storage keys, provider URLs, and file content do not appear in client bundles, responses, audit metadata, or logs;
 - the authenticated upload-policy response exposes only safe limits, allowlisted MIME values, and the current user's quota snapshot.
 
-Update `server/.env.example`, deployment mappings, configuration tests, and setup documentation together during implementation.
+The Files UI offers 5, 10, and 20 results per page and defaults to 20; the API rejects other page-size values. Keep `server/.env.example`, deployment mappings, configuration tests, and setup documentation synchronized with the server-only settings during implementation.
 
 ## Install and Verify
 

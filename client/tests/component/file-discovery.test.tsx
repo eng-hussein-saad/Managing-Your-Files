@@ -32,6 +32,10 @@ describe("file discovery components", () => {
       target: { value: "new" },
     });
     expect(onChange).toHaveBeenCalledWith({ search: "new", page: 1 });
+    fireEvent.change(screen.getByLabelText(/files per page/i), {
+      target: { value: "10" },
+    });
+    expect(onChange).toHaveBeenCalledWith({ pageSize: 10, page: 1 });
     fireEvent.click(screen.getByRole("button", { name: "Grid" }));
     expect(onView).toHaveBeenCalledWith("grid");
     expect(screen.getByRole("button", { name: "List" })).toHaveAttribute(
