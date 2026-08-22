@@ -5,6 +5,7 @@ import { AppNavigation } from "../../src/components/navigation/app-navigation";
 import { ToastProvider } from "../../src/components/toast/toast-provider";
 
 vi.mock("next/navigation", () => ({
+  usePathname: () => "/dashboard",
   useRouter: () => ({ replace: vi.fn() }),
 }));
 
@@ -25,14 +26,14 @@ function renderNavigation(role: "USER" | "ADMIN") {
 describe("shared authenticated navigation", () => {
   it("shows the same base links without administrator access for users", () => {
     renderNavigation("USER");
-    expect(screen.getByRole("link", { name: "Dashboard" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "Overview" })).toBeVisible();
     expect(screen.getByRole("link", { name: "Profile" })).toBeVisible();
     expect(screen.queryByRole("link", { name: "Admin" })).toBeNull();
   });
 
   it("adds administrator access without replacing the base links", () => {
     renderNavigation("ADMIN");
-    expect(screen.getByRole("link", { name: "Dashboard" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "Overview" })).toBeVisible();
     expect(screen.getByRole("link", { name: "Profile" })).toBeVisible();
     expect(screen.getByRole("link", { name: "Admin" })).toBeVisible();
   });

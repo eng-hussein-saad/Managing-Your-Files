@@ -22,8 +22,8 @@ test("search, filter, sort, pagination, details, and cross-owner isolation", asy
     page.getByRole("button", { name: /quarterly-report.txt/i }),
   ).toBeVisible();
   await page.getByLabel("Type").selectOption("text");
-  await page.getByLabel("Sort").selectOption("name");
-  await page.getByLabel("Direction").selectOption("asc");
+  await page.getByLabel("Sort by").selectOption("name");
+  await page.getByLabel("Order").selectOption("asc");
   await page.getByRole("button", { name: /quarterly-report.txt/i }).click();
   await expect(
     page.getByRole("complementary", { name: /file details/i }),

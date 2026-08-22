@@ -18,7 +18,7 @@ test("ten-level fixed-parent hierarchy, breadcrumbs, rename, duplicate rejection
   await expect(
     page.getByRole("navigation", { name: /folder breadcrumbs/i }),
   ).toContainText("Level 10");
-  await page.getByRole("button", { name: "Rename folder" }).click();
+  await page.getByRole("button", { name: "Rename", exact: true }).click();
   await page.getByLabel("Folder name").fill("Deep archive");
   await page.getByRole("button", { name: "Save" }).click();
   await expect(
