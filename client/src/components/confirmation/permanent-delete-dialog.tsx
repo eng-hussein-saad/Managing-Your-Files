@@ -31,7 +31,7 @@ export function PermanentDeleteDialog({
   }, [open]);
   if (!open) return null;
   return (
-    <div
+    <div className="dialog-backdrop"><div className="app-dialog danger-dialog"
       role="dialog"
       aria-modal="true"
       aria-labelledby="delete-title"
@@ -40,7 +40,7 @@ export function PermanentDeleteDialog({
       <h2 id="delete-title">Permanently delete {subject}?</h2>
       <p id="delete-description">This cannot be undone.</p>
       {error ? <p role="alert">{error}</p> : null}
-      <button
+      <div className="dialog-actions"><button
         ref={cancelRef}
         type="button"
         onClick={onCancel}
@@ -48,9 +48,9 @@ export function PermanentDeleteDialog({
       >
         Cancel
       </button>
-      <button type="button" onClick={onConfirm} disabled={pending}>
+      <button className="danger" type="button" onClick={onConfirm} disabled={pending}>
         {pending ? "Deleting…" : "Delete permanently"}
       </button>
-    </div>
+      </div></div></div>
   );
 }

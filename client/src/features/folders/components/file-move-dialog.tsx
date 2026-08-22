@@ -22,7 +22,7 @@ export function FileMoveDialog({
         { onSuccess: onMoved },
       );
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby="move-title">
+    <div className="dialog-backdrop"><div className="app-dialog" role="dialog" aria-modal="true" aria-labelledby="move-title">
       <h2 id="move-title">Move file</h2>
       <Breadcrumbs
         items={contents.data?.breadcrumbs ?? []}
@@ -51,12 +51,12 @@ export function FileMoveDialog({
       {mutation.isError ? (
         <p role="alert">The file could not be moved. Retry.</p>
       ) : null}
-      <button type="button" onClick={onCancel}>
+      <div className="dialog-actions"><button type="button" onClick={onCancel}>
         Cancel
       </button>
       <button type="button" onClick={confirm} disabled={mutation.isPending}>
         Move here
       </button>
-    </div>
+      </div></div></div>
   );
 }

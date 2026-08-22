@@ -12,10 +12,11 @@ export function FileQueryToolbar({
   onView: (view: "list" | "grid") => void;
 }) {
   return (
-    <section aria-label="File filters">
-      <label>
-        Search files{" "}
+    <section className="file-toolbar" aria-label="File filters">
+      <label className="search-field">
+        <span className="sr-only">Search files</span><span aria-hidden="true">⌕</span>
         <input
+          placeholder="Search your archive"
           value={query.search ?? ""}
           maxLength={200}
           onChange={
@@ -25,8 +26,7 @@ export function FileQueryToolbar({
           }
         />
       </label>
-      <label>
-        Type{" "}
+      <label><span>Type</span>
         <select
           value={query.type ?? ""}
           onChange={
@@ -48,8 +48,7 @@ export function FileQueryToolbar({
           <option value="document">Documents</option>
         </select>
       </label>
-      <label>
-        Sort{" "}
+      <label><span>Sort by</span>
         <select
           value={query.sort ?? "uploadedAt"}
           onChange={
@@ -67,8 +66,7 @@ export function FileQueryToolbar({
           <option value="size">Size</option>
         </select>
       </label>
-      <label>
-        Direction{" "}
+      <label className="direction-field"><span>Order</span>
         <select
           value={query.direction ?? "desc"}
           onChange={
@@ -85,7 +83,7 @@ export function FileQueryToolbar({
           <option value="asc">Ascending</option>
         </select>
       </label>
-      <div role="group" aria-label="File view">
+      <div className="view-switch" role="group" aria-label="File view">
         <button
           type="button"
           aria-pressed={view === "list"}
@@ -94,7 +92,7 @@ export function FileQueryToolbar({
               onView("list")
           }
         >
-          List
+          <span aria-hidden="true">☷</span><span className="sr-only">List</span>
         </button>
         <button
           type="button"
@@ -104,7 +102,7 @@ export function FileQueryToolbar({
               onView("grid")
           }
         >
-          Grid
+          <span aria-hidden="true">⊞</span><span className="sr-only">Grid</span>
         </button>
       </div>
     </section>

@@ -28,7 +28,8 @@ export function FileDetails({
           },
       });
   return (
-    <aside aria-label="File details">
+    <aside className="file-details" aria-label="File details">
+      <span className="eyebrow">File details</span>
       <h2>{file.originalName}</h2>
       <dl>
         <dt>Type</dt>
@@ -62,13 +63,9 @@ export function FileDetails({
       ) : (
         <p>Extracted content is unavailable.</p>
       )}
-      <FileDownload id={file.id} name={file.originalName} />
-      {onMove ? (
-        <button type="button" onClick={onMove}>
-          Move file
-        </button>
-      ) : null}
-      <button
+      <div className="detail-actions"><FileDownload id={file.id} name={file.originalName} />
+      {onMove ? <button type="button" onClick={onMove}>Move file</button> : null}
+      <button className="danger"
         type="button"
         onClick={
           /** Handles the bound UI event or state projection for this JSX control. */ () =>
@@ -77,6 +74,7 @@ export function FileDetails({
       >
         Delete file
       </button>
+      </div>
       <PermanentDeleteDialog
         open={confirming}
         subject={file.originalName}

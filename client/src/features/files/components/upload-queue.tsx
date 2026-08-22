@@ -8,7 +8,7 @@ export function UploadQueue({
   onRetry?: (id: string) => void;
 }) {
   return (
-    <ul aria-live="polite" aria-label="Upload queue">
+    <ul className="upload-queue" aria-live="polite" aria-label="Upload queue">
       {items.map(
         /** Maps one source item into its derived public representation. */ (
           item,

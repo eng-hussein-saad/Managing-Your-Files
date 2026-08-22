@@ -23,7 +23,7 @@ export function FolderNameDialog({
       if (value) onSubmit(value);
     };
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby="folder-dialog-title">
+    <div className="dialog-backdrop"><div className="app-dialog" role="dialog" aria-modal="true" aria-labelledby="folder-dialog-title">
       <h2 id="folder-dialog-title">
         {mode === "create" ? "Create folder" : "Rename folder"}
       </h2>
@@ -41,12 +41,12 @@ export function FolderNameDialog({
         />
       </label>
       {error ? <p role="alert">{error}</p> : null}
-      <button type="button" onClick={onCancel} disabled={pending}>
+      <div className="dialog-actions"><button type="button" onClick={onCancel} disabled={pending}>
         Cancel
       </button>
       <button type="button" onClick={submit} disabled={pending || !name.trim()}>
         {pending ? "Saving…" : "Save"}
       </button>
-    </div>
+      </div></div></div>
   );
 }

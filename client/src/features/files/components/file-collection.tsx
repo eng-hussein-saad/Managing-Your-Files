@@ -13,11 +13,11 @@ export function FileCollection({
 }) {
   if (!files.length)
     return (
-      <p>
-        {hasFilters
-          ? "No files match these filters."
-          : "You have no files yet."}
-      </p>
+      <div className="collection-empty">
+        <span aria-hidden="true">{hasFilters ? "⌕" : "+"}</span>
+        <h3>{hasFilters ? "Nothing found" : "Your archive is ready"}</h3>
+        <p>{hasFilters ? "No files match these filters." : "You have no files yet. Add your first one above."}</p>
+      </div>
     );
   return (
     <ul
@@ -36,15 +36,23 @@ export function FileCollection({
                   onSelect(file.id)
               }
             >
-              <strong>{file.originalName}</strong>
-              <span>
-                {file.typeCategory} · {file.sizeBytes} bytes
-              </span>
-              <span>{file.folder?.name ?? "My Files"}</span>
+              <span className="file-kind" data-kind={file.typeCategory} aria-hidden="true">{file.typeCategory.slice(0, 3)}</span>
+              <span className="file-summary"><strong>{file.originalName}</strong><small>{file.typeCategory} · {formatFileSize(file.sizeBytes)}</small></span>
+              <span className="file-location">{file.folder?.name ?? "My Files"}</span>
+              <span className="file-date">{new Date(file.uploadedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</span>
+              <span className="file-open" aria-hidden="true">→</span>
             </button>
           </li>
         ),
       )}
     </ul>
   );
+}
+
+/** Converts the API byte string into a compact browser-friendly label. */
+function formatFileSize(value: string) {
+  const bytes = Number(value);
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
 }

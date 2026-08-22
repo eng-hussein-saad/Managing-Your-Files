@@ -7,7 +7,7 @@ export function Breadcrumbs({
   onNavigate: (id: string | null) => void;
 }) {
   return (
-    <nav aria-label="Folder breadcrumbs">
+    <nav className="breadcrumbs" aria-label="Folder breadcrumbs">
       <ol>
         <li>
           <button
@@ -17,7 +17,7 @@ export function Breadcrumbs({
                 onNavigate(null)
             }
           >
-            My Files
+            <span aria-hidden="true">⌂</span> My Files
           </button>
         </li>
         {items.map(

@@ -24,8 +24,10 @@ export function UploadDropzone({
       event: DragEvent<HTMLDivElement>,
     ) => event.preventDefault();
   return (
-    <div onDragOver={allowDrop} onDrop={drop}>
-      <label htmlFor="file-picker">Select files or drop them here</label>
+    <div className="upload-dropzone" onDragOver={allowDrop} onDrop={drop}>
+      <span className="upload-mark" aria-hidden="true">↑</span>
+      <div><strong>Add to your archive</strong><p>Drop up to 10 files here, or choose from your device.</p></div>
+      <label className="button secondary" htmlFor="file-picker">Select files<span className="sr-only"> or drop them here</span></label>
       <input id="file-picker" type="file" multiple onChange={choose} />
       {error ? <p role="alert">{error}</p> : null}
     </div>

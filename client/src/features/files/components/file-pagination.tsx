@@ -9,7 +9,7 @@ export function FilePagination({
   onPage: (page: number) => void;
 }) {
   return (
-    <nav aria-label="File pages">
+    <nav className="file-pagination" aria-label="File pages">
       <button
         type="button"
         disabled={page <= 1}

@@ -58,22 +58,21 @@ export default function FilesPage() {
     };
   const hasFilters = Boolean(query.search || query.type);
   return (
-    <main id="main">
-      <h1>My Files</h1>
-      <p>
-        Upload, inspect, organize, and permanently remove your private files.
-      </p>
-      <FolderBrowser location={location} onNavigate={navigate} />
+    <main id="main" className="files-page app-page">
+      <header className="page-heading files-heading">
+        <div><span className="eyebrow">Personal archive</span><h1>My Files</h1><p>Everything important, organized and close at hand.</p></div>
+        <span className="privacy-note"><i aria-hidden="true">✓</i> Private by default</span>
+      </header>
       <UploadDropzone onFiles={queue.add} error={queue.selectionError} />
       {queue.items.length > 0 ? (
-        <>
+        <section className="upload-panel" aria-label="Files ready to upload">
           <UploadQueue
             items={queue.items}
             onRetry={(id) => {
               void queue.retry(id, location);
             }}
           />
-          <button
+          <button className="button"
             type="button"
             onClick={() => {
               void upload();
@@ -81,17 +80,16 @@ export default function FilesPage() {
           >
             Upload queued files
           </button>
-        </>
+        </section>
       ) : null}
-      <FileQueryToolbar
-        query={query}
-        view={view}
-        onChange={changeQuery}
-        onView={setView}
-      />
-      {files.isLoading ? <p>Loading files…</p> : null}
+      <div className="files-workspace">
+        <aside className="folders-panel"><div className="panel-title"><span>Browse</span><small>Folders</small></div><FolderBrowser location={location} onNavigate={navigate} /></aside>
+        <section className="collection-panel" aria-label="Files">
+          <div className="collection-heading"><div><h2>{location ? "Folder files" : "All files"}</h2><span>{meta.totalItems} {meta.totalItems === 1 ? "item" : "items"}</span></div></div>
+          <FileQueryToolbar query={query} view={view} onChange={changeQuery} onView={setView} />
+      {files.isLoading ? <div className="collection-loading" aria-busy="true"><span/><span/><span/></div> : null}
       {files.isError ? (
-        <p role="alert">
+        <div className="inline-state error-state" role="alert"><span>
           Files could not be loaded.{" "}
           <button
             type="button"
@@ -101,7 +99,7 @@ export default function FilesPage() {
           >
             Retry
           </button>
-        </p>
+        </span></div>
       ) : null}
       {files.data ? (
         <FileCollection
@@ -116,19 +114,16 @@ export default function FilesPage() {
         totalPages={meta.totalPages}
         onPage={(page) => changeQuery({ page })}
       />
+        </section>
+      </div>
       {detail.isLoading ? <p>Loading file details…</p> : null}
       {detail.isError ? (
         <p role="alert">File details are unavailable.</p>
       ) : null}
       {detail.data ? (
-        <FileDetails
-          file={detail.data}
-          onMove={() => setMoving(true)}
-          onDeleted={() => {
-            setSelected(null);
-            void files.refetch();
-          }}
-        />
+        <div className="detail-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>
+          <div className="detail-drawer"><button className="drawer-close" type="button" aria-label="Close file details" onClick={() => setSelected(null)}>×</button><FileDetails file={detail.data} onMove={() => setMoving(true)} onDeleted={() => { setSelected(null); void files.refetch(); }} /></div>
+        </div>
       ) : null}
       {moving && selected ? (
         <FileMoveDialog

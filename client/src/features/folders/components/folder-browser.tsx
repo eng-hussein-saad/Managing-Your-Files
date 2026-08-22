@@ -54,12 +54,12 @@ export function FolderBrowser({
         });
     };
   return (
-    <section aria-label="Folders">
+    <section className="folder-browser" aria-label="Folders">
       <Breadcrumbs
         items={contents.data?.breadcrumbs ?? []}
         onNavigate={onNavigate}
       />
-      <button
+      <div className="folder-actions"><button
         type="button"
         onClick={
           /** Handles the bound UI event or state projection for this JSX control. */ () =>
@@ -67,35 +67,36 @@ export function FolderBrowser({
         }
         disabled={(current?.depth ?? 0) >= 10}
       >
-        New folder
+        <span aria-hidden="true">＋</span> New folder
       </button>
       {current ? (
         <>
-          <button
+          <button className="icon-action"
             type="button"
             onClick={
               /** Handles the bound UI event or state projection for this JSX control. */ () =>
                 setDialog("rename")
             }
           >
-            Rename folder
+            Rename
           </button>
-          <button
+          <button className="icon-action danger"
             type="button"
             onClick={
               /** Handles the bound UI event or state projection for this JSX control. */ () =>
                 setDialog("delete")
             }
           >
-            Delete folder
+            Delete
           </button>
         </>
       ) : null}
-      {contents.isLoading ? <p>Loading folders…</p> : null}
+      </div>
+      {contents.isLoading ? <p className="muted-state">Loading folders…</p> : null}
       {contents.isError ? (
         <p role="alert">Folders could not be loaded.</p>
       ) : null}
-      <ul>
+      <ul className="folder-list">
         {contents.data?.folders.map(
           /** Maps one source item into its derived public representation. */ (
             folder,
@@ -108,7 +109,7 @@ export function FolderBrowser({
                     onNavigate(folder.id)
                 }
               >
-                {folder.name}
+                <span aria-hidden="true">▰</span>{folder.name}<span aria-hidden="true">›</span>
               </button>
             </li>
           ),
