@@ -30,12 +30,40 @@ import { authPublicRoutes } from "./http/routes/auth-public.routes.js";
 import { authInternalRoutes } from "./http/routes/auth-internal.routes.js";
 import { userRoutes } from "./http/routes/user.routes.js";
 import { adminRoutes } from "./http/routes/admin.routes.js";
+import { fileRoutes } from "./http/routes/file.routes.js";
+import { fileUploadController } from "./http/controllers/file-upload.controller.js";
+import { UploadFileService } from "./modules/files/services/upload-file.service.js";
+import { FindFilesService } from "./modules/files/services/find-files.service.js";
+import { fileQueryController } from "./http/controllers/file-query.controller.js";
+import { GetFileContentService } from "./modules/files/services/get-file-content.service.js";
+import { fileContentController } from "./http/controllers/file-content.controller.js";
+import { DeleteFileService } from "./modules/files/services/delete-file.service.js";
+import { fileDeleteController } from "./http/controllers/file-delete.controller.js";
+import { folderController } from "./http/controllers/folder.controller.js";
+import { folderRoutes } from "./http/routes/folder.routes.js";
+import { ManageFoldersService } from "./modules/folders/services/manage-folders.service.js";
+import { fileStatisticsController } from "./http/controllers/file-statistics.controller.js";
+import { fileStatisticsRoutes } from "./http/routes/file-statistics.routes.js";
+import { FileStatisticsService } from "./modules/statistics/file-statistics.service.js";
+import { MoveFileService } from "./modules/files/services/move-file.service.js";
+import { fileMoveController } from "./http/controllers/file-move.controller.js";
+import { DeleteFolderService } from "./modules/folders/services/delete-folder.service.js";
+import type { StoragePort } from "./modules/files/ports/storage.port.js";
+import type { ExtractionPort } from "./modules/files/ports/extraction.port.js";
+
+export interface FileManagementDependencies {
+  storage?: StoragePort;
+  extractor?: ExtractionPort;
+  audit?: AuditService;
+  authenticatedUserId?: string;
+}
 
 /** Composes the Express boundary around independently testable services. */
 export function createApp(
   env: ServerEnv,
   prisma: PrismaClient,
   mailer: MailPort,
+  fileManagement: FileManagementDependencies = {},
 ): Express {
   const accessTtl = durationSeconds(env.ACCESS_TOKEN_TTL);
   const refreshTtl = durationSeconds(env.REFRESH_TOKEN_TTL);
@@ -82,15 +110,27 @@ export function createApp(
     refreshTtl,
   );
   const logout = new LogoutService(prisma, systemClock, logger);
-  const audit = new AuditService(prisma, systemClock, logger);
+  const audit =
+    fileManagement.audit ?? new AuditService(prisma, systemClock, logger);
   const registrationHandlers = registrationController(
     registration,
     verification,
     resend,
   );
   const trustedHandlers = trustedAuthController(login, refresh, logout);
-  const bearer = authenticate(accessTokens);
+  /** Uses an explicit deterministic identity only in an injected test harness. */
+  const bearer: ReturnType<typeof authenticate> =
+    fileManagement.authenticatedUserId
+      ? (_request, response, next) => {
+          response.locals.identity = {
+            subject: fileManagement.authenticatedUserId,
+            role: "USER",
+          };
+          next();
+        }
+      : authenticate(accessTokens);
   const app = express();
+  app.set("fileManagement", fileManagement);
   app.disable("x-powered-by");
   app.use(requestId);
   app.use(
@@ -99,6 +139,59 @@ export function createApp(
     ),
   );
   app.use(express.json({ limit: "32kb", strict: true }));
+  if (fileManagement.storage && fileManagement.extractor) {
+    const upload = new UploadFileService(
+      prisma,
+      fileManagement.storage,
+      fileManagement.extractor,
+      audit,
+      systemClock,
+      systemIdentifiers,
+      env.FILE_EXTRACTION_MAX_BYTES,
+    );
+    const uploadController = fileUploadController(upload, {
+      maxFileSizeBytes: env.UPLOAD_MAX_FILE_SIZE_BYTES.toString(),
+      maxFilesPerBatch: env.UPLOAD_MAX_FILES_PER_BATCH,
+      allowedMimeTypes: env.UPLOAD_ALLOWED_MIME_TYPES,
+    });
+    app.use(
+      "/api/v1/files",
+      fileRoutes(
+        bearer,
+        uploadController,
+        fileQueryController(new FindFilesService(prisma)),
+        fileContentController(
+          new GetFileContentService(prisma, fileManagement.storage, audit),
+        ),
+        fileDeleteController(
+          new DeleteFileService(prisma, fileManagement.storage, audit),
+        ),
+        fileMoveController(new MoveFileService(prisma, systemClock, audit)),
+      ),
+    );
+    app.use(
+      "/api/v1/folders",
+      folderRoutes(
+        bearer,
+        folderController(
+          new ManageFoldersService(
+            prisma,
+            systemClock,
+            systemIdentifiers,
+            audit,
+          ),
+          new DeleteFolderService(prisma, audit),
+        ),
+      ),
+    );
+    app.use(
+      "/api/v1/file-statistics",
+      fileStatisticsRoutes(
+        bearer,
+        fileStatisticsController(new FileStatisticsService(prisma)),
+      ),
+    );
+  }
   app.use(healthRoutes());
   app.use("/api/v1/auth", authPublicRoutes(registrationHandlers));
   app.use(

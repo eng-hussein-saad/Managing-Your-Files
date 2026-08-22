@@ -37,8 +37,43 @@ const serverEnvSchema = z
     ADMIN_EMAIL: z.string().trim().toLowerCase().pipe(z.email()),
     ADMIN_PASSWORD: z.string().min(8).max(1024),
     ADMIN_NAME: z.string().trim().min(1).max(120),
+    SUPABASE_URL: z.url(),
+    SUPABASE_SECRET_KEY: z.string().regex(/^sb_secret_.+/),
+    SUPABASE_STORAGE_BUCKET: z.string().trim().min(3).max(63),
+    UPLOAD_MAX_FILE_SIZE_BYTES: z.coerce.number().int().positive(),
+    USER_STORAGE_QUOTA_BYTES: z.coerce.number().int().positive(),
+    UPLOAD_ALLOWED_MIME_TYPES: z.string().transform((value) =>
+      value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
+    ),
+    UPLOAD_MAX_FILES_PER_BATCH: z.coerce.number().int().positive(),
+    FILE_QUERY_DEFAULT_PAGE_SIZE: z.coerce.number().int().min(1).max(100),
+    FILE_QUERY_MAX_PAGE_SIZE: z.coerce.number().int().min(1).max(100),
+    FILE_EXTRACTION_MAX_BYTES: z.coerce.number().int().positive(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (value) =>
+      value.FILE_QUERY_DEFAULT_PAGE_SIZE <= value.FILE_QUERY_MAX_PAGE_SIZE,
+    {
+      message:
+        "FILE_QUERY_DEFAULT_PAGE_SIZE must not exceed FILE_QUERY_MAX_PAGE_SIZE",
+    },
+  )
+  .refine(
+    (value) =>
+      value.UPLOAD_MAX_FILE_SIZE_BYTES === 5_242_880 &&
+      value.USER_STORAGE_QUOTA_BYTES === 104_857_600 &&
+      value.UPLOAD_MAX_FILES_PER_BATCH === 10 &&
+      value.UPLOAD_ALLOWED_MIME_TYPES.join(",") ===
+        "application/pdf,text/plain,image/jpeg,image/png,image/webp,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    {
+      message:
+        "Phase 2 upload limits and MIME allowlist must match the approved specification",
+    },
+  );
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
 
@@ -61,6 +96,16 @@ export function parseServerEnv(input: NodeJS.ProcessEnv): ServerEnv {
     ADMIN_EMAIL: input.ADMIN_EMAIL,
     ADMIN_PASSWORD: input.ADMIN_PASSWORD,
     ADMIN_NAME: input.ADMIN_NAME,
+    SUPABASE_URL: input.SUPABASE_URL,
+    SUPABASE_SECRET_KEY: input.SUPABASE_SECRET_KEY,
+    SUPABASE_STORAGE_BUCKET: input.SUPABASE_STORAGE_BUCKET,
+    UPLOAD_MAX_FILE_SIZE_BYTES: input.UPLOAD_MAX_FILE_SIZE_BYTES,
+    USER_STORAGE_QUOTA_BYTES: input.USER_STORAGE_QUOTA_BYTES,
+    UPLOAD_ALLOWED_MIME_TYPES: input.UPLOAD_ALLOWED_MIME_TYPES,
+    UPLOAD_MAX_FILES_PER_BATCH: input.UPLOAD_MAX_FILES_PER_BATCH,
+    FILE_QUERY_DEFAULT_PAGE_SIZE: input.FILE_QUERY_DEFAULT_PAGE_SIZE,
+    FILE_QUERY_MAX_PAGE_SIZE: input.FILE_QUERY_MAX_PAGE_SIZE,
+    FILE_EXTRACTION_MAX_BYTES: input.FILE_EXTRACTION_MAX_BYTES,
   });
 }
 

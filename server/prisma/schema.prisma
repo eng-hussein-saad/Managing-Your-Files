@@ -13,6 +13,7 @@ model User {
   passwordHash      String
   role              String
   isEmailVerified   Boolean
+  deletedAt         DateTime?          @db.Timestamptz(3)
   createdAt         DateTime           @db.Timestamptz(3)
   updatedAt         DateTime           @db.Timestamptz(3)
   verificationCodes VerificationCode[]
@@ -54,7 +55,6 @@ model Folder {
   ownerId   String    @db.Uuid
   parentId  String?   @db.Uuid
   name      String
-  deletedAt DateTime? @db.Timestamptz(3)
   createdAt DateTime  @db.Timestamptz(3)
   updatedAt DateTime  @db.Timestamptz(3)
   owner     User      @relation(fields: [ownerId], references: [id], onDelete: NoAction)
@@ -74,7 +74,6 @@ model File {
   mimeType         String
   size             BigInt    @db.BigInt
   extractedContent String?
-  deletedAt        DateTime? @db.Timestamptz(3)
   createdAt        DateTime  @db.Timestamptz(3)
   updatedAt        DateTime  @db.Timestamptz(3)
   owner            User      @relation(fields: [ownerId], references: [id], onDelete: NoAction)

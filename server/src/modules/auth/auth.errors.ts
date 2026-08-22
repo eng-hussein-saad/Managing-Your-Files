@@ -8,6 +8,7 @@ export class AppError extends Error {
     public readonly code: ErrorCode,
     message: string,
     public readonly fields?: Array<{ field: string; message: string }>,
+    public readonly meta?: Record<string, unknown>,
   ) {
     super(message);
   }

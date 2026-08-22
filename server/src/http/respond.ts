@@ -16,16 +16,16 @@ export function failure(
   code: ErrorCode,
   message: string,
   fields?: Array<{ field: string; message: string }>,
+  meta?: Record<string, unknown>,
 ): void {
-  response
-    .status(status)
-    .json({
-      success: false,
-      error: {
-        code,
-        message,
-        fields,
-        requestId: response.locals.requestId as string | undefined,
-      },
-    });
+  response.status(status).json({
+    success: false,
+    error: {
+      code,
+      message,
+      fields,
+      requestId: response.locals.requestId as string | undefined,
+    },
+    ...(meta ? { meta } : {}),
+  });
 }

@@ -10,11 +10,20 @@ import { systemClock } from "./infrastructure/runtime/clock.js";
 import { systemIdentifiers } from "./infrastructure/runtime/identifiers.js";
 import { passwordHasher } from "./infrastructure/security/password-hasher.js";
 import { createApp } from "./app.js";
+import { SupabaseStorage } from "./infrastructure/storage/supabase-storage.js";
+import { assertStorageReady } from "./infrastructure/storage/storage-readiness.js";
+import { PdfExtractor } from "./infrastructure/extraction/pdf-extractor.js";
 
 /** Validates configuration, initializes the administrator, and starts HTTP traffic. */
 async function start(): Promise<void> {
   const env = parseServerEnv(process.env);
   const prisma = createPrismaClient(env.DATABASE_URL);
+  const storage = new SupabaseStorage(
+    env.SUPABASE_URL,
+    env.SUPABASE_SECRET_KEY,
+    env.SUPABASE_STORAGE_BUCKET,
+  );
+  await assertStorageReady(storage);
   const bootstrap = new AdminBootstrapService(
     prisma,
     systemClock,
@@ -34,7 +43,10 @@ async function start(): Promise<void> {
     password: env.SMTP_PASSWORD,
     from: env.EMAIL_FROM,
   });
-  const server = createApp(env, prisma, mailer).listen(env.PORT);
+  const server = createApp(env, prisma, mailer, {
+    storage,
+    extractor: new PdfExtractor(),
+  }).listen(env.PORT);
   /** Closes network and database resources on a termination signal. */
   const shutdown = () =>
     server.close(() => {

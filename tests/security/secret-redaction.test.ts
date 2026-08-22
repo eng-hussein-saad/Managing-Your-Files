@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { prohibitedValues, scanFiles } from "./prohibited-patterns";
+import {
+  prohibitedFileExposureValues,
+  prohibitedValues,
+  scanFiles,
+} from "./prohibited-patterns";
 describe("safe example configuration", () => {
   it("contains placeholders rather than usable credentials", () => {
     const server = readFileSync(resolve("server/.env.example"), "utf8");
@@ -17,11 +21,31 @@ describe("prohibited secret artifacts", () => {
     const files = scanFiles([
       "client/src",
       "client/.next/static",
+      "server/src",
       "server/tests/fixtures",
       "tests/e2e",
+      "test-results",
+      "playwright-report",
+      "specs/002-user-file-management/evidence",
     ]);
     const findings = files.flatMap((file) =>
       prohibitedValues
+        .filter((pattern) => pattern.test(file.content))
+        .map((pattern) => `${file.path}: ${pattern.source}`),
+    );
+    expect(findings).toEqual([]);
+  });
+
+  it("finds no file content, private keys, provider URLs, or temporary paths in generated public artifacts", () => {
+    const files = scanFiles([
+      "client/.next/static",
+      "test-results",
+      "playwright-report",
+      "coverage",
+      "logs",
+    ]);
+    const findings = files.flatMap((file) =>
+      prohibitedFileExposureValues
         .filter((pattern) => pattern.test(file.content))
         .map((pattern) => `${file.path}: ${pattern.source}`),
     );

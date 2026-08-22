@@ -15,6 +15,7 @@ export function AppNavigation({ role }: { role: UserRole }) {
       <nav aria-label="Account">
         {role === "ADMIN" ? <Link href="/admin">Admin</Link> : null}
         <Link href="/dashboard">Dashboard</Link>
+        <Link href="/files">My Files</Link>
         <Link href="/profile">Profile</Link>
         <LogoutButton />
       </nav>

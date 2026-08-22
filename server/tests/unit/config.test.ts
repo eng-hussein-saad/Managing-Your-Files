@@ -18,6 +18,17 @@ const valid = {
   ADMIN_EMAIL: "Admin@Example.invalid ",
   ADMIN_PASSWORD: "administrator-pass",
   ADMIN_NAME: "Administrator",
+  SUPABASE_URL: "https://project.supabase.co",
+  SUPABASE_SECRET_KEY: "sb_secret_service-role-key",
+  SUPABASE_STORAGE_BUCKET: "gold-era-private-files",
+  UPLOAD_MAX_FILE_SIZE_BYTES: "5242880",
+  USER_STORAGE_QUOTA_BYTES: "104857600",
+  UPLOAD_ALLOWED_MIME_TYPES:
+    "application/pdf,text/plain,image/jpeg,image/png,image/webp,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  UPLOAD_MAX_FILES_PER_BATCH: "10",
+  FILE_QUERY_DEFAULT_PAGE_SIZE: "25",
+  FILE_QUERY_MAX_PAGE_SIZE: "100",
+  FILE_EXTRACTION_MAX_BYTES: "5242880",
 };
 
 describe("server configuration contract", () => {
@@ -46,5 +57,13 @@ describe("server configuration contract", () => {
     const missing = { ...valid };
     delete (missing as Partial<typeof valid>).DATABASE_URL;
     expect(() => parseServerEnv(missing)).toThrow();
+  });
+  it("enforces Phase 2 fixed limits and page relationships", () => {
+    expect(() =>
+      parseServerEnv({ ...valid, UPLOAD_MAX_FILE_SIZE_BYTES: "5242881" }),
+    ).toThrow();
+    expect(() =>
+      parseServerEnv({ ...valid, FILE_QUERY_DEFAULT_PAGE_SIZE: "101" }),
+    ).toThrow();
   });
 });

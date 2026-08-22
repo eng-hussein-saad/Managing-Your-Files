@@ -9,6 +9,8 @@ import {
 import { parseServerEnv } from "../../src/config/env.js";
 import { resetDatabase } from "./database.js";
 import { FakeMailer } from "../fakes/fake-mailer.js";
+import { FakeStorage } from "../fakes/fake-storage.js";
+import { FakeExtractor } from "../fakes/fake-extractor.js";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 const databaseUrl =
@@ -32,7 +34,21 @@ export const integrationEnv = parseServerEnv({
   ADMIN_EMAIL: "admin@example.invalid",
   ADMIN_PASSWORD: "administrator-pass",
   ADMIN_NAME: "Administrator",
+  UPLOAD_MAX_FILE_SIZE_BYTES: "5242880",
+  USER_STORAGE_QUOTA_BYTES: "104857600",
+  UPLOAD_ALLOWED_MIME_TYPES:
+    "application/pdf,text/plain,image/jpeg,image/png,image/webp,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  UPLOAD_MAX_FILES_PER_BATCH: "10",
+  SUPABASE_URL: "https://project.supabase.co",
+  SUPABASE_SECRET_KEY: "sb_secret_test-key",
+  SUPABASE_STORAGE_BUCKET: "gold-era-private-files",
+  FILE_QUERY_DEFAULT_PAGE_SIZE: "20",
+  FILE_QUERY_MAX_PAGE_SIZE: "100",
+  FILE_EXTRACTION_MAX_BYTES: "5242880",
 });
+
+export const primaryUserId = "11111111-1111-4111-8111-111111111111";
+export const secondaryUserId = "22222222-2222-4222-8222-222222222222";
 
 /** Creates a migrated-database integration harness and resets it between cases. */
 export function integrationHarness(): {
@@ -56,6 +72,60 @@ export function integrationHarness(): {
     prisma,
     trust: { "x-gold-era-bff-trust": integrationEnv.BFF_SHARED_SECRET },
   };
+}
+
+/** Creates a deterministic file-management app with fake private storage and an owned user. */
+export function fileManagementHarness(): {
+  app: Express;
+  prisma: ReturnType<typeof createPrismaClient>;
+  storage: FakeStorage;
+  extractor: FakeExtractor;
+} {
+  const prisma = createPrismaClient(databaseUrl);
+  const mailer = new FakeMailer();
+  const storage = new FakeStorage();
+  const extractor = new FakeExtractor();
+  const app = createApp(integrationEnv, prisma, mailer, {
+    storage,
+    extractor,
+    authenticatedUserId: primaryUserId,
+  });
+  beforeEach(async () => {
+    await resetDatabase(prisma);
+    storage.objects.clear();
+    storage.calls.length = 0;
+    storage.failNext = undefined;
+    storage.delayMs = 0;
+    storage.afterRemove = undefined;
+    extractor.result = null;
+    extractor.failure = undefined;
+    await prisma.user.createMany({
+      data: [
+        {
+          id: primaryUserId,
+          name: "Primary User",
+          email: "primary@example.invalid",
+          passwordHash: "test",
+          role: "USER",
+          isEmailVerified: true,
+          createdAt: new Date("2026-08-01T00:00:00Z"),
+          updatedAt: new Date("2026-08-01T00:00:00Z"),
+        },
+        {
+          id: secondaryUserId,
+          name: "Secondary User",
+          email: "secondary@example.invalid",
+          passwordHash: "test",
+          role: "USER",
+          isEmailVerified: true,
+          createdAt: new Date("2026-08-01T00:00:00Z"),
+          updatedAt: new Date("2026-08-01T00:00:00Z"),
+        },
+      ],
+    });
+  });
+  afterAll(async () => disconnectPrisma(prisma));
+  return { app, prisma, storage, extractor };
 }
 
 /** Registers and verifies one user through the public HTTP contract. */

@@ -9,10 +9,11 @@
     "dev": "pnpm -r --parallel dev",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
-    "test": "vitest run --project unit --project contract --project component",
+    "test": "vitest run --project unit --project contract --project component --maxWorkers=1 --no-file-parallelism",
     "test:integration": "vitest run --project integration --maxWorkers=1 --no-file-parallelism",
     "test:e2e": "playwright test --workers=1",
-    "test:security": "vitest run --project security"
+    "test:security": "vitest run --project security --maxWorkers=1 --no-file-parallelism",
+    "audit:comments": "node scripts/intent-comment-audit.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.55.1",
