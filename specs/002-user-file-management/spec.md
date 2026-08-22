@@ -74,7 +74,7 @@ An authenticated user creates a personal folder hierarchy, browses it with bread
 
 **Why this priority**: Organization becomes valuable after upload and discovery work, especially as a user's collection grows.
 
-**Independent Test**: Create at least three nested levels, navigate by folder and breadcrumb, rename a folder, move files between root and nested locations, and attempt cross-user and cyclic hierarchy changes.
+**Independent Test**: Create at least three nested levels, navigate by folder and breadcrumb, rename a folder, move files between root and nested locations, and attempt cross-user folder access and mutations.
 
 **Acceptance Scenarios**:
 
@@ -82,8 +82,7 @@ An authenticated user creates a personal folder hierarchy, browses it with bread
 2. **Given** an owned folder, **When** the user renames it to a valid name not already used by a sibling folder, **Then** the new name is shown throughout navigation without changing its contents.
 3. **Given** nested owned folders, **When** the user browses into one or selects a breadcrumb ancestor, **Then** the correct child folders and files are shown and every breadcrumb segment resolves to an owned existing folder.
 4. **Given** an owned file, **When** the user moves it to the root or another owned folder, **Then** it disappears from the old location, appears in the destination, and remains owned by the same user.
-5. **Given** a request involving another user's folder, **When** the user attempts to read, rename, delete, parent, or move a file into it, **Then** the operation is denied without disclosing the other folder's details.
-6. **Given** an owned folder, **When** the user tries to make it its own descendant, **Then** the operation is rejected and the hierarchy remains unchanged.
+5. **Given** a request involving another user's folder, **When** the user attempts to read, rename, delete, create a child beneath it, or move a file into it, **Then** the operation is denied without disclosing the other folder's details.
 
 ---
 
@@ -165,7 +164,7 @@ An authenticated user opens a dashboard to understand current file count, curren
 - **FR-017**: Active sibling folders MUST have non-empty names that are unique after trimming surrounding whitespace and comparing without letter-case differences.
 - **FR-018**: Users MUST be able to rename an owned folder without changing its contents or parent, subject to the same folder-name rules as creation.
 - **FR-019**: Users MUST be able to move an owned file between the root and any owned folder without changing ownership or file metadata unrelated to location.
-- **FR-020**: Folder relationships MUST remain within one owner and MUST never form a cycle; the empty-folder deletion rule MUST prevent a file or folder from being stranded beneath a removed ancestor.
+- **FR-020**: A folder's parent MUST be selected only when the folder is created, MUST belong to the same owner, and MUST NOT be changed afterward in Phase 2; the empty-folder deletion rule MUST prevent a file or folder from being stranded beneath a removed ancestor.
 - **FR-021**: Breadcrumbs MUST start at the user's file root, show each active ancestor in order, and provide navigation only to authorized active locations.
 - **FR-022**: File deletion MUST require explicit irreversible-action confirmation and, on success, MUST permanently remove both the owned file's metadata record and corresponding Supabase Storage object. It MUST emit the required sanitized audit event and return the deleted file's byte size to available user quota exactly once.
 - **FR-023**: Folder deletion MUST require explicit irreversible-action confirmation and MUST permanently remove only an owned folder with no child folders and no files; deletion MUST NOT cascade.
@@ -180,7 +179,7 @@ An authenticated user opens a dashboard to understand current file count, curren
 - **FR-032**: All Phase 2 inputs, including uploaded content, filenames, folder names, identifiers, query controls, and configuration, MUST be validated at the authoritative boundary and failures MUST use the existing safe predictable response contract.
 - **FR-033**: File, folder, and aggregate behavior MUST align with the approved `FILE` and `FOLDER` ownership, hierarchy, metadata, and permanent-deletion contracts in `database-schema.mmd`. The approved schema change removes `FILE.deletedAt` and `FOLDER.deletedAt` and adds `USER.deletedAt`; no other schema deviation is authorized by this specification.
 - **FR-034**: The system MUST document every Phase 2 configuration setting with a non-secret example, classification, purpose, validation rule, and deployment mapping and MUST refuse startup when a required value is missing or invalid.
-- **FR-035**: Phase 2 verification MUST include upload-boundary, ownership-isolation, query-combination, pagination-stability, preview/download authorization, hierarchy-cycle, permanent file and empty-folder deletion, quota reclamation, dashboard accuracy, audit redaction, configuration, accessibility, and responsive-layout evidence.
+- **FR-035**: Phase 2 verification MUST include upload-boundary, ownership-isolation, query-combination, pagination-stability, preview/download authorization, fixed folder-parent behavior, permanent file and empty-folder deletion, quota reclamation, dashboard accuracy, audit redaction, configuration, accessibility, and responsive-layout evidence.
 - **FR-036**: Supabase Storage MUST be the Phase 2 object/file-storage provider and MUST remain behind the project's storage boundary. The configured bucket MUST be private; privileged Supabase credentials MUST remain server-only; and every upload, preview, download, and future storage mutation MUST first pass the application's own authentication, ownership, lifecycle, and validation rules. Phase 2 MUST NOT use Supabase Authentication, Supabase Database, or other Supabase products as replacements for the approved application identity or persistence systems.
 - **FR-037**: Each user MUST be limited to 100 MB of currently stored file content, defined as 104,857,600 bytes. The quota MUST count each owned stored file object exactly once and MUST exclude failed uploads and successfully deleted objects.
 - **FR-038**: Before storing each file, the system MUST authoritatively admit its byte size against the user's remaining quota in a concurrency-safe manner so simultaneous uploads and multi-file batches cannot raise retained usage above 100 MB. A failed storage or metadata operation MUST release any provisional quota capacity.
@@ -194,7 +193,7 @@ An authenticated user opens a dashboard to understand current file count, curren
 | FR-003–FR-008, FR-037–FR-039 | User Story 1 scenarios plus exact 5 MB boundary, exact 100 MB boundary, concurrent quota admission, deterministic partial-batch, quota-release, spoofed-type, interrupted-upload, storage-failure, and extraction-state tests |
 | FR-009–FR-012 | User Story 2 scenarios plus combined-query, invalid-query, deterministic-pagination, empty-state, and concurrent-change tests |
 | FR-013–FR-015 | User Story 3 scenarios plus content-header, expired-access, deleted-during-request, and missing-storage-object tests |
-| FR-016–FR-021 | User Story 4 scenarios plus sibling-name, cross-owner, deleted-ancestor, cycle, and concurrent-hierarchy tests |
+| FR-016–FR-021 | User Story 4 scenarios plus sibling-name, cross-owner, fixed-parent, deleted-ancestor, and concurrent create/delete tests |
 | FR-022–FR-025 | User Story 5 scenarios plus irreversible confirmation, cancel, repeated deletion, object/metadata consistency, empty-folder enforcement, audit preservation, and exact quota-reclamation checks |
 | FR-026–FR-027 | User Story 6 scenarios plus post-deletion usage, cross-user isolation, zero-period, normalized-category, and displayed-date-boundary checks |
 | FR-028–FR-031 | All user stories plus keyboard/accessibility review and audit completeness, failure consistency, and prohibited-data scans |
@@ -234,7 +233,7 @@ The following names are the Phase 2 configuration contract. Planning MAY refine 
 - **SC-004**: In a mixed batch of at least 20 files containing valid, oversized, disallowed, and operationally failed items, 100% receive an individual final status and 100% of successful files remain usable without an active dangling record for failed files.
 - **SC-005**: Users can locate a known file by search or type/folder filter, open its details, and initiate preview or download in no more than 5 user actions from My Files in at least 90% of usability trials.
 - **SC-006**: 100% of supported preview samples render an appropriate representation, 100% of unsupported samples show a clear fallback, and every tested owned existing file remains downloadable with the expected filename and content.
-- **SC-007**: In hierarchy tests at least three levels deep, 100% of valid create, rename, navigate, breadcrumb, and move actions preserve ownership and reachability, while 100% of cyclic, deleted-ancestor, cross-user, and non-empty-folder deletion attempts are rejected without data loss.
+- **SC-007**: In hierarchy tests at least three levels deep, 100% of valid folder creation, rename, navigation, breadcrumb, and file-move actions preserve ownership and reachability, while 100% of folder-parent changes, deleted-ancestor access, cross-user access, and non-empty-folder deletion attempts are rejected without data loss.
 - **SC-008**: After successful file or empty-folder deletion, 100% of tested lists, searches, details, previews, downloads, destination choices, breadcrumbs, and dashboard aggregates exclude the item; its metadata record is absent, deleted file content is absent from storage, and quota decreases by exactly the deleted file size.
 - **SC-009**: Dashboard totals and distributions match a known verification dataset exactly, and every time-series bucket differs from its expected active-upload count by zero.
 - **SC-010**: 100% of required successful Phase 2 state changes and downloads produce structurally complete audit events, with zero prohibited secrets, file content, extracted text, or storage locations found in audit and error-output scans.
