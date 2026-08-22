@@ -26,7 +26,7 @@ Cross-system failures follow Constitution v3.0.0: private objects and metadata u
 
 **Project Type**: TypeScript web application monorepo (`client/`, `server/`, `packages/contracts/`)
 
-**Performance Goals**: File list and dashboard responses or clear failures within two seconds for at least 95% of acceptance queries over 10,000 owned files; stable page ordering; usable per-file progress; quota remains correct under at least 20 concurrent upload attempts
+**Performance Goals**: Under the SC-003 reference protocol (production-built API on Linux, at least 2 dedicated CPU cores and 4 GB RAM, same-host PostgreSQL, deterministic 10,000-owner/1,000-foreign fixture, one warm-up per Q1–Q5 template, then 20 measured repetitions per template at concurrency 5), at least 95 measured successful file-list requests complete within two seconds; stable page ordering; usable per-file progress; quota remains correct under at least 20 concurrent upload attempts
 
 **Constraints**: 5,242,880 bytes/file inclusive; 104,857,600 retained bytes/user; 1–10 files/client batch; PDF/TXT/JPEG/PNG/WebP/DOCX only; private bucket and server-only secret; folder depth 10; permanent file/folder deletion; no unapproved database difference; JSON byte counts are decimal strings
 
@@ -42,7 +42,7 @@ Cross-system failures follow Constitution v3.0.0: private objects and metadata u
 | II. Server-enforced security | Bearer authentication, owner-scoped lookup, byte-based validation, generated keys, private storage, safe not-found behavior, and authorization before streaming are contract requirements. | PASS | PASS |
 | III. Stable contracts and replaceable infrastructure | `contracts/file-management.openapi.yaml` documents envelopes, queries, binary responses, and errors; Supabase is behind `StoragePort`. | PASS | PASS |
 | IV. Complete reusable UX | Feature modules provide hooks and reusable upload, collection, preview, folder, statistics, state, confirmation, and accessibility patterns. | PASS | PASS |
-| V. Verified environment contract | All ten Phase 2 settings are named in the spec and quickstart, validated at startup, mapped to server configuration, and kept out of client bundles. | PASS | PASS |
+| V. Verified environment contract | All ten Phase 2 settings are named in the spec and quickstart, validated at startup, mapped to server configuration, and kept out of client bundles. Phase 2 inventories Docker/deployment configuration, synchronizes every existing artifact, and records an explicit not-applicable result when none exists. | PASS | PASS |
 | VI. Audit important operations | Successful important operations attempt sanitized events. Audit failure is fail-open with operational logging. Storage/database divergence uses permitted best-effort compensation. | PASS | PASS |
 | VII. Spec-driven tested delivery | Quickstart scenarios and contract/data-model rules map to FR-001–FR-039 and retain risk-based security/concurrency evidence. | PASS | PASS |
 | VIII. Comment every function/method | Implementation tasks and review must require an intent comment above every new or changed function, method, and callback. | PASS | PASS |
