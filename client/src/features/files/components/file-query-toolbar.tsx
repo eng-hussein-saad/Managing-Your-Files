@@ -1,18 +1,35 @@
+"use client";
+import { useEffect, useState } from "react";
 import type { FileQuery } from "../api/files.api";
-/** Renders controlled server-side search, type, sorting, and view controls. */
+
+type FileQueryToolbarProps = {
+  query: FileQuery;
+  view: "list" | "grid";
+  onChange: (change: Partial<FileQuery>) => void;
+  onView: (view: "list" | "grid") => void;
+};
+
+/** Renders responsive server-side search, filters, sorting, and view controls. */
 export function FileQueryToolbar({
   query,
   view,
   onChange,
   onView,
-}: {
-  query: FileQuery;
-  view: "list" | "grid";
-  onChange: (change: Partial<FileQuery>) => void;
-  onView: (view: "list" | "grid") => void;
-}) {
+}: FileQueryToolbarProps) {
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  useEffect(() => {
+    if (!filtersOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setFiltersOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [filtersOpen]);
+
   return (
-    <section className="file-toolbar" aria-label="File filters">
+    <>
+      <section className="file-toolbar" aria-label="File filters">
       <label className="search-field">
         <span className="sr-only">Search files</span><span aria-hidden="true">⌕</span>
         <input
@@ -26,81 +43,16 @@ export function FileQueryToolbar({
           }
         />
       </label>
-      <label><span>Type</span>
-        <select
-          value={query.type ?? ""}
-          onChange={
-            /** Handles the bound UI event or state projection for this JSX control. */ (
-              event,
-            ) =>
-              onChange({
-                type: event.target.value
-                  ? (event.target.value as FileQuery["type"])
-                  : undefined,
-                page: 1,
-              })
-          }
-        >
-          <option value="">All types</option>
-          <option value="pdf">PDF</option>
-          <option value="text">Text</option>
-          <option value="image">Images</option>
-          <option value="document">Documents</option>
-        </select>
-      </label>
-      <label><span>Sort by</span>
-        <select
-          value={query.sort ?? "uploadedAt"}
-          onChange={
-            /** Handles the bound UI event or state projection for this JSX control. */ (
-              event,
-            ) =>
-              onChange({
-                sort: event.target.value as FileQuery["sort"],
-                page: 1,
-              })
-          }
-        >
-          <option value="uploadedAt">Uploaded</option>
-          <option value="name">Name</option>
-          <option value="size">Size</option>
-        </select>
-      </label>
-      <label className="direction-field"><span>Order</span>
-        <select
-          value={query.direction ?? "desc"}
-          onChange={
-            /** Handles the bound UI event or state projection for this JSX control. */ (
-              event,
-            ) =>
-              onChange({
-                direction: event.target.value as FileQuery["direction"],
-                page: 1,
-              })
-          }
-        >
-          <option value="desc">Descending</option>
-          <option value="asc">Ascending</option>
-        </select>
-      </label>
-      <label className="page-size-field"><span>Files per page</span>
-        <select
-          value={query.pageSize ?? 20}
-          onChange={
-            /** Handles the bound UI event or state projection for this JSX control. */ (
-              event,
-            ) =>
-              onChange({
-                pageSize: Number(event.target.value),
-                page: 1,
-              })
-          }
-        >
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="20">20</option>
-        </select>
-      </label>
+      <FilterControls query={query} onChange={onChange} />
+      <button
+        className="filter-trigger"
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={filtersOpen}
+        onClick={() => setFiltersOpen(true)}
+      >
+        Filters
+      </button>
       <div className="view-switch" role="group" aria-label="File view">
         <button
           type="button"
@@ -123,6 +75,127 @@ export function FileQueryToolbar({
           <span aria-hidden="true">⊞</span><span className="sr-only">Grid</span>
         </button>
       </div>
-    </section>
+      </section>
+      {filtersOpen ? (
+        <div
+          className="filter-drawer-overlay"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setFiltersOpen(false);
+          }}
+        >
+          <aside
+            className="filter-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="file-filter-drawer-title"
+          >
+            <div className="filter-drawer-header">
+              <div>
+                <span className="eyebrow">Refine your archive</span>
+                <h2 id="file-filter-drawer-title">Filters</h2>
+              </div>
+              <button
+                className="drawer-close"
+                type="button"
+                aria-label="Close filters"
+                onClick={() => setFiltersOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="filter-drawer-fields">
+              <label>
+                <span>Search files</span>
+                <input
+                  placeholder="Search your archive"
+                  value={query.search ?? ""}
+                  maxLength={200}
+                  onChange={(event) =>
+                    onChange({ search: event.target.value, page: 1 })
+                  }
+                />
+              </label>
+              <FilterControls query={query} onChange={onChange} />
+            </div>
+          </aside>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+/** Renders the shared filter fields for inline and drawer presentations. */
+function FilterControls({
+  query,
+  onChange,
+}: Pick<FileQueryToolbarProps, "query" | "onChange">) {
+  return (
+    <>
+      <label>
+        <span>Type</span>
+        <select
+          value={query.type ?? ""}
+          onChange={(event) =>
+            onChange({
+              type: event.target.value
+                ? (event.target.value as FileQuery["type"])
+                : undefined,
+              page: 1,
+            })
+          }
+        >
+          <option value="">All types</option>
+          <option value="pdf">PDF</option>
+          <option value="text">Text</option>
+          <option value="image">Images</option>
+          <option value="document">Documents</option>
+        </select>
+      </label>
+      <label>
+        <span>Sort by</span>
+        <select
+          value={query.sort ?? "uploadedAt"}
+          onChange={(event) =>
+            onChange({
+              sort: event.target.value as FileQuery["sort"],
+              page: 1,
+            })
+          }
+        >
+          <option value="uploadedAt">Uploaded</option>
+          <option value="name">Name</option>
+          <option value="size">Size</option>
+        </select>
+      </label>
+      <label className="direction-field">
+        <span>Order</span>
+        <select
+          value={query.direction ?? "desc"}
+          onChange={(event) =>
+            onChange({
+              direction: event.target.value as FileQuery["direction"],
+              page: 1,
+            })
+          }
+        >
+          <option value="desc">Descending</option>
+          <option value="asc">Ascending</option>
+        </select>
+      </label>
+      <label className="page-size-field">
+        <span>Files per page</span>
+        <select
+          value={query.pageSize ?? 20}
+          onChange={(event) =>
+            onChange({ pageSize: Number(event.target.value), page: 1 })
+          }
+        >
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+        </select>
+      </label>
+    </>
   );
 }

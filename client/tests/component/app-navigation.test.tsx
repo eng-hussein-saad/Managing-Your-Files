@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppNavigation } from "../../src/components/navigation/app-navigation";
 import { ToastProvider } from "../../src/components/toast/toast-provider";
@@ -26,6 +26,7 @@ function renderNavigation(role: "USER" | "ADMIN") {
 describe("shared authenticated navigation", () => {
   it("shows the same base links without administrator access for users", () => {
     renderNavigation("USER");
+    expect(screen.getByRole("button", { name: "Sign out" })).toBeVisible();
     expect(screen.getByRole("link", { name: "Overview" })).toBeVisible();
     expect(screen.getByRole("link", { name: "Profile" })).toBeVisible();
     expect(screen.queryByRole("link", { name: "Admin" })).toBeNull();
@@ -36,5 +37,18 @@ describe("shared authenticated navigation", () => {
     expect(screen.getByRole("link", { name: "Overview" })).toBeVisible();
     expect(screen.getByRole("link", { name: "Profile" })).toBeVisible();
     expect(screen.getByRole("link", { name: "Admin" })).toBeVisible();
+  });
+
+  it("opens a navigable side tab while keeping sign out in the header", () => {
+    renderNavigation("USER");
+    fireEvent.click(screen.getByRole("button", { name: "Open navigation" }));
+    const drawer = screen.getByRole("dialog", { name: "Navigate" });
+    expect(within(drawer).getByRole("link", { name: "Overview" })).toBeVisible();
+    expect(within(drawer).getByRole("link", { name: "Files" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Sign out" })).toBeVisible();
+    fireEvent.click(
+      within(drawer).getByRole("button", { name: "Close navigation" }),
+    );
+    expect(screen.queryByRole("dialog", { name: "Navigate" })).toBeNull();
   });
 });

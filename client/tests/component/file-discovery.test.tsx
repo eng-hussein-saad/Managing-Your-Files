@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { FileCollection } from "../../src/features/files/components/file-collection";
 import { FilePagination } from "../../src/features/files/components/file-pagination";
@@ -36,6 +36,16 @@ describe("file discovery components", () => {
       target: { value: "10" },
     });
     expect(onChange).toHaveBeenCalledWith({ pageSize: 10, page: 1 });
+    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+    const drawer = screen.getByRole("dialog", { name: "Filters" });
+    expect(within(drawer).getByLabelText("Type")).toBeInTheDocument();
+    expect(within(drawer).getByLabelText("Sort by")).toBeInTheDocument();
+    expect(within(drawer).getByLabelText("Order")).toBeInTheDocument();
+    expect(
+      within(drawer).getByLabelText("Files per page"),
+    ).toBeInTheDocument();
+    fireEvent.click(within(drawer).getByRole("button", { name: "Close filters" }));
+    expect(screen.queryByRole("dialog", { name: "Filters" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Grid" }));
     expect(onView).toHaveBeenCalledWith("grid");
     expect(screen.getByRole("button", { name: "List" })).toHaveAttribute(
