@@ -430,13 +430,19 @@ Use Express REST APIs with Multer for upload intake, Prisma/PostgreSQL for metad
 
 ---
 
-# Phase 3 — Administration, Analytics, Auditability & Application Polish
+# Phase 3 — Administration, Application Polish, Testing & Final Quality
 
 ## Objective
 
-Complete administrator capabilities, global operational visibility, audit inspection, and the remaining cross-application user experience features.
+Complete administrator capabilities, global operational visibility, audit inspection, application rebranding, remaining cross-application user experience features, automated testing, Docker support, final security and performance review, and developer documentation.
 
-Phase 3 must reuse the Supabase Storage integration established in Phase 2. It must not introduce, migrate to, or replace the object/file-storage provider; administrator file operations must go through the same application storage abstraction and authorization boundaries.
+This phase should build on the existing authentication, authorization, Prisma data model, Supabase Storage integration, audit service, API conventions, React Query patterns, and UI components established in previous phases.
+
+It must not reopen completed architecture or production-configuration decisions unless an actual implementation defect requires a change.
+
+File and folder Trash, soft deletion, restoration, and recovery workflows are intentionally outside this phase and may be implemented later as a separate optional feature phase.
+
+---
 
 ## Scope
 
@@ -444,41 +450,132 @@ Phase 3 must reuse the Supabase Storage integration established in Phase 2. It m
 
 Administrator-only user management should provide:
 
-- User listing.
-- Search.
-- Pagination.
-- Relevant user metadata.
-- Role editing.
-- User soft deletion by setting the user deletion timestamp, revoking active refresh tokens, and immediately denying sign-in, renewal, and protected access while retaining the user's owned file/folder records.
-- Clear administrator visibility of soft-deleted user status. User restore and permanent user deletion remain outside this phase unless separately specified.
-- Protection against unsafe administrative actions such as accidental self-removal or invalid role transitions where applicable.
-- Audit events for administrative changes.
+* User listing.
+* Search.
+* Pagination.
+* Relevant user metadata.
+* Role editing.
+* Permanent user deletion.
+* Protection against unsafe administrative actions such as accidental administrator self-deletion or invalid role transitions where applicable.
+* Audit events for administrative changes and permanent user deletion.
+
+User soft deletion is removed from the application.
+
+Remove the existing `deletedAt` field from the `User` Prisma model and database table.
+
+Removal of user soft deletion should also include obsolete:
+
+* Database indexes.
+* Prisma queries.
+* Authentication checks.
+* Authorization checks.
+* Middleware.
+* Services.
+* Validation.
+* API response fields.
+* Frontend types.
+* Administrator UI states.
+* Tests.
+* Documentation.
+
+Do not retain unused deleted-user lifecycle infrastructure.
+
+### Permanent user deletion
+
+Administrator user deletion should be an explicit permanent operation.
+
+Permanent user deletion must safely handle relevant dependent state, including:
+
+* Active refresh tokens.
+* Verification codes or similar user-dependent authentication records where applicable.
+* User-owned files.
+* User-owned folders.
+* Supabase Storage objects.
+* Other dependent database records required by the current schema.
+
+File objects must be removed from Supabase Storage before or as part of the established permanent-deletion workflow so successful user deletion does not leave orphaned stored objects.
+
+Use safe database ordering or transactions where appropriate.
+
+The operation must:
+
+* Revoke or remove active refresh tokens.
+* Remove required user-owned Supabase Storage objects.
+* Remove dependent database records safely.
+* Remove the user record.
+* Preserve audit information according to the established audit policy.
+* Return predictable failure behavior if required cleanup cannot be completed safely.
+
+Do not implement:
+
+* User soft deletion.
+* User restoration.
+* Deleted-user states.
+* User retention periods.
+* Scheduled user cleanup.
+* Account recovery after administrator deletion.
+
+---
 
 ### Global file administration
 
 Administrators should be able to:
 
-- View files across all users.
-- Identify file owners.
-- Search files.
-- Filter files.
-- Paginate files.
-- Inspect relevant file metadata.
-- Permanently delete files using the Phase 2 metadata, Supabase object-removal, quota-reclamation, and audit policy.
+* View files across all users.
+* Identify file owners.
+* Search files.
+* Filter files.
+* Paginate files.
+* Inspect relevant file metadata.
+* View file size.
+* Permanently delete files.
 
 Administrator access must be enforced by the backend regardless of what the frontend displays.
+
+Administrator file deletion should explicitly use the existing permanent file-deletion behavior.
+
+Permanent administrator file deletion should:
+
+* Validate administrator authorization.
+* Remove the corresponding Supabase Storage object.
+* Remove the file database record according to established data-integrity rules.
+* Keep storage-related state consistent.
+* Emit the appropriate audit event.
+* Return predictable errors if required cleanup cannot be completed safely.
+
+Internally, permanent-deletion services should use clear naming such as:
+
+```ts
+permanentlyDeleteFile()
+permanentlyDeleteFolder()
+permanentlyDeleteUser()
+```
+
+rather than ambiguous deletion-service names where practical.
+
+This keeps current behavior explicit and allows a future Trash feature to introduce separate soft-delete operations without redefining administrator deletion semantics.
+
+File and folder Trash behavior is not implemented in this phase.
+
+---
 
 ### Admin dashboard
 
 Provide administrator statistics including:
 
-- Total users.
-- Total files.
-- Total storage usage.
-- Most uploaded file types.
-- Recent uploads.
+* Total users.
+* Total files.
+* Total storage usage.
+* Most uploaded file types.
+* Recent uploads.
 
-The backend should perform the required aggregations efficiently and expose purpose-built statistics endpoints.
+Total platform storage usage should represent the storage consumed by currently stored file objects.
+
+The backend should perform required aggregations efficiently and expose purpose-built statistics endpoints.
+
+Statistics should use clear semantics and remain consistent with existing file and storage behavior.
+
+---
 
 ### Audit log interface
 
@@ -486,236 +583,519 @@ Expose administrator-only audit history using the audit events accumulated throu
 
 The audit experience should support useful inspection fields such as:
 
-- Timestamp.
-- Acting user.
-- Action.
-- Entity type.
-- Target/entity identifier where appropriate.
-- Relevant metadata that is safe to expose.
+* Timestamp.
+* Acting user.
+* Action.
+* Entity type.
+* Target/entity identifier where appropriate.
+* Relevant metadata that is safe to expose.
 
-Add search/filter/pagination if they provide useful operational value without complicating the data model unnecessarily.
+Add search, filtering, and pagination where they provide useful operational value without unnecessarily complicating the implementation.
 
-Audit events should cover important operations across the system, including authentication, uploads, downloads, deletes, folder actions, role changes, and user-management actions.
+Audit events should cover important operations across the system, including:
+
+* Authentication.
+* Uploads.
+* Downloads.
+* Permanent file deletions.
+* Permanent folder deletions.
+* Folder mutations.
+* Role changes.
+* Permanent user deletion.
+* Other administrator actions.
+
+Do not introduce Trash-specific audit behavior during this phase.
+
+---
+
+### Site rebranding
+
+Rebrand the application from **Gold Era** to:
+
+**Fileora**
+*Your files. Organized your way.*
+
+Apply the new branding consistently across the application, including where applicable:
+
+* Application name and visible product branding.
+* Navbar/sidebar branding.
+* Authentication pages.
+* Page metadata and browser titles.
+* Dashboard and application-shell areas.
+* Empty states or other user-facing copy that references the old name.
+* README and project-facing documentation where the product name is shown.
+* Any other visible references to Gold Era.
+
+Add an application footer consistent with the existing design system and responsive layout.
+
+The footer should:
+
+* Display the **Fileora** branding.
+* Include the tagline **"Your files. Organized your way."** where appropriate.
+* Work correctly in both light and dark modes.
+* Behave correctly across mobile, tablet, and desktop layouts.
+* Remain visually consistent with the rest of the application.
+
+Do not rename internal package names, environment-variable names, database objects, repository identifiers, or other technical identifiers solely for branding unless changing them is necessary for user-facing consistency.
+
+---
 
 ### Dark mode
 
 Implement a complete application theme experience with:
 
-- Light mode.
-- Dark mode.
-- System preference when appropriate.
-- Persisted user/browser preference.
-- Theme-safe charts, dialogs, tables, forms, empty states, and file previews.
+* Light mode.
+* Dark mode.
+* System preference where appropriate.
+* Persisted user/browser preference.
+* Theme-safe charts.
+* Dialogs.
+* Tables.
+* Forms.
+* Empty states.
+* File previews.
+* Administrator interfaces.
+* Footer.
+
+---
 
 ### Cross-application polish
 
 Review and normalize UX across user and admin areas:
 
-- Responsive behavior on mobile, tablet, and desktop.
-- Navigation states.
-- Consistent page headers/actions.
-- Loading skeletons.
-- Empty states.
-- Error states.
-- Toast messages.
-- Destructive-action confirmation.
-- Accessible form labels and keyboard behavior.
-- Appropriate Framer Motion usage.
-- Consistent file-size/date formatting.
-- Consistent pagination and query-state handling.
+* Responsive behavior on mobile, tablet, and desktop.
+* Navigation states.
+* Consistent page headers and actions.
+* Loading skeletons.
+* Empty states.
+* Error states.
+* Toast messages.
+* Destructive-action confirmation.
+* Accessible form labels and keyboard behavior.
+* Appropriate Framer Motion usage.
+* Consistent file-size formatting.
+* Consistent date formatting.
+* Consistent pagination behavior.
+* Consistent query-state handling.
+* Consistent administrator table behavior.
 
-## Phase 3 completion gate
+Permanent and destructive actions should have clear confirmation where appropriate, particularly:
 
-Phase 3 is complete only when:
-
-- Administrators can manage users and roles securely.
-- Administrators can search, inspect, paginate, and delete files across the system.
-- Normal users are blocked from every administrator API even if they call it directly.
-- Administrator statistics are accurate.
-- Audit events exist for the important workflows implemented across all phases and can be inspected by an administrator.
-- Dark mode works across the complete application without obvious unreadable or unthemed areas.
-- User and admin experiences behave correctly across common viewport sizes.
-
-## Spec Kit kickoff
-
-### `/speckit.specify` seed
-
-Build the administrator and operational layer of Managing Your Files. Administrators need secure user management, role management, global file management, aggregated system statistics, and a usable audit-history view. Complete the application-wide theme and interaction polish so both user and admin areas work consistently in light and dark modes, remain responsive, and clearly communicate loading, empty, success, error, and destructive-action states. Administrator privileges must remain securely enforced by the backend.
-
-### `/speckit.plan` constraints
-
-Reuse the existing authentication, role middleware, Prisma data model, audit service, API conventions, React Query patterns, and UI components rather than creating parallel implementations. Use efficient database aggregation for statistics and server-side pagination/filtering for admin data sets. Finish audit-event coverage, implement the admin audit interface, and add persistent light/dark/system theming with compatible charts and components.
+* File deletion.
+* Folder deletion.
+* Administrator file deletion.
+* Administrator user deletion.
 
 ---
-
-# Phase 4 — Testing, Containerization, Deployment & Production Readiness
-
-## Objective
-
-Turn the functionally complete application into a reproducible, tested, deployable, and well-documented system.
-
-Phase 4 must verify and document the Supabase Storage integration delivered in Phase 2. It must not add, migrate, or replace the object/file-storage provider unless a separately approved requirement change first updates the Phase 2 specification and its dependent artifacts.
-
-## Scope
 
 ### Automated testing
 
 Add automated tests focused on high-value behavior and security boundaries.
 
-Authentication coverage should include cases such as:
+#### Authentication coverage
 
-- Successful registration.
-- Duplicate registration rejection.
-- Password validation/login failure.
-- Email verification success/failure.
-- Expired or invalid OTP handling.
-- Refresh-token behavior.
-- Authentication-required endpoint rejection.
-- Administrator authorization rejection for normal users.
+Include cases such as:
 
-File/folder coverage should include cases such as:
+* Successful registration.
+* Duplicate registration rejection.
+* Password validation/login failure.
+* Email verification success/failure.
+* Expired or invalid OTP handling.
+* Refresh-token behavior.
+* Authentication-required endpoint rejection.
+* Administrator authorization rejection for normal users.
 
-- Valid upload.
-- Invalid file type.
-- Oversized file.
-- Multiple-file behavior where relevant.
-- Ownership enforcement.
-- Search/filter/pagination behavior for important cases.
-- Permanent file and empty-folder deletion, including Supabase object removal and quota reclamation.
-- User soft deletion, refresh-token revocation, and deleted-user access denial.
-- Secure download/preview authorization.
-- Folder ownership and mutation rules.
+#### User model and user administration coverage
 
-Administrator coverage should include cases such as:
+Include cases such as:
 
-- User listing authorization.
-- Role updates.
-- Global file access.
-- Administrative deletion behavior.
-- Statistics access control.
+* `User.deletedAt` no longer existing in the Prisma model.
+* User queries no longer depending on soft-deletion state.
+* Authentication no longer checking user soft-deletion state.
+* User listing authorization.
+* User search.
+* User pagination.
+* Role updates.
+* Invalid role transitions where applicable.
+* Permanent user deletion.
+* Refresh-token cleanup or revocation during permanent user deletion.
+* Required dependent-record cleanup.
+* User-owned file cleanup.
+* User-owned folder cleanup.
+* User-owned Supabase Storage object removal.
+* Administrator self-deletion protection where applicable.
 
-Add focused unit tests for complex services/utilities where they provide value, and integration/API tests for the most important end-to-end backend behavior.
+Do not add tests for user soft deletion or restoration.
+
+#### File/folder coverage
+
+Include cases such as:
+
+* Valid upload.
+* Invalid file type.
+* Oversized file.
+* Multiple-file behavior where relevant.
+* Ownership enforcement.
+* Search/filter/pagination behavior for important cases.
+* Permanent file deletion.
+* Supabase object removal during permanent file deletion.
+* Storage-related state remaining consistent after deletion.
+* Permanent folder deletion.
+* Recursive file cleanup during permanent folder deletion where applicable.
+* Secure download authorization.
+* Secure preview authorization.
+* Folder ownership.
+* Folder mutation rules.
+
+Do not add Trash, restore, soft-delete, or Empty Trash tests during this phase.
+
+#### Administrator coverage
+
+Include cases such as:
+
+* Administrator endpoint authorization.
+* Normal-user rejection from administrator APIs.
+* User listing.
+* Role updates.
+* Permanent user deletion.
+* Global file access.
+* File-owner visibility.
+* File search/filter/pagination.
+* Administrator permanent file deletion.
+* Statistics access control.
+* Audit-history access control.
+
+Add focused unit tests for complex services or utilities where they provide value, and integration/API tests for the most important end-to-end backend behavior.
+
+Prioritize meaningful security and business behavior rather than maximizing raw test count.
+
+---
 
 ### Docker support
 
 Provide Docker support for reproducible local execution.
 
-Include appropriate Dockerfiles and Docker Compose configuration so the project can run its required local services with minimal setup. Containerization should respect environment variables and should not bake secrets into images.
+Include appropriate Dockerfiles and Docker Compose configuration so the project can run its required local services with minimal setup.
 
-### Production configuration
+Containerization must:
 
-Prepare the application for independent frontend/backend deployment:
+* Use environment variables rather than baking configuration into images.
+* Avoid baking secrets into images.
+* Support the existing monorepo structure.
+* Support the existing frontend and backend applications without changing their architecture.
+* Provide appropriate `.dockerignore` files.
+* Allow the intended local development or production-like workflow to be started through documented Docker commands.
 
-- Frontend configured through `NEXT_PUBLIC_API_URL`.
-- Backend configured through environment variables.
-- Production CORS configuration.
-- Secure authentication-cookie/token settings according to the selected implementation.
-- Correct proxy/header handling where applicable.
-- Production verification and deployment configuration for the existing Phase 2 Supabase Storage integration, including its private bucket and backend-only credentials.
-- Database migrations/deployment migration strategy.
-- Admin initialization strategy.
-- Email delivery configuration.
-- Logging/error behavior appropriate for production.
+Do not restructure the application solely to make containerization easier.
+
+---
 
 ### Security and reliability review
 
-Perform a final review for:
+Review the implemented application for remaining security or reliability gaps and correct issues where necessary.
 
-- Authorization on every sensitive endpoint.
-- File ownership enforcement.
-- Upload validation.
-- Filename/path safety.
-- Password/token/OTP handling.
-- Refresh-token invalidation.
-- CORS configuration.
-- Environment-secret handling.
-- Accidental sensitive data in API responses or audit logs.
-- Soft-deleted user leakage or continued authentication, and residual file/folder records or objects after successful permanent deletion.
-- Error messages that expose implementation details.
+Review areas should include:
+
+* Authorization on every sensitive endpoint.
+* Administrator authorization on every administrator endpoint.
+* File ownership enforcement.
+* Folder ownership enforcement.
+* Upload validation.
+* Filename/path safety.
+* Password handling.
+* Access-token handling.
+* Refresh-token handling and invalidation.
+* OTP handling.
+* Permanent user deletion.
+* Administrator self-deletion protection.
+* Permanent file deletion.
+* Permanent folder deletion.
+* Supabase Storage cleanup.
+* Residual database records or storage objects after successful permanent deletion.
+* Accidental sensitive data in API responses.
+* Accidental sensitive data in audit logs.
+* Error messages that expose implementation details.
+* Unsafe role transitions.
+* Missing destructive-action validation.
+
+Remove obsolete security logic that existed solely for `User.deletedAt`.
+
+Do not redesign working authentication, storage, or authorization architecture unless an actual defect requires a change.
+
+---
 
 ### Performance review
 
-Verify reasonable behavior for:
+Review and improve reasonable behavior for:
 
-- Paginated file lists.
-- Admin lists.
-- Statistics queries.
-- Upload progress.
-- Preview/download paths.
-- Database indexes supporting frequent queries.
-- React Query caching and invalidation.
-- Avoiding unnecessary frontend refetches.
+* Paginated user file lists.
+* Administrator user lists.
+* Administrator file lists.
+* Statistics queries.
+* Audit-log queries.
+* Upload progress.
+* Preview/download paths.
+* Database indexes supporting frequent queries.
+* React Query caching.
+* React Query invalidation after mutations.
+* Avoiding unnecessary frontend refetches.
+
+Review and remove obsolete indexes associated exclusively with `User.deletedAt`.
+
+Use server-side pagination/filtering for administrator data sets.
+
+Only introduce optimizations where they address an identifiable issue or clearly improve an important application path.
+
+Do not perform speculative architectural optimization.
+
+---
 
 ### README and developer experience
 
 Create a complete `README.md` containing:
 
-- Project overview.
-- Feature overview.
-- Technology stack.
-- Repository/folder structure.
-- Architecture summary.
-- Local setup instructions.
-- Environment variables.
-- Database migration instructions.
-- Admin initialization instructions.
-- Running the frontend and backend locally.
-- Docker instructions.
-- Testing instructions.
-- Existing Supabase Storage configuration established in Phase 2.
-- Deployment instructions.
-- Assumptions and notable design decisions.
+* Project overview.
+* Feature overview.
+* Technology stack.
+* Repository/folder structure.
+* Architecture summary.
+* Local setup instructions.
+* Environment variables.
+* Database migration instructions.
+* Admin initialization instructions.
+* Running the frontend and backend locally.
+* Docker instructions.
+* Testing instructions.
+* Supabase Storage configuration.
+* Deployment instructions.
+* Assumptions and notable design decisions.
 
-The README should explicitly surface the extended functionality implemented by the application, including folders, previews, downloads, user-only soft deletion, permanent file/folder deletion, audit logs, refresh tokens, dark mode, Docker support, and tests.
+The README should use the **Fileora** product name and tagline where appropriate.
 
-### Final verification
+The README should explicitly surface implemented extended functionality including:
 
-Perform a clean-environment smoke test covering the complete application journey:
+* Folder management.
+* File previews.
+* File downloads.
+* Permanent file/folder deletion.
+* Administrator user management.
+* Administrator global file management.
+* Audit logs.
+* Refresh-token authentication.
+* Dark mode.
+* Docker support.
+* Automated tests.
 
-1. Configure environment variables.
-2. Install/build or start through the documented method.
-3. Run database migrations.
-4. Initialize the administrator.
-5. Register a user.
-6. Verify email.
-7. Log in.
-8. Upload multiple files.
-9. Browse/search/filter/sort/paginate files.
-10. Inspect extracted content and previews.
-11. Create folders and move files.
-12. Download and permanently delete files, confirming metadata/object removal and reclaimed quota.
-13. Inspect user statistics.
-14. Log in as administrator.
-15. Manage users and roles.
-16. Manage global files.
-17. Inspect admin statistics and audit history.
-18. Verify light/dark theme behavior.
-19. Run the automated test suite.
+Document that:
 
-## Phase 4 completion gate
+* Administrator user deletion is permanent.
+* `User` does not use a `deletedAt` lifecycle field.
+* Current file and folder deletion is permanent.
+* File/folder Trash and restore are not part of the current implementation.
 
-Phase 4 is complete only when:
+Do not document a Trash or restore feature unless it is implemented in a later phase.
 
-- The automated test suite passes consistently.
-- The application can be started from documented clean-setup instructions.
-- Docker configuration works for the intended local workflow.
-- Production frontend, backend, database, email, and the existing Phase 2 Supabase Storage configuration work together without introducing another storage provider.
-- Database migrations can be applied reliably.
-- No known critical authorization or file-access issue remains.
-- README instructions have been verified rather than only written.
-- The complete production smoke-test path succeeds.
+---
+
+### Future extensibility boundary
+
+Do not implement file/folder Trash during this phase.
+
+However, current permanent-deletion behavior should remain explicit enough that a future optional Trash phase can extend deletion semantics without unnecessarily rewriting administrator functionality.
+
+In particular:
+
+* Administrator deletion should remain permanently destructive.
+* Existing storage-removal logic should remain reusable.
+* Existing quota/storage-accounting logic should remain reusable.
+* Existing audit infrastructure should remain reusable.
+* Existing ownership and authorization logic should remain reusable.
+* Permanent file/folder deletion services should be separable from any future soft-delete behavior.
+
+A future Trash phase may introduce separate operations such as:
+
+```ts
+moveFileToTrash()
+restoreFile()
+
+moveFolderToTrash()
+restoreFolder()
+
+emptyTrash()
+```
+
+without changing the meaning of:
+
+```ts
+permanentlyDeleteFile()
+permanentlyDeleteFolder()
+```
+
+Do not implement those future operations now.
+
+---
+
+### Final implementation validation
+
+Before considering the phase complete:
+
+* Remove `deletedAt` from the `User` Prisma model.
+* Apply the corresponding Prisma/database migration.
+* Remove obsolete backend user-soft-deletion logic.
+* Remove obsolete frontend user-soft-deletion logic.
+* Verify no user-soft-delete API or UI remains unintentionally accessible.
+* Build the frontend successfully.
+* Build the backend successfully.
+* Run the automated test suite.
+* Verify administrator user listing, search, pagination, and role editing.
+* Verify permanent administrator user deletion.
+* Verify refresh-token cleanup during permanent user deletion.
+* Verify required user-owned file/folder cleanup during permanent user deletion.
+* Verify Supabase Storage cleanup during permanent user deletion.
+* Verify global administrator file management.
+* Verify administrator permanent file deletion.
+* Verify administrator statistics.
+* Verify administrator audit-history access.
+* Verify normal users cannot call administrator APIs directly.
+* Verify dark mode across important application surfaces.
+* Verify responsive behavior across common viewport sizes.
+* Verify Docker configuration starts the intended services correctly.
+* Review security and reliability.
+* Review important performance paths.
+* Verify README instructions against the completed implementation.
+* Resolve implementation errors discovered during these checks.
+
+---
+
+## Phase 3 completion gate
+
+Phase 3 is complete only when:
+
+* The `User` Prisma model and database table no longer contain `deletedAt`.
+* No backend, frontend, authentication, authorization, or administrative logic depends on user soft-deletion state.
+* User soft deletion and user restoration are not implemented.
+* Administrators can securely list, search, and paginate users.
+* Administrators can edit user roles safely.
+* Administrators can permanently delete users.
+* Permanent user deletion correctly handles active refresh tokens and required dependent state.
+* Permanent user deletion safely removes required user-owned Supabase Storage objects and database records.
+* Unsafe administrator self-deletion is prevented where applicable.
+* Administrators can view files across all users.
+* Administrators can identify file owners.
+* Administrators can search, filter, and paginate global files.
+* Administrators can permanently delete files.
+* Administrator deletion correctly removes required Supabase Storage objects and database records.
+* Normal users are blocked from every administrator API even when calling it directly.
+* Administrator statistics are accurate.
+* Administrator audit history is usable and access-controlled.
+* Important operations emit appropriate audit events.
+* All user-facing Gold Era branding has been replaced with **Fileora**.
+* The tagline **"Your files. Organized your way."** is used consistently where appropriate.
+* The application includes a responsive, theme-compatible footer.
+* No obvious outdated Gold Era branding remains in the user-facing application.
+* Dark mode works across the complete application without obvious unreadable or unthemed areas.
+* User and administrator experiences behave correctly across common viewport sizes.
+* Loading, empty, error, success, and destructive-action states are consistently handled.
+* The automated test suite passes consistently.
+* Critical authentication, authorization, file, folder, user-management, and administrator behavior is covered by tests.
+* Docker configuration works for the intended local workflow.
+* No known critical authorization or file-access issue remains.
+* Important database queries and frontend data-fetching behavior have been reviewed for obvious performance problems.
+* The frontend builds successfully.
+* The backend builds successfully.
+* The README accurately documents the completed application and its setup.
+* File/folder Trash or restore functionality has not been unnecessarily introduced into this phase.
+* No unnecessary architectural restructuring has been introduced during finalization.
+
+---
 
 ## Spec Kit kickoff
 
 ### `/speckit.specify` seed
 
-Make Managing Your Files production-ready and reproducible. The complete application must have automated tests for critical authentication, authorization, file, folder, and administrator behavior; Docker-based local support; secure production configuration; verified deployment behavior; and comprehensive developer documentation. Review security, reliability, and performance across the existing system and close any gaps discovered during verification without changing intended product behavior.
+Complete the administrator and final-quality layer of **Fileora — Your files. Organized your way.**
+
+Simplify user lifecycle handling by removing user soft deletion entirely. Remove `deletedAt` from the `User` Prisma model and database table together with queries, indexes, authentication checks, authorization behavior, API fields, frontend types, UI states, tests, and other code that exists solely to support user soft deletion.
+
+Administrator user deletion should be permanent. Permanent deletion must safely handle active refresh tokens, required dependent database records, user-owned files and folders, associated Supabase Storage objects, and audit requirements. Do not implement user restoration or any deleted-user lifecycle.
+
+Complete secure administrator user management with listing, search, pagination, role editing, permanent deletion, and protection against unsafe administrative actions.
+
+Complete global administrator file management with owner visibility, search, filtering, pagination, metadata inspection, and permanent file deletion. Administrator deletion remains permanently destructive and should reuse the existing Supabase Storage and database cleanup behavior.
+
+Complete the administrator dashboard with total users, total files, total storage usage, most-uploaded file types, and recent uploads. Expose accumulated audit history through a secure administrator-only inspection interface.
+
+Rebrand the existing application from Gold Era to **Fileora**, using the tagline **"Your files. Organized your way."**, and add a responsive footer compatible with light and dark themes.
+
+Complete persistent light/dark/system theming, responsive application-wide interaction polish, loading/error/empty/destructive states, and consistent user and administrator UX.
+
+Finalize the application by adding automated tests for critical authentication, authorization, permanent deletion, file/folder behavior, and administrator functionality; adding Docker support for reproducible execution; reviewing security, reliability, and performance; and producing comprehensive developer documentation.
+
+Do not implement file/folder Trash, soft deletion, restoration, Empty Trash, retention policies, or other recovery workflows during this phase. These may be introduced later as a separate optional feature phase.
+
+Build on the existing architecture and integrations rather than reopening completed configuration or design decisions.
 
 ### `/speckit.plan` constraints
 
-Build on the existing architecture rather than restructuring working feature domains without a demonstrated need. Prioritize integration/API tests for security-critical behavior, targeted unit tests for complex logic, Docker support for reproducible local execution, environment-driven production configuration, verified Prisma migration procedures, verification and documentation of the existing Phase 2 Supabase Storage integration, CORS/auth security, database indexes, React Query cache behavior, and a README whose setup/deployment instructions are validated against a clean run. Do not add, migrate, or replace the object/file-storage provider in Phase 4.
+Reuse the existing authentication, role middleware, Prisma data model, Supabase Storage abstraction, audit service, API conventions, React Query patterns, and UI components rather than creating parallel implementations.
 
----
+Remove `deletedAt` from the `User` model and create the required Prisma migration.
+
+Remove code that:
+
+* Filters users by deletion timestamp.
+* Checks deleted-user state during authentication.
+* Checks deleted-user state during authorization.
+* Exposes deleted-user status through APIs.
+* Displays deleted-user state in the frontend.
+* Implements user restoration or soft deletion.
+
+Do not implement user soft deletion, user restoration, deleted-user states, user retention periods, or scheduled user cleanup.
+
+Administrator user deletion is a permanent operation. Reuse existing refresh-token, file/folder, Supabase Storage, and audit services to safely perform required cleanup rather than creating parallel infrastructure.
+
+Administrator file deletion is also a permanent operation.
+
+Prefer explicit permanent-deletion service names such as:
+
+```ts
+permanentlyDeleteFile()
+permanentlyDeleteFolder()
+permanentlyDeleteUser()
+```
+
+where practical so future deletion behavior remains unambiguous.
+
+Do not implement file/folder Trash, file/folder soft deletion, restore operations, Empty Trash, automatic Trash expiration, scheduled Trash cleanup, retention configuration, or file versioning.
+
+Do not add `deletedAt` fields to File or Folder as part of this phase solely in preparation for future Trash functionality.
+
+A future optional Trash phase should extend the existing permanent-deletion architecture rather than requiring current administrator functionality to be redesigned.
+
+Rebrand user-facing application surfaces from Gold Era to **Fileora**, using the tagline **"Your files. Organized your way."**, and add a responsive theme-compatible footer.
+
+Branding changes should focus on user-facing presentation and documentation. Do not perform unnecessary technical renames of packages, environment variables, database objects, repository identifiers, or other internal identifiers.
+
+Use efficient database aggregation for statistics and server-side pagination/filtering for administrator data sets.
+
+Finish audit-event coverage and implement the administrator audit interface.
+
+Add persistent light/dark/system theming with compatible charts and components.
+
+Prioritize:
+
+* Integration/API tests for security-critical behavior.
+* Targeted unit tests for complex logic.
+* Docker support for reproducible execution.
+* Database indexes where justified.
+* React Query cache behavior.
+* Security and reliability fixes discovered during review.
+* Performance fixes for identifiable problems.
+* Completion of the project README.
+
+Do not restructure working feature domains without a demonstrated need.
+
+Do not create tasks for production environment configuration, CORS/cookie deployment configuration, Prisma production migration execution, administrator bootstrap execution, email-provider production setup, Supabase production setup, or other manual deployment operations that are already configured outside this implementation phase.
 
 # Phase Dependency Summary
 
@@ -727,10 +1107,8 @@ Phase 2
 Complete User File Management + Folders + User Analytics
         ↓
 Phase 3
-Administration + Admin Analytics + Audit UI + Dark Mode + UX Polish
         ↓
-Phase 4
-Tests + Docker + Deployment + Security/Performance Review + Documentation
+Administration + Admin Analytics + Audit UI + Dark Mode + UX Polish + Tests + Docker + Security/Performance Review + Documentation
 ```
 
 Each phase should be considered complete only after its completion gate passes. If implementation uncovers a requirement change, update the relevant specification first and regenerate or reconcile the downstream plan/tasks rather than allowing the implementation to silently diverge from the specification.
