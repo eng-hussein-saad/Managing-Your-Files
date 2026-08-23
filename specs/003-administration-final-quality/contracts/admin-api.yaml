@@ -1,0 +1,444 @@
+openapi: 3.1.0
+info:
+  title: Fileora Administration API
+  version: 0.1.0-phase3
+  description: >-
+    Administrator-only metadata and lifecycle operations. Authentication and
+    ADMIN authorization run before any response data is disclosed. This API
+    deliberately defines no administrator preview or download operation.
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: Admin users
+  - name: Admin files
+  - name: Admin overview
+  - name: Admin audit
+paths:
+  /admin/users:
+    get:
+      tags: [Admin users]
+      summary: Search and page users
+      parameters:
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/UserRole'
+        - $ref: '#/components/parameters/Verified'
+        - $ref: '#/components/parameters/UserSort'
+        - $ref: '#/components/parameters/Direction'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Deterministic page of browser-safe account metadata
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminUserPageEnvelope'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /admin/users/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      tags: [Admin users]
+      summary: Inspect one user's safe account metadata
+      responses:
+        '200':
+          description: User metadata
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminUserEnvelope'}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    delete:
+      tags: [Admin users]
+      summary: Permanently delete a user and required owned data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [expectedUpdatedAt, confirmationEmail]
+              properties:
+                expectedUpdatedAt: {type: string, format: date-time}
+                confirmationEmail:
+                  type: string
+                  format: email
+                  description: Must exactly match the current target email.
+      responses:
+        '204': {description: User and required owned state permanently removed}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /admin/users/{userId}/role:
+    patch:
+      tags: [Admin users]
+      summary: Change role and invalidate all target refresh sessions
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [role, expectedUpdatedAt]
+              properties:
+                role: {$ref: '#/components/schemas/Role'}
+                expectedUpdatedAt: {type: string, format: date-time}
+      responses:
+        '200':
+          description: Updated user metadata; existing refresh sessions invalidated
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminUserEnvelope'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /admin/files:
+    get:
+      tags: [Admin files]
+      summary: Search and page metadata for files across all owners
+      description: Does not grant or return content, preview, download, or signed access.
+      parameters:
+        - $ref: '#/components/parameters/Search'
+        - name: ownerId
+          in: query
+          schema: {type: string, format: uuid}
+        - name: type
+          in: query
+          schema: {$ref: '#/components/schemas/FileType'}
+        - name: uploadedFrom
+          in: query
+          schema: {type: string, format: date}
+        - name: minSizeBytes
+          in: query
+          schema: {type: string, pattern: '^\d+$'}
+        - name: maxSizeBytes
+          in: query
+          schema: {type: string, pattern: '^\d+$'}
+        - name: uploadedBefore
+          in: query
+          schema: {type: string, format: date-time}
+        - name: folder
+          in: query
+          schema: {type: string, enum: [any, root, foldered], default: any}
+        - $ref: '#/components/parameters/FileSort'
+        - $ref: '#/components/parameters/Direction'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Deterministic metadata-only file page
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminFilePageEnvelope'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /admin/files/{fileId}:
+    parameters:
+      - $ref: '#/components/parameters/FileId'
+    get:
+      tags: [Admin files]
+      summary: Inspect metadata for one file
+      responses:
+        '200':
+          description: File metadata without private content capability
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminFileEnvelope'}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    delete:
+      tags: [Admin files]
+      summary: Permanently delete a file's object and record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [expectedUpdatedAt, confirmationOriginalName]
+              properties:
+                expectedUpdatedAt: {type: string, format: date-time}
+                confirmationOriginalName:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  description: Must exactly match the current original name.
+      responses:
+        '204': {description: Stored object and metadata permanently removed}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /admin/statistics:
+    get:
+      tags: [Admin overview]
+      summary: Read current platform statistics
+      responses:
+        '200':
+          description: Exact read-time current-record statistics
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminStatisticsEnvelope'}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /admin/audit-events:
+    get:
+      tags: [Admin audit]
+      summary: Search and page sanitized retained audit events
+      parameters:
+        - $ref: '#/components/parameters/Search'
+        - name: action
+          in: query
+          schema: {type: string, maxLength: 100}
+        - name: entityType
+          in: query
+          schema: {type: string, enum: [USER, REFRESH_TOKEN, FILE, FOLDER]}
+        - name: actorId
+          in: query
+          schema: {type: string, format: uuid}
+        - name: actorState
+          in: query
+          schema: {type: string, enum: [user, deleted, system]}
+        - name: outcome
+          in: query
+          schema: {type: string, enum: [SUCCESS, FAILURE, DENIED]}
+        - name: createdFrom
+          in: query
+          schema: {type: string, format: date-time}
+        - name: createdBefore
+          in: query
+          schema: {type: string, format: date-time}
+        - $ref: '#/components/parameters/Direction'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Newest-first deterministic audit page
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AuditPageEnvelope'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+  parameters:
+    UserId: {name: userId, in: path, required: true, schema: {type: string, format: uuid}}
+    FileId: {name: fileId, in: path, required: true, schema: {type: string, format: uuid}}
+    Search: {name: search, in: query, schema: {type: string, maxLength: 200}}
+    UserRole: {name: role, in: query, schema: {$ref: '#/components/schemas/Role'}}
+    Verified: {name: verified, in: query, schema: {type: boolean}}
+    UserSort: {name: sort, in: query, schema: {type: string, enum: [name, email, role, createdAt], default: createdAt}}
+    FileSort: {name: sort, in: query, schema: {type: string, enum: [name, owner, size, uploadedAt], default: uploadedAt}}
+    Direction: {name: direction, in: query, schema: {type: string, enum: [asc, desc], default: desc}}
+    Page: {name: page, in: query, schema: {type: integer, minimum: 1, default: 1}}
+    PageSize: {name: pageSize, in: query, schema: {type: integer, enum: [5, 10, 20], default: 20}}
+  schemas:
+    Role: {type: string, enum: [USER, ADMIN]}
+    FileType: {type: string, enum: [pdf, text, image, document]}
+    PageMeta:
+      type: object
+      additionalProperties: false
+      required: [page, pageSize, totalItems, totalPages]
+      properties:
+        page: {type: integer, minimum: 1}
+        pageSize: {type: integer, minimum: 1}
+        totalItems: {type: integer, minimum: 0}
+        totalPages: {type: integer, minimum: 0}
+    AdminUser:
+      type: object
+      additionalProperties: false
+      required: [id, name, email, role, isEmailVerified, createdAt, updatedAt]
+      properties:
+        id: {type: string, format: uuid}
+        name: {type: string}
+        email: {type: string, format: email}
+        role: {$ref: '#/components/schemas/Role'}
+        isEmailVerified: {type: boolean}
+        createdAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time, description: Mutation precondition version.}
+    OwnerSummary:
+      type: object
+      additionalProperties: false
+      required: [id, name, email]
+      properties:
+        id: {type: string, format: uuid}
+        name: {type: string}
+        email: {type: string, format: email}
+    FolderSummary:
+      type: object
+      additionalProperties: false
+      required: [id, name]
+      properties:
+        id: {type: string, format: uuid}
+        name: {type: string}
+    AdminFile:
+      type: object
+      additionalProperties: false
+      required: [id, owner, originalName, mimeType, type, sizeBytes, folder, uploadedAt, updatedAt]
+      properties:
+        id: {type: string, format: uuid}
+        owner: {$ref: '#/components/schemas/OwnerSummary'}
+        originalName: {type: string}
+        mimeType: {type: string}
+        type: {$ref: '#/components/schemas/FileType'}
+        sizeBytes: {type: string, pattern: '^\d+$'}
+        folder: {oneOf: [{$ref: '#/components/schemas/FolderSummary'}, {type: 'null'}]}
+        uploadedAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time, description: Mutation precondition version.}
+    AuditActor:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [kind, id, name, email]
+          properties:
+            kind: {const: user}
+            id: {type: string, format: uuid}
+            name: {type: string}
+            email: {type: string, format: email}
+        - type: object
+          additionalProperties: false
+          required: [kind, label]
+          properties:
+            kind: {const: deleted}
+            label: {const: Deleted user}
+        - type: object
+          additionalProperties: false
+          required: [kind, label]
+          properties:
+            kind: {const: system}
+            label: {const: System}
+    AuditEvent:
+      type: object
+      additionalProperties: false
+      required: [id, actor, action, entityType, entityId, metadata, createdAt]
+      properties:
+        id: {type: string, format: uuid}
+        actor: {$ref: '#/components/schemas/AuditActor'}
+        action: {type: string}
+        entityType: {oneOf: [{type: string, enum: [USER, REFRESH_TOKEN, FILE, FOLDER]}, {type: 'null'}]}
+        entityId: {oneOf: [{type: string}, {type: 'null'}]}
+        metadata:
+          type: object
+          additionalProperties: false
+          properties:
+            outcome: {type: string, enum: [SUCCESS, FAILURE, DENIED]}
+            reasonCode: {type: string}
+            requestId: {type: string}
+        createdAt: {type: string, format: date-time}
+    AdminStatistics:
+      type: object
+      additionalProperties: false
+      required: [totalUsers, totalFiles, storedBytes, typeDistribution, recentUploads, computedAt]
+      properties:
+        totalUsers: {type: integer, minimum: 0}
+        totalFiles: {type: integer, minimum: 0}
+        storedBytes: {type: string, pattern: '^\d+$'}
+        typeDistribution:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [type, count]
+            properties:
+              type: {$ref: '#/components/schemas/FileType'}
+              count: {type: integer, minimum: 0}
+        recentUploads:
+          type: array
+          maxItems: 10
+          items: {$ref: '#/components/schemas/AdminFile'}
+        computedAt: {type: string, format: date-time}
+    AdminUserEnvelope:
+      type: object
+      additionalProperties: false
+      required: [success, data]
+      properties: {success: {const: true}, data: {$ref: '#/components/schemas/AdminUser'}}
+    AdminUserPageEnvelope:
+      type: object
+      additionalProperties: false
+      required: [success, data, meta]
+      properties:
+        success: {const: true}
+        data: {type: array, items: {$ref: '#/components/schemas/AdminUser'}}
+        meta: {$ref: '#/components/schemas/PageMeta'}
+    AdminFileEnvelope:
+      type: object
+      additionalProperties: false
+      required: [success, data]
+      properties: {success: {const: true}, data: {$ref: '#/components/schemas/AdminFile'}}
+    AdminFilePageEnvelope:
+      type: object
+      additionalProperties: false
+      required: [success, data, meta]
+      properties:
+        success: {const: true}
+        data: {type: array, items: {$ref: '#/components/schemas/AdminFile'}}
+        meta: {$ref: '#/components/schemas/PageMeta'}
+    AdminStatisticsEnvelope:
+      type: object
+      additionalProperties: false
+      required: [success, data]
+      properties: {success: {const: true}, data: {$ref: '#/components/schemas/AdminStatistics'}}
+    AuditPageEnvelope:
+      type: object
+      additionalProperties: false
+      required: [success, data, meta]
+      properties:
+        success: {const: true}
+        data: {type: array, items: {$ref: '#/components/schemas/AuditEvent'}}
+        meta: {$ref: '#/components/schemas/PageMeta'}
+    ErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required: [success, error]
+      properties:
+        success: {const: false}
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum: [VALIDATION_FAILED, AUTH_REQUIRED, AUTH_FORBIDDEN, RESOURCE_NOT_FOUND, RESOURCE_CONFLICT, SERVICE_UNAVAILABLE]
+            message: {type: string}
+            fields: {type: array, items: {type: object, required: [field, message], properties: {field: {type: string}, message: {type: string}}}}
+            requestId: {type: string}
+  responses:
+    ValidationError:
+      description: Invalid query, identifier, body, date range, or confirmation
+      content: {application/json: {schema: {$ref: '#/components/schemas/ErrorEnvelope'}}}
+    Unauthenticated:
+      description: Missing or invalid authentication
+      content: {application/json: {schema: {$ref: '#/components/schemas/ErrorEnvelope'}}}
+    Forbidden:
+      description: Authenticated caller is not an administrator or action violates an admin safeguard
+      content: {application/json: {schema: {$ref: '#/components/schemas/ErrorEnvelope'}}}
+    NotFound:
+      description: Requested current resource does not exist
+      content: {application/json: {schema: {$ref: '#/components/schemas/ErrorEnvelope'}}}
+    Conflict:
+      description: Target changed since confirmation or another invariant changed; reload and reconfirm
+      content: {application/json: {schema: {$ref: '#/components/schemas/ErrorEnvelope'}}}
+    Unavailable:
+      description: Required storage cleanup could not safely complete; retry is allowed
+      content: {application/json: {schema: {$ref: '#/components/schemas/ErrorEnvelope'}}}

@@ -13,6 +13,11 @@
 ### Session 2026-08-23
 
 - Q: May Phase 3 update the canonical database schema to remove the user soft-deletion field? → A: Yes. Update the schema to match the new Phase 3 design.
+- Q: May administrators preview or download file contents owned by other users, or is global file administration limited to metadata and permanent deletion? → A: Administrators are limited to metadata and permanent deletion; they cannot preview or download another user's file contents.
+- Q: When an administrator changes a user's role, how must that change affect the user's existing signed-in sessions? → A: Invalidate all existing sessions; the user must sign in again under the new role.
+- Q: What should happen when two administrators concurrently change or delete the same user account? → A: The first valid operation succeeds; later stale operations receive a conflict and require refreshed confirmation.
+- Q: After an audit event's actor account is permanently deleted, how should the actor appear in audit history? → A: Show "Deleted user" without retaining the actor's name or email snapshot.
+- Q: If permanent user deletion removes some stored objects but then fails before cleanup finishes, what must happen on a later retry? → A: Allow an idempotent retry; securely absent objects count as cleaned, and remaining objects are removed before database deletion completes.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -27,11 +32,12 @@ An administrator finds users through a searchable, paginated directory, reviews 
 **Acceptance Scenarios**:
 
 1. **Given** an authenticated administrator and enough users for multiple pages, **When** the administrator searches or changes page, **Then** the directory returns the correct deterministic subset and relevant metadata without exposing credentials, tokens, verification codes, or other secrets.
-2. **Given** an eligible target user, **When** an administrator confirms a valid role change, **Then** the new role governs subsequent authorization and the operation attempts to record a safe audit event.
+2. **Given** an eligible target user with one or more active sessions, **When** an administrator confirms a valid role change, **Then** every existing session is invalidated, the user must sign in again under the new role, and the operation attempts to record a safe audit event.
 3. **Given** a target user with active refresh tokens, verification records, nested folders, files, and stored objects, **When** an administrator confirms permanent deletion, **Then** required stored objects and dependent records are removed, active sessions can no longer refresh, the user record is removed, and no recovery or restoration state is created.
-4. **Given** required external file cleanup cannot be completed safely, **When** permanent user deletion is attempted, **Then** the user is not reported as deleted, the administrator receives a predictable non-sensitive failure, and the remaining state is left safe or compensated and operationally traceable.
+4. **Given** required external file cleanup cannot be completed safely after some stored objects were removed, **When** permanent user deletion fails and is retried, **Then** the user is not reported as deleted after the failed attempt, securely absent objects count as cleaned, remaining objects are removed, and database deletion completes only after required cleanup succeeds.
 5. **Given** an administrator targets their own account or role, or an action would leave the platform with no administrator, **When** the destructive change is submitted, **Then** the operation is rejected with a clear explanation.
 6. **Given** an authenticated normal user, **When** they call any user-administration operation directly, **Then** access is denied without disclosing administrative data or changing state.
+7. **Given** two administrators act on the same user from the same earlier account state, **When** the first valid role change or deletion succeeds and the second submits a stale operation, **Then** the second receives a conflict, no additional state changes, and must reload and confirm again against the current state.
 
 ---
 
@@ -49,6 +55,7 @@ An administrator can locate files owned by any user, see ownership and relevant 
 2. **Given** an administrator selects a file, **When** they confirm permanent deletion, **Then** the stored object and file record are removed, storage totals remain consistent, and a safe audit event is attempted.
 3. **Given** required stored-object removal fails, **When** deletion is attempted, **Then** the file is not reported as permanently deleted, no unauthorized access is introduced, and the administrator receives a predictable non-sensitive error.
 4. **Given** a normal user, **When** they call global file-administration operations directly, **Then** access is denied and no other user's metadata or content is disclosed.
+5. **Given** an administrator viewing a file owned by another user, **When** they attempt to preview or download its contents through administrator capabilities, **Then** access is denied while metadata inspection and permanent deletion remain available.
 
 ---
 
@@ -64,7 +71,7 @@ An administrator sees accurate platform totals and recent activity, and inspects
 
 1. **Given** a known platform data set, **When** an administrator opens the dashboard, **Then** total users, total files, current stored bytes, most-uploaded file types, and recent uploads match the current records and stored-file semantics.
 2. **Given** accumulated audit events, **When** an administrator searches, filters, or paginates audit history, **Then** results show timestamp, actor when retained, action, entity type, target identifier, and safe useful metadata in deterministic order.
-3. **Given** an audit event whose actor was later permanently deleted, **When** an administrator inspects history, **Then** the event remains usable without restoring the deleted user or exposing sensitive data.
+3. **Given** an audit event whose actor was later permanently deleted, **When** an administrator inspects history, **Then** the actor appears as "Deleted user," the event's action, target, and timestamp remain usable, and no actor name or email snapshot is retained.
 4. **Given** a normal user, **When** they request statistics or audit history directly, **Then** access is denied and no operational information is disclosed.
 
 ---
@@ -135,7 +142,7 @@ A maintainer can set up, run, test, review, and troubleshoot the full applicatio
 
 ### Edge Cases
 
-- A permanent user deletion encounters one or more unavailable stored objects, a storage-provider timeout, or a database failure after partial cleanup.
+- A permanent user deletion encounters one or more unavailable stored objects, a storage-provider timeout, or a database failure after partial cleanup; the retained user and remaining records permit an idempotent retry that accepts securely absent objects as already cleaned.
 - An administrator attempts to delete or demote themselves, delete or demote the last remaining administrator, assign an unsupported role, or act on a user changed concurrently.
 - A deleted user is the actor referenced by retained audit history; the history remains safe and understandable with no live user relationship required.
 - A global file query combines search, owner, type, size, and date filters, requests an empty or out-of-range page, or encounters records changed between page requests.
@@ -156,18 +163,18 @@ A maintainer can set up, run, test, review, and troubleshoot the full applicatio
 - **FR-002**: The application MUST NOT provide user soft deletion, deleted-user states, restoration, retention periods, scheduled deletion, or account recovery after administrator deletion.
 - **FR-003**: Only authenticated administrators MUST be able to list, search, paginate, inspect, change roles for, or permanently delete users; all such authorization MUST be enforced before data is disclosed or changed.
 - **FR-004**: User listings MUST support server-evaluated search and deterministic pagination and MUST expose only relevant non-sensitive account metadata.
-- **FR-005**: Role changes MUST accept only supported role transitions, take effect for subsequent authorization decisions, and reject changes to the acting administrator or changes that would leave no administrator.
+- **FR-005**: Role changes MUST accept only supported role transitions, invalidate all existing sessions belonging to the changed user, require that user to sign in again under the new role, and reject changes to the acting administrator or changes that would leave no administrator.
 - **FR-006**: Permanent user deletion MUST require an explicit confirmation that identifies the account and irreversible consequences.
 - **FR-007**: Permanent user deletion MUST revoke or remove active refresh tokens, remove applicable verification records and dependent records, remove user-owned files and folders, remove associated stored objects, and finally remove the user record without creating recoverable user state.
-- **FR-008**: Permanent user deletion MUST use ordering, atomic database changes, and reasonable compensation so that a reported success leaves no required user-owned database records or stored objects and a failure does not expose content or falsely report completion.
-- **FR-009**: The application MUST reject administrator self-deletion and any deletion that would leave the platform without an administrator.
+- **FR-008**: Permanent user deletion MUST use ordering, atomic database changes, and reasonable compensation so that a reported success leaves no required user-owned database records or stored objects and a failure does not expose content or falsely report completion; after partial stored-object cleanup, the user and required database records MUST remain available for an idempotent retry that treats securely absent objects as cleaned and removes all remaining objects before database deletion completes.
+- **FR-009**: The application MUST reject administrator self-deletion and any deletion that would leave the platform without an administrator; role-change and deletion safeguards MUST be evaluated atomically against current state, and a stale concurrent operation MUST return a conflict without changing state or being retried automatically.
 - **FR-010**: Successful role changes and permanent user deletions MUST attempt to create sanitized audit events; failure to record an audit event MAY allow the primary operation to succeed but MUST produce sanitized operational evidence.
 
 #### Global File Administration
 
-- **FR-011**: Only authenticated administrators MUST be able to access global file listings, metadata inspection, statistics, or permanent file deletion.
+- **FR-011**: Only authenticated administrators MUST be able to access global file listings, metadata inspection, statistics, or permanent file deletion; these administrator capabilities MUST NOT grant preview or download access to another user's file contents.
 - **FR-012**: Global file listings MUST support server-evaluated search, useful filters, deterministic sorting, and pagination across all owners.
-- **FR-013**: Each global file result MUST identify its owner and show relevant metadata including original name, type, size, folder context when present, and upload timestamp without exposing private content, credentials, or storage access secrets.
+- **FR-013**: Each global file result MUST identify its owner and show relevant metadata including original name, type, size, folder context when present, and upload timestamp without exposing private content, content-access links, credentials, or storage access secrets.
 - **FR-014**: Administrator file deletion MUST be explicitly permanent and require confirmation identifying the file, owner, and irreversible consequence.
 - **FR-015**: Permanent administrator file deletion MUST reuse the established permanent cleanup semantics, remove the stored object and corresponding record, keep storage accounting consistent, and attempt a sanitized audit event.
 - **FR-016**: If required permanent file cleanup cannot complete safely, the application MUST return a predictable non-sensitive error, MUST NOT report success, and MUST use reasonable compensation or sanitized operational logging for any partial result.
@@ -178,9 +185,9 @@ A maintainer can set up, run, test, review, and troubleshoot the full applicatio
 - **FR-018**: The administrator dashboard MUST show total current users, total current files, total bytes consumed by currently stored file objects, most-uploaded file types, and recent uploads.
 - **FR-019**: Dashboard figures MUST use clearly defined current-record semantics and remain consistent after successful uploads and permanent deletions.
 - **FR-020**: Audit history MUST be visible only to authenticated administrators and MUST support deterministic pagination plus search or filtering by useful operational fields including action, entity type, actor when available, and time range.
-- **FR-021**: Audit entries shown to administrators MUST include timestamp, action, entity type and target when applicable, actor information when retained, and only safe useful metadata.
+- **FR-021**: Audit entries shown to administrators MUST include timestamp, action, entity type and target when applicable, actor information when the actor still exists, and only safe useful metadata.
 - **FR-022**: Important successful authentication, upload, download, permanent file deletion, permanent folder deletion, folder mutation, role change, permanent user deletion, and other administrator operations MUST attempt to emit centralized audit events.
-- **FR-023**: Audit history MUST remain usable after an actor is permanently deleted and MUST be retained without automated deletion during this phase.
+- **FR-023**: Audit history MUST remain usable after an actor is permanently deleted, MUST display that actor as "Deleted user" without retaining a name or email snapshot, and MUST be retained without automated deletion during this phase.
 - **FR-024**: Audit records, application responses, and operational errors MUST NOT expose passwords, tokens, verification codes, private file contents, storage credentials, or unnecessary implementation details.
 
 #### Branding, Theme, and Experience Quality
@@ -219,12 +226,12 @@ A maintainer can set up, run, test, review, and troubleshoot the full applicatio
 ### Key Entities
 
 - **User**: An account with identity, verification state, role, and timestamps. Under the approved Phase 3 design it has no soft-deletion field or deleted-user lifecycle; permanent deletion removes the account after required cleanup.
-- **Refresh Session**: A revocable authentication session belonging to a user that must become unusable when that user is permanently deleted.
+- **Refresh Session**: A revocable authentication session belonging to a user that must become unusable when that user is permanently deleted or their role is changed.
 - **Verification Record**: Time-bound account-verification state belonging to a user and removed when dependency cleanup requires it.
 - **File**: Metadata for one user-owned stored object, including owner, optional folder, original name, type, size, content availability, and timestamps; administrator deletion is permanently destructive.
 - **Folder**: A user-owned hierarchical container whose relationships and contained files must be resolved safely during permanent user deletion.
 - **Stored Object**: The private binary content corresponding to a file record; it must not remain orphaned after a reported successful permanent deletion.
-- **Audit Event**: A retained, sanitized record of an important successful operation with actor when available, action, target, timestamp, and safe metadata; it remains useful if the actor account is later removed.
+- **Audit Event**: A retained, sanitized record of an important successful operation with actor when available, action, target, timestamp, and safe metadata; after the actor account is removed, it uses a generic "Deleted user" presentation without retaining the actor's name or email snapshot.
 - **Theme Preference**: A browser-persisted selection of light, dark, or system behavior.
 - **Platform Statistics Snapshot**: A read-time operational view of current user count, file count, stored bytes, type distribution, and recent uploads rather than a separate lifecycle record.
 
@@ -242,7 +249,7 @@ A maintainer can set up, run, test, review, and troubleshoot the full applicatio
 
 - **SC-001**: In authorization tests, 100% of administrator endpoints reject unauthenticated callers and authenticated normal users without disclosing administrator-only data.
 - **SC-002**: In a seeded deletion scenario containing active sessions, verification records, nested folders, files, and stored objects, a successful permanent user deletion leaves zero required user-owned database records, zero associated stored objects, and zero usable refresh sessions.
-- **SC-003**: In failure-injection scenarios for required storage cleanup, 100% of affected permanent user and file deletions avoid reporting false success and leave no newly unauthorized content exposure.
+- **SC-003**: In failure-injection scenarios for required storage cleanup, 100% of affected permanent user and file deletions avoid reporting false success and leave no newly unauthorized content exposure; every retried partial user deletion completes after all remaining objects are removed while already-securely-absent objects are accepted as cleaned.
 - **SC-004**: Administrator user and file directories return the correct search/filter result counts and deterministic page contents for data sets of at least 1,000 users and 10,000 files, with 95% of tested interactions presenting the requested page within 2 seconds under the agreed test environment.
 - **SC-005**: Dashboard totals and distributions match the seeded source data exactly before and after representative uploads and permanent deletions, including byte totals and recent-upload ordering.
 - **SC-006**: 100% of tested audit-history requests from normal users are denied, while administrators can locate a known event by supported filters in no more than three interactions.
