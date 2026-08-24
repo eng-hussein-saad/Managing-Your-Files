@@ -1097,6 +1097,912 @@ Do not restructure working feature domains without a demonstrated need.
 
 Do not create tasks for production environment configuration, CORS/cookie deployment configuration, Prisma production migration execution, administrator bootstrap execution, email-provider production setup, Supabase production setup, or other manual deployment operations that are already configured outside this implementation phase.
 
+# Phase 4 — Complete UI Redesign & Design System Migration
+
+## Objective
+
+Replace the existing Fileora frontend presentation with the approved redesigned interface while preserving the completed application functionality, business rules, authentication architecture, authorization behavior, API contracts, React Query behavior, and backend integrations established in Phases 1–3.
+
+The redesign has already been defined in:
+
+```text
+fiora-app.html
+```
+
+**`fiora-app.html` is the single source of truth for the new UI design and responsive behavior.**
+
+The HTML design already includes approved responsive layouts for:
+
+* Desktop.
+* Tablet.
+* Mobile.
+
+Phase 4 is primarily a frontend implementation and migration phase. Its purpose is to translate the approved HTML design into the existing Next.js application using the established frontend architecture and required technology stack.
+
+This phase must not redesign backend architecture or silently change application behavior merely to accommodate the new presentation.
+
+---
+
+## Design source of truth
+
+The file:
+
+```text
+fiora-app.html
+```
+
+is the authoritative reference for the new Fileora visual design.
+
+It should be treated as the single source of truth for areas such as:
+
+* Overall visual language.
+* Application layout.
+* Page composition.
+* Sidebar and navigation presentation.
+* Header design.
+* Typography.
+* Colors.
+* Spacing.
+* Borders.
+* Border radii.
+* Shadows.
+* Cards.
+* Tables.
+* Buttons.
+* Inputs.
+* Search controls.
+* Filters.
+* File/folder presentation.
+* Dashboard presentation.
+* Administrator interfaces.
+* Dialog presentation.
+* Empty states.
+* Visual hierarchy.
+* Desktop responsive behavior.
+* Tablet responsive behavior.
+* Mobile responsive behavior.
+* Light/dark theme presentation where represented.
+* Other visual and interaction patterns demonstrated by the approved design.
+
+Do not preserve existing UI styling or responsive behavior merely because it is already implemented if it conflicts with `fiora-app.html`.
+
+Where the existing frontend and `fiora-app.html` disagree visually or responsively, **`fiora-app.html` takes precedence**.
+
+However, `fiora-app.html` is the source of truth for **design and presentation, not application business behavior**.
+
+Existing completed specifications and implementation remain authoritative for:
+
+* Authentication behavior.
+* BFF authentication architecture.
+* Access-token handling.
+* Refresh-token handling.
+* Authorization.
+* User/admin roles.
+* API contracts.
+* File ownership.
+* Folder ownership.
+* Upload behavior.
+* File/folder operations.
+* Permanent deletion semantics.
+* Supabase Storage behavior.
+* Audit behavior.
+* Pagination semantics.
+* Search/filter/sort behavior.
+* Validation.
+* Security rules.
+* Administrator capabilities.
+* Other completed application requirements.
+
+If the design does not explicitly display an existing required state or action, the functionality must not be removed. Instead, integrate it into the new design using the closest appropriate visual and responsive patterns already established by `fiora-app.html`.
+
+---
+
+## Scope
+
+### Design-system extraction
+
+Analyze the complete `fiora-app.html` before rewriting individual application pages.
+
+Identify and implement its reusable visual system, including conventions for:
+
+* Typography hierarchy.
+* Application colors.
+* Background surfaces.
+* Card styles.
+* Border styles.
+* Radius scale.
+* Shadow treatment.
+* Spacing.
+* Buttons.
+* Icon buttons.
+* Form controls.
+* Search inputs.
+* Select/filter controls.
+* Badges.
+* Status indicators.
+* Tables.
+* File/folder rows or cards.
+* Dropdown menus.
+* Dialogs.
+* Tooltips where applicable.
+* Pagination.
+* Tabs where applicable.
+* Skeleton/loading states.
+* Empty states.
+* Error presentation.
+* Toast presentation.
+* Sidebar navigation.
+* Mobile navigation.
+* Page headers.
+* Dashboard statistic cards.
+* Chart containers.
+
+Translate these patterns into reusable Next.js/React/Tailwind components rather than copying large sections of prototype markup independently into individual routes.
+
+The implementation should reproduce the approved design while remaining maintainable within the existing application architecture.
+
+---
+
+### Application shell redesign
+
+Replace the current application shell with the structure represented by `fiora-app.html`.
+
+This includes, where represented by the approved design:
+
+* Main application navigation.
+* Sidebar.
+* Top navigation/header.
+* Page content container.
+* Active navigation states.
+* User/profile controls.
+* Administrator navigation.
+* Theme controls.
+* Fileora branding.
+* Desktop navigation behavior.
+* Tablet navigation behavior.
+* Mobile navigation behavior.
+
+Preserve appropriate separation between:
+
+* Public/authentication pages.
+* Authenticated user pages.
+* Administrator pages.
+
+Do not weaken route protection or authorization during UI restructuring.
+
+---
+
+### Authentication UI redesign
+
+Migrate the existing authentication functionality into the approved visual language.
+
+Apply the new design to:
+
+* Registration.
+* Login.
+* Email verification.
+* Resend verification flow.
+* Profile.
+* Logout interactions.
+* Invalid authentication states.
+* Expired-session states.
+* Unauthorized states.
+* Forbidden states.
+
+Preserve the Phase 1 authentication architecture and behavior.
+
+Do not redesign:
+
+* The BFF authentication model.
+* Express authentication responsibilities.
+* Access-token storage.
+* Refresh-token storage.
+* Refresh rotation.
+* Refresh revocation.
+* Authentication API contracts.
+
+unless an actual implementation defect is discovered.
+
+Authentication screens should reproduce the desktop, tablet, and mobile behavior established by `fiora-app.html`.
+
+---
+
+### User dashboard redesign
+
+Reimplement the user dashboard using the design patterns established by `fiora-app.html`.
+
+The dashboard must continue exposing:
+
+* Total uploaded files.
+* Storage usage.
+* File-type distribution.
+* Upload history.
+
+Charts and statistics should visually match the approved design while continuing to consume the existing statistics APIs.
+
+Ensure dashboard layouts and charts reproduce the intended desktop, tablet, and mobile behavior.
+
+Charts must remain usable in supported themes.
+
+---
+
+### Files and folders redesign
+
+Apply the approved Fileora design to the complete file-management experience.
+
+This includes:
+
+* My Files.
+* File listing.
+* Folder listing.
+* Folder navigation.
+* Breadcrumbs.
+* Search.
+* Filtering.
+* Sorting.
+* Pagination.
+* File/folder actions.
+* File details.
+* File metadata.
+* Extracted content.
+* File preview.
+* Image preview.
+* Download actions.
+* File deletion.
+* Folder creation.
+* Folder rename.
+* Folder deletion.
+* Moving files between folders.
+* Empty states.
+* Loading states.
+* Error states.
+
+Existing server-driven search, filtering, sorting, and pagination behavior must be preserved.
+
+Existing ownership and authorization behavior must not change.
+
+Desktop, tablet, and mobile file/folder layouts must follow the responsive behavior represented by `fiora-app.html`.
+
+---
+
+### Upload experience redesign
+
+Reimplement the upload experience according to the approved design while preserving the established upload functionality.
+
+Continue supporting:
+
+* Drag-and-drop uploading.
+* File picker uploading.
+* Multiple files.
+* Per-file progress.
+* Client-side validation.
+* Backend authoritative validation.
+* Upload failure handling.
+* File-size restrictions.
+* File-type restrictions.
+* Successful upload feedback.
+
+The new upload presentation may reorganize these interactions visually, but it must not remove existing functionality.
+
+The upload interface must follow the desktop, tablet, and mobile behavior established by `fiora-app.html`.
+
+---
+
+### File details and preview redesign
+
+Update file details and preview surfaces to match the new UI.
+
+Continue supporting appropriate presentation of:
+
+* Filename.
+* MIME/file type.
+* File size.
+* Upload date.
+* Folder/location.
+* Extracted content.
+* Preview.
+* Download.
+* Permanent deletion.
+
+Supported image/document/text previews and unsupported-preview states must continue working.
+
+File details and preview layouts must adapt according to the responsive patterns established by `fiora-app.html`.
+
+---
+
+### Administrator interface redesign
+
+Apply the approved design language consistently to all administrator functionality.
+
+#### User management
+
+Preserve:
+
+* User listing.
+* Search.
+* Pagination.
+* User metadata.
+* Role editing.
+* Permanent user deletion.
+* Required confirmation flows.
+* Administrator self-deletion protection.
+
+#### Global file management
+
+Preserve:
+
+* Global file listing.
+* File-owner visibility.
+* Search.
+* Filtering.
+* Pagination.
+* File metadata.
+* Permanent administrator deletion.
+
+#### Admin dashboard
+
+Preserve:
+
+* Total users.
+* Total files.
+* Total storage usage.
+* Most-uploaded file types.
+* Recent uploads.
+
+#### Audit interface
+
+Preserve:
+
+* Audit history.
+* Acting user.
+* Action.
+* Entity type.
+* Entity identifier where applicable.
+* Timestamp.
+* Safe metadata.
+* Search/filter/pagination where already implemented.
+
+Administrator authorization must remain enforced by the backend independently of the redesigned frontend.
+
+Administrator layouts, tables, controls, dashboards, and navigation must reproduce the desktop, tablet, and mobile presentation established by `fiora-app.html`.
+
+---
+
+### Responsive implementation
+
+Implement the responsive behavior already defined in `fiora-app.html`.
+
+The approved HTML design includes completed responsive layouts for:
+
+* Desktop.
+* Tablet.
+* Mobile.
+
+The Next.js implementation should reproduce those layouts and transitions faithfully rather than independently redesigning responsive behavior.
+
+Responsive implementation should preserve the behavior demonstrated by `fiora-app.html` for areas such as:
+
+* Sidebar/navigation.
+* Headers.
+* Page layouts.
+* Tables.
+* File and folder listings.
+* Dashboard statistics.
+* Charts.
+* Search controls.
+* Filtering controls.
+* Page actions.
+* Dialogs.
+* Forms.
+* File previews.
+* Authentication pages.
+* Administrator interfaces.
+* Spacing.
+* Content density.
+* Grid changes.
+* Component stacking.
+* Component rearrangement.
+* Mobile-specific navigation or controls where present.
+
+Do not treat tablet or mobile layouts as merely scaled-down versions of desktop.
+
+Do not invent an alternative responsive system when `fiora-app.html` already specifies the intended behavior.
+
+When translating the prototype into React/Tailwind, inspect how each relevant component changes between desktop, tablet, and mobile and reproduce those changes using maintainable responsive components and breakpoints.
+
+If an existing application feature or state is not represented in `fiora-app.html`, adapt it using the responsive patterns established by the closest equivalent design elements.
+
+---
+
+### Light and dark themes
+
+Preserve the completed theme functionality from Phase 3.
+
+The redesigned application must continue supporting:
+
+* Light mode.
+* Dark mode.
+* System preference.
+* Persisted theme preference.
+
+All redesigned components must be reviewed in both light and dark modes, including:
+
+* Navigation.
+* Cards.
+* Tables.
+* Forms.
+* Dialogs.
+* File previews.
+* Charts.
+* Empty states.
+* Loading states.
+* Administrator interfaces.
+
+If `fiora-app.html` defines specific light/dark theme treatments, those treatments should guide the implementation.
+
+Where an application state is absent from the prototype, extend the same theme language rather than falling back to legacy styling.
+
+---
+
+### Motion and interaction behavior
+
+Use Framer Motion where useful to reproduce or enhance interactions implied by the approved design.
+
+Motion should remain focused and subtle.
+
+Potential areas include:
+
+* Page transitions.
+* Sidebar transitions.
+* Dialog transitions.
+* Dropdowns.
+* Upload interactions.
+* Hover/press feedback.
+* Empty-state transitions.
+* File/folder interactions.
+
+Do not introduce excessive animation that negatively affects responsiveness, usability, or performance.
+
+---
+
+### Loading, empty, error, and feedback states
+
+Ensure every important asynchronous redesigned surface has appropriate states.
+
+These should include:
+
+* Loading skeletons.
+* Empty states.
+* Error states.
+* Validation feedback.
+* Success feedback.
+* Toast notifications.
+* Disabled/submitting states.
+* Destructive-operation confirmation.
+* Retry behavior where appropriate.
+
+If `fiora-app.html` does not contain a particular required application state, create that state using the same design language rather than falling back to the old UI.
+
+These states must also behave appropriately across desktop, tablet, and mobile.
+
+---
+
+### Accessibility and interaction quality
+
+The redesign must retain or improve basic accessibility.
+
+Review:
+
+* Semantic HTML.
+* Form labels.
+* Keyboard navigation.
+* Focus visibility.
+* Dialog focus behavior.
+* Button labeling.
+* Icon-only actions.
+* Accessible names.
+* Color contrast.
+* Disabled states.
+* Error messaging.
+* Responsive touch targets.
+
+Do not sacrifice accessibility solely to achieve closer visual similarity to the prototype.
+
+---
+
+### Frontend architecture
+
+Implement the new design within the existing frontend architecture.
+
+Prefer:
+
+* Reusable components.
+* Shared design primitives.
+* Existing React Query hooks.
+* Existing Axios infrastructure.
+* Existing authentication context/state.
+* Existing route structure where practical.
+* Existing domain logic.
+* Existing API clients.
+* Existing validation logic where still appropriate.
+
+Refactoring frontend components is expected where necessary to implement the redesigned system cleanly.
+
+However, do not create duplicate business logic solely because the new design organizes content differently.
+
+Maintain a clear separation where practical:
+
+```text
+Presentation
+     ↓
+Application hooks/state
+     ↓
+API/data layer
+```
+
+The redesign should change presentation aggressively while changing application behavior conservatively.
+
+---
+
+### Legacy UI cleanup
+
+After equivalent functionality has been migrated to the new design:
+
+* Remove obsolete components.
+* Remove obsolete layout components.
+* Remove unused Tailwind classes/styles.
+* Remove unused design tokens.
+* Remove abandoned UI utilities.
+* Remove obsolete assets.
+* Remove unused imports.
+* Remove dead frontend code created by the old visual system.
+
+Do not retain two parallel UI systems unless a temporary migration requirement makes it unavoidable.
+
+Do not remove application logic solely because an old UI component was its previous entry point.
+
+---
+
+### Branding consistency
+
+Ensure the redesigned interface consistently uses:
+
+**Fileora**
+
+and:
+
+**Your files. Organized your way.**
+
+Remove remaining visible references to previous application branding.
+
+Preserve the Phase 3 rule that internal technical identifiers do not need to be renamed solely for branding purposes.
+
+---
+
+## Explicit non-goals
+
+Phase 4 must not intentionally introduce:
+
+* New backend architecture.
+* New authentication architecture.
+* Different refresh-token behavior.
+* Different authorization rules.
+* Different file ownership behavior.
+* Different folder ownership behavior.
+* Different permanent-deletion semantics.
+* File/folder Trash.
+* File/folder soft deletion.
+* Restore functionality.
+* User soft deletion.
+* New storage providers.
+* Supabase Auth.
+* New database architecture.
+* API redesign solely for UI convenience.
+* Major unrelated performance optimization.
+* New product features not represented by existing requirements.
+
+A backend change is acceptable only when an actual defect or unavoidable frontend integration requirement is discovered.
+
+Such changes should remain minimal and preserve established behavior.
+
+---
+
+## Functional regression requirements
+
+The redesign must not be considered complete based only on visual similarity.
+
+Existing functionality must continue working after migration.
+
+Verify at minimum:
+
+### Authentication
+
+* Registration.
+* Login.
+* Email verification.
+* Resend verification.
+* Session restoration.
+* Access-token refresh.
+* Logout.
+* Protected routes.
+* Administrator route protection.
+
+### File management
+
+* Upload.
+* Multi-file upload.
+* Upload progress.
+* File validation.
+* Search.
+* Filter.
+* Sort.
+* Pagination.
+* File details.
+* Preview.
+* Download.
+* Permanent deletion.
+
+### Folder management
+
+* Create.
+* Rename.
+* Navigate.
+* Nested folders.
+* Breadcrumbs.
+* Move files.
+* Delete according to existing rules.
+
+### User dashboard
+
+* File statistics.
+* Storage statistics.
+* File-type statistics.
+* Upload-history statistics.
+
+### Administrator functionality
+
+* User listing.
+* User search.
+* User pagination.
+* Role changes.
+* Permanent user deletion.
+* Global file listing.
+* Global file search/filter/pagination.
+* File-owner visibility.
+* Administrator file deletion.
+* Administrator statistics.
+* Audit history.
+
+### Global application behavior
+
+* React Query invalidation.
+* Loading states.
+* Error states.
+* Empty states.
+* Toast feedback.
+* Confirmation dialogs.
+* Desktop responsiveness.
+* Tablet responsiveness.
+* Mobile responsiveness.
+* Light mode.
+* Dark mode.
+* System theme.
+* Fileora branding.
+
+---
+
+## Testing and validation
+
+Existing automated tests from Phase 3 must continue passing.
+
+Update frontend tests where implementation details legitimately change because of the redesigned component structure.
+
+Do not weaken behavioral or security tests merely to accommodate the redesign.
+
+Add targeted UI/component tests where they provide meaningful regression protection for important redesigned interactions.
+
+Perform final validation for:
+
+* Frontend build.
+* TypeScript errors.
+* Linting where configured.
+* Automated test suite.
+* Browser console errors.
+* React errors/warnings.
+* Broken routes.
+* Broken API interactions.
+* Light mode.
+* Dark mode.
+* Loading states.
+* Empty states.
+* Error states.
+* Authentication restoration.
+* User navigation.
+* Administrator navigation.
+* Critical user workflows.
+* Critical administrator workflows.
+
+### Responsive validation
+
+Compare the implemented application directly against `fiora-app.html` for:
+
+* Desktop layouts.
+* Tablet layouts.
+* Mobile layouts.
+* Navigation behavior at each form factor.
+* Component stacking and rearrangement.
+* Page spacing.
+* Content density.
+* Tables and data-heavy views.
+* File/folder views.
+* Dashboard cards.
+* Charts.
+* Search/filter controls.
+* Forms.
+* Dialogs.
+* Authentication screens.
+* File previews.
+* Administrator interfaces.
+* Loading states.
+* Empty states.
+* Error states.
+
+The goal is not merely for the application to be generally responsive.
+
+The implemented responsive behavior should reproduce the approved responsive design defined by `fiora-app.html`.
+
+---
+
+## Phase 4 completion gate
+
+Phase 4 is complete only when:
+
+* `fiora-app.html` has been used as the single source of truth for the new UI design.
+* `fiora-app.html` has been used as the single source of truth for desktop, tablet, and mobile responsive presentation.
+* The existing visual system has been replaced by the approved Fileora design across all important application surfaces.
+* The application uses a coherent reusable design system rather than isolated page-specific copies of prototype markup.
+* Authentication pages match the new design.
+* The authenticated application shell matches the new design.
+* User dashboard pages match the new design.
+* File and folder management match the new design.
+* Upload interactions match the new design.
+* File details and preview experiences match the new design.
+* Administrator dashboard matches the new design.
+* Administrator user management matches the new design.
+* Administrator global file management matches the new design.
+* Audit history matches the new design.
+* Fileora branding is consistent.
+* Desktop layouts accurately reproduce the approved HTML design.
+* Tablet layouts accurately reproduce the approved HTML design.
+* Mobile layouts accurately reproduce the approved HTML design.
+* Navigation reproduces the appropriate responsive behavior defined in `fiora-app.html`.
+* Tables and data-heavy views reproduce the intended responsive behavior.
+* File/folder views reproduce the intended responsive behavior.
+* Dashboard layouts reproduce the intended responsive behavior.
+* Forms and dialogs reproduce the intended responsive behavior.
+* Administrator interfaces reproduce the intended responsive behavior.
+* Light mode is visually complete.
+* Dark mode is visually complete.
+* Required loading, empty, validation, success, and error states use the new design language.
+* Destructive actions continue to require appropriate confirmation.
+* All existing authentication and authorization behavior remains functional.
+* Existing BFF authentication architecture remains intact.
+* Existing React Query/API behavior remains functional.
+* File and folder ownership protections remain intact.
+* Administrator authorization remains intact.
+* Existing permanent-deletion semantics remain intact.
+* Existing Supabase Storage integration remains intact.
+* No required application capability has been removed merely because it was absent from the HTML prototype.
+* Obsolete legacy UI components and styles have been removed where safe.
+* No unnecessary duplicate UI system remains.
+* Existing automated tests continue to pass after legitimate test updates.
+* The frontend builds successfully.
+* No major runtime or browser-console errors remain.
+* No unnecessary backend or architectural redesign has been introduced.
+
+---
+
+## Spec Kit kickoff
+
+### `/speckit.specify` seed
+
+Completely redesign the Fileora frontend using the approved `fiora-app.html` design.
+
+`fiora-app.html` is the **single source of truth for the new UI design and responsive behavior**.
+
+The file already contains approved desktop, tablet, and mobile layouts. Reproduce those layouts and their responsive behavior faithfully in the Next.js application rather than independently redesigning responsiveness.
+
+Use `fiora-app.html` as the authoritative reference for layout, visual hierarchy, navigation presentation, typography, colors, spacing, surfaces, components, tables, cards, forms, buttons, file-management presentation, dashboards, administrator interfaces, responsive component behavior, and other visual patterns.
+
+Replace the existing application presentation with this design across authentication, application navigation, user dashboard, files and folders, upload flows, file details and previews, profile, administrator dashboard, administrator user management, global file management, audit history, theme behavior, and shared application states.
+
+Preserve all functionality implemented in Phases 1–3. The HTML design is authoritative for presentation, but existing application specifications and working implementation remain authoritative for authentication, authorization, BFF behavior, API contracts, file/folder ownership, uploads, search/filter/sort/pagination, permanent deletion, Supabase Storage, audit behavior, administrator capabilities, validation, and other business rules.
+
+If an existing required state or action is not explicitly represented in `fiora-app.html`, do not remove it. Integrate it using the same visual and responsive design language established by the closest equivalent elements in the approved design.
+
+Extract reusable components and a coherent design system from the approved HTML rather than copying large amounts of prototype markup independently into every page.
+
+Ensure light mode, dark mode, loading states, empty states, errors, success feedback, dialogs, destructive confirmations, and accessibility remain complete.
+
+Do not introduce new product functionality or redesign the backend architecture as part of this phase.
+
+---
+
+### `/speckit.plan` constraints
+
+Treat `fiora-app.html` as the **single source of truth for both Fileora's visual design and its desktop, tablet, and mobile responsive behavior**.
+
+Before changing individual application pages, inspect the complete HTML design and identify its:
+
+* Shared design language.
+* Page shell.
+* Navigation model.
+* Typography.
+* Spacing.
+* Colors.
+* Surfaces.
+* Component patterns.
+* States.
+* Desktop behavior.
+* Tablet behavior.
+* Mobile behavior.
+* Light/dark theme treatment.
+
+Translate those patterns into reusable Next.js/React/Tailwind components rather than reproducing the prototype as unrelated page-specific markup.
+
+Where the current frontend visually or responsively conflicts with `fiora-app.html`, the approved HTML design takes precedence.
+
+Do not derive an independent responsive design or simply scale the desktop interface using generic breakpoints when `fiora-app.html` already demonstrates the intended tablet and mobile behavior.
+
+Inspect how navigation, grids, tables, controls, page actions, content density, dialogs, forms, dashboards, file/folder views, and administrator interfaces change between desktop, tablet, and mobile, and translate those behaviors into maintainable responsive React/Tailwind components.
+
+Where `fiora-app.html` does not represent an existing required behavior, preserve that behavior and design the missing state or interaction consistently with the closest visual and responsive pattern in the approved design.
+
+Reuse the existing:
+
+* Route structure where practical.
+* Authentication architecture.
+* BFF Route Handlers.
+* Authentication state.
+* Axios infrastructure.
+* React Query hooks.
+* API clients.
+* Backend APIs.
+* Validation behavior.
+* File/folder domain logic.
+* Administrator APIs.
+* Statistics APIs.
+* Audit infrastructure.
+* Supabase Storage integration.
+
+Do not rewrite working application or business logic solely because the presentation changes.
+
+Preserve the architecture in which Express remains authoritative for authentication, authorization, data access, storage decisions, and business behavior.
+
+Do not expose refresh tokens to browser JavaScript or alter the established BFF security architecture.
+
+Do not change file/folder ownership or permanent deletion behavior.
+
+Do not add Trash, restore, soft-delete, or other new lifecycle functionality.
+
+Use Framer Motion selectively for interactions and transitions consistent with the approved design.
+
+Preserve and adapt the existing light/dark/system theme functionality.
+
+Ensure charts, dialogs, tables, file previews, forms, navigation, and administrator interfaces are compatible with the redesigned theme.
+
+Explicitly validate desktop, tablet, and mobile implementations against `fiora-app.html`.
+
+Remove legacy frontend components/styles only after their required behavior has been successfully migrated.
+
+Run existing automated tests and update tests only when component structure or presentation legitimately changes.
+
+Do not weaken behavioral or security tests.
+
+Finish by validating the complete frontend build and all critical user/admin workflows.
+
+---
+
 # Phase Dependency Summary
 
 ```text
@@ -1107,8 +2013,20 @@ Phase 2
 Complete User File Management + Folders + User Analytics
         ↓
 Phase 3
+Administration + Admin Analytics + Audit UI + Dark Mode +
+UX Polish + Tests + Docker + Security/Performance Review +
+Documentation
         ↓
-Administration + Admin Analytics + Audit UI + Dark Mode + UX Polish + Tests + Docker + Security/Performance Review + Documentation
+Phase 4
+Complete Fileora UI Redesign +
+Design System Migration +
+Desktop/Tablet/Mobile Responsive Implementation +
+Functional Regression Validation
 ```
 
-Each phase should be considered complete only after its completion gate passes. If implementation uncovers a requirement change, update the relevant specification first and regenerate or reconcile the downstream plan/tasks rather than allowing the implementation to silently diverge from the specification.
+Each phase should be considered complete only after its completion gate passes.
+
+Phase 4 intentionally occurs after the application's required functionality and final-quality work are established so that the redesign can focus on replacing the presentation layer without destabilizing the completed application architecture.
+
+If implementation uncovers a genuine requirement or functionality change, update the relevant specification first and reconcile downstream plans/tasks rather than silently changing application behavior to match the visual prototype.
+
