@@ -8,6 +8,14 @@
 
 **Input**: User description: "Read IMPLEMENTATION_PLAN.md and create a specification for Phase 4 only, using specs/fileora-app.html."
 
+## Clarifications
+
+### Session 2026-08-24
+
+- Q: Which browsers must pass Phase 4 visual, responsive, and functional acceptance testing? → A: Latest two major versions of Chrome, Edge, Firefox, and Safari, plus current iOS Safari and Android Chrome.
+- Q: What minimum participant sample should the Phase 4 usability criterion require? → A: At least 10 participants; at least 9 must complete every named journey without assistance on both desktop and mobile.
+- Q: Who must approve a material visual or responsive deviation from `specs/fileora-app.html` before Phase 4 can pass acceptance? → A: The project maintainer, with explicit approval recorded in the feature artifacts.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Enter Fileora Through the Approved Experience (Priority: P1)
@@ -177,6 +185,7 @@ As a returning user, I experience consistent Fileora patterns across pages rathe
 
 - **FR-033**: Every in-scope route and transient state MUST reproduce the desktop, tablet, and mobile composition demonstrated by the approved source, including navigation, grids, tables, forms, controls, page actions, dialogs, drawers, file collections, dashboards, and administrator interfaces.
 - **FR-034**: Representative acceptance review MUST include desktop (1440 px), tablet (768 px), and mobile (390 px) viewport widths, plus the 320 px minimum-width boundary; behavior between those widths MUST remain coherent.
+- **FR-034A**: Phase 4 visual, responsive, and functional acceptance testing MUST pass on the latest two major desktop versions of Chrome, Edge, Firefox, and Safari, plus the current versions of iOS Safari and Android Chrome.
 - **FR-035**: Content MUST reflow, stack, rearrange, selectively condense, or become intentionally scrollable according to the approved patterns without page-level horizontal overflow at supported widths.
 - **FR-036**: Light, dark, and system appearance modes MUST remain available, and the user's saved preference MUST continue across navigation and later visits.
 - **FR-037**: Every redesigned navigation, card, table, form, dialog, preview, chart, empty state, loading state, and administrator surface MUST remain legible and operable in light and dark appearance.
@@ -211,6 +220,7 @@ As a returning user, I experience consistent Fileora patterns across pages rathe
 2. Existing Phase 1–3 specifications and verified application behavior govern business rules, data, access, and lifecycle semantics.
 3. `specs/fileora-app.html` governs Phase 4 visual design, interaction presentation, and responsive behavior.
 4. The existing interface has no authority where it conflicts with the approved design, but its established capability cannot be removed solely because the prototype omits a state or action.
+5. Any material visual or responsive deviation from `specs/fileora-app.html` requires explicit project-maintainer approval recorded in the feature artifacts before Phase 4 can pass acceptance.
 
 ### Explicitly Out of Scope
 
@@ -225,9 +235,9 @@ As a returning user, I experience consistent Fileora patterns across pages rathe
 
 ### Measurable Outcomes
 
-- **SC-001**: 100% of in-scope public, authentication, user, file/folder, profile, dashboard, and administrator surfaces pass side-by-side acceptance review against the approved source at 1440 px, 768 px, and 390 px in both light and dark appearance, with no material unapproved visual or responsive deviation.
+- **SC-001**: 100% of in-scope public, authentication, user, file/folder, profile, dashboard, and administrator surfaces pass side-by-side acceptance review against the approved source at 1440 px, 768 px, and 390 px in both light and dark appearance, with every material visual or responsive deviation explicitly approved by the project maintainer and recorded in the feature artifacts.
 - **SC-002**: 100% of the Phase 4 functional regression journeys for authentication, files, folders, user statistics, administrator operations, feedback, theme, and navigation complete with the same authorized outcome as before the redesign.
-- **SC-003**: At least 90% of participants in a representative usability check complete sign-in, locate a file, upload files, inspect a file, and initiate/cancel a destructive action on their first attempt without assistance on both desktop and mobile layouts.
+- **SC-003**: In a usability check with at least 10 representative participants, at least 9 participants complete sign-in, locate a file, upload files, inspect a file, and initiate and cancel a destructive action on their first attempt without assistance on both desktop and mobile layouts.
 - **SC-004**: All in-scope pages remain usable at widths from 320 px upward with no page-level horizontal overflow, clipped primary action, or inaccessible required information; intentionally scrollable data regions remain clearly operable.
 - **SC-005**: All major workflows can be completed using only a keyboard, and automated accessibility checks report zero critical violations on the landing, authentication, dashboard, files, profile, and administrator route families.
 - **SC-006**: 100% of destructive file, folder, user, and administrator-file actions display an explicit irreversible confirmation before execution, and unauthorized access tests continue to deny every protected operation.
@@ -237,6 +247,7 @@ As a returning user, I experience consistent Fileora patterns across pages rathe
 - **SC-010**: User-perceived readiness for each critical route and interaction is no more than 10% slower than the verified pre-redesign baseline under the same conditions, and no major browser-console or runtime error remains in critical user or administrator journeys.
 - **SC-011**: Final review finds zero user-accessible pages using obsolete branding or an unapproved mixture of legacy and redesigned visual patterns after migration is declared complete.
 - **SC-012**: From a clean documented environment, authorized testers can start the complete product and finish at least one critical landing/authentication, file-management, and administrator smoke journey with no undocumented configuration, data-design mismatch, or invalidated operational guidance.
+- **SC-013**: The Phase 4 visual, responsive, and functional acceptance suite passes on every supported browser and mobile-browser version defined by FR-034A.
 
 ## Assumptions
 
