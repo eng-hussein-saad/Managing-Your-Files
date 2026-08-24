@@ -3,7 +3,8 @@ import type { Clock } from "../../infrastructure/runtime/clock.js";
 import type { Identifiers } from "../../infrastructure/runtime/identifiers.js";
 import type { PasswordHasher } from "../../infrastructure/security/password-hasher.js";
 import { serializable } from "../../infrastructure/persistence/transactions.js";
-import { AuditRepository } from "../audit/audit.repository.js";
+import { AuditService } from "../audit/audit.service.js";
+import { logger } from "../../infrastructure/observability/logger.js";
 
 /** Initializes exactly one configured administrator without implicit promotion. */
 export class AdminBootstrapService {
@@ -13,7 +14,7 @@ export class AdminBootstrapService {
     private readonly clock: Clock,
     private readonly identifiers: Identifiers,
     private readonly hasher: PasswordHasher,
-    private readonly audit = new AuditRepository(),
+    private readonly audit = new AuditService(prisma, clock, logger),
   ) {}
   /** Creates the configured verified administrator or safely preserves an existing admin. */
   async bootstrap(input: {
@@ -24,7 +25,7 @@ export class AdminBootstrapService {
     const passwordHash = await this.hasher.hash(input.password);
     const now = this.clock.now();
     try {
-      return await serializable(this.prisma, async (transaction) => {
+      const result = await serializable(this.prisma, async (transaction) => {
         const existing = await transaction.user.findUnique({
           where: { email: input.email },
         });
@@ -45,19 +46,17 @@ export class AdminBootstrapService {
             updatedAt: now,
           },
         });
-        await this.audit.append(
-          transaction,
-          {
-            actorId: user.id,
-            action: "admin.bootstrap",
-            entityType: "USER",
-            entityId: user.id,
-            metadata: { outcome: "SUCCESS" },
-          },
-          now,
-        );
-        return { created: true };
+        return { created: true, userId: user.id };
       });
+      if (result.created)
+        await this.audit.bestEffort({
+          actorId: result.userId,
+          action: "admin.bootstrap",
+          entityType: "USER",
+          entityId: result.userId,
+          metadata: { outcome: "SUCCESS" },
+        });
+      return { created: result.created };
     } catch (error) {
       if ((error as Prisma.PrismaClientKnownRequestError).code === "P2002")
         return this.bootstrap(input);

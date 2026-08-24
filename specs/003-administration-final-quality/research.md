@@ -127,8 +127,11 @@ would violate the explicit access boundary.
 grouped file categories, and a bounded recent-upload query. Establish a
 diagnostic budget of warmed API p95 at or below one second, leaving the rest of
 the two-second SC-004 interaction target for network and rendering. Seed at
-least 1,000 users and 10,000 files, capture query timings/`EXPLAIN ANALYZE`, and
-add indexes only where measurements show an important plan problem.
+least 1,000 users and 10,000 files and capture query timings/`EXPLAIN ANALYZE`.
+Measurements may produce an advisory index candidate, but implementation stops
+until the exact index and compatibility impact are added to the governed
+artifacts, explicitly approved, synchronized with `database-schema.mmd`, and
+implemented through a new migration rather than an applied migration rewrite.
 
 On the client, debounce text queries, cancel superseded requests, keep previous
 page data, use complete normalized query keys, and invalidate only affected
@@ -136,7 +139,8 @@ lists/statistics after mutations.
 
 **Rationale**: Read-time aggregates stay exact after uploads/deletions and avoid
 new lifecycle/cache infrastructure. Measured optimization satisfies the spec
-and constitution without speculative redesign.
+without allowing performance work to bypass the constitutional schema approval
+gate.
 
 **Alternatives considered**: Materialized statistics or a broad cache require
 invalidation machinery and can become stale. Unmeasured indexes increase write
@@ -171,9 +175,17 @@ copies risk inconsistent coverage.
 **Decision**: Extend existing Vitest projects, Supertest, Testing Library, and
 Playwright. Prioritize authorization matrices, deterministic queries, stale and
 last-admin races, immediate session invalidation, partial cleanup/retry, safe
-audit projection, exact statistics, async UI states, focus/keyboard behavior,
-theme persistence/system changes, branding, and responsive journeys. Run the
-critical suite three clean times and build both applications.
+audit projection, exact statistics, focus/keyboard behavior, theme
+persistence/system changes, branding, and responsive journeys. Maintain an
+operation matrix that verifies centralized sanitized fail-open audit attempts
+for every constitution-mandated successful operation. Within administrator
+capabilities, audit only user role change, permanent user deletion, and
+permanent administrator file deletion; verify user/file list and detail,
+statistics, and audit-history reads create no audit events. Maintain a second
+inventory of every user-facing asynchronous workflow and verify every applicable
+loading, empty, validation, success, and error state instead of sampling only
+representative flows. Run the critical suite three clean times and build both
+applications.
 
 Add pinned Node 24/pnpm multi-stage client and server images, a secret-excluding
 `.dockerignore`, and Compose services for PostgreSQL, migration, Express, and

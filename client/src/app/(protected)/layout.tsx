@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useAuthState } from "../../features/auth/auth-store";
 import { AppNavigation } from "../../components/navigation/app-navigation";
 import { PageState } from "../../components/status/page-state";
+import { AppFooter } from "../../components/layout/app-footer";
 /** Provides a UX guard while Express remains the protected-data authority. */
 export default function ProtectedLayout({ children }: PropsWithChildren) {
   const auth = useAuthState();
@@ -30,6 +31,7 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
     <>
       <AppNavigation role={auth.session.user.role} />
       {children}
+      <AppFooter />
     </>
   );
 }

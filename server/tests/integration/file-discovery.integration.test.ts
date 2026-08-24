@@ -62,10 +62,10 @@ describeDatabase("file discovery persistence", () => {
     });
     for (const sort of ["name", "size", "uploadedAt"]) {
       const asc = await supertest(app)
-        .get(`/api/v1/files?sort=${sort}&direction=asc&pageSize=1`)
+        .get(`/api/v1/files?sort=${sort}&direction=asc&pageSize=5`)
         .expect(200);
       const desc = await supertest(app)
-        .get(`/api/v1/files?sort=${sort}&direction=desc&pageSize=1`)
+        .get(`/api/v1/files?sort=${sort}&direction=desc&pageSize=5`)
         .expect(200);
       expect(asc.body.data[0].id).toBe(first.id);
       expect(desc.body.data[0].id).toBe(second.id);

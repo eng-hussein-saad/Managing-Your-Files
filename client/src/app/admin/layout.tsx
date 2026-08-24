@@ -3,6 +3,7 @@ import type { PropsWithChildren } from "react";
 import { useAuthState } from "../../features/auth/auth-store";
 import { AppNavigation } from "../../components/navigation/app-navigation";
 import { PageState } from "../../components/status/page-state";
+import { AppFooter } from "../../components/layout/app-footer";
 /** Provides an administrator UX guard without replacing server authorization. */
 export default function AdminLayout({ children }: PropsWithChildren) {
   const auth = useAuthState();
@@ -26,6 +27,7 @@ export default function AdminLayout({ children }: PropsWithChildren) {
     <>
       <AppNavigation role={auth.session.user.role} />
       {children}
+      <AppFooter />
     </>
   );
 }

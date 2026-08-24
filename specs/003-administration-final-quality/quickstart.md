@@ -122,17 +122,33 @@ folders, and dates plus known audit events.
   ordering with direct seeded expectations before and after upload/deletion.
 - Locate known audit events by supported filters; inspect live, deleted, and
   system actor presentations and safe metadata.
+- Execute successful authentication, upload, download, permanent file/folder
+  deletion, folder mutation, user role change, permanent user deletion, and
+  permanent administrator file deletion; verify each attempts a centralized
+  sanitized audit event. Inject an audit-write
+  failure for each operation class and verify the primary operation remains
+  governed by its own contract while sanitized operational evidence is emitted.
+- Execute administrator user/file list and detail, statistics, and audit-history
+  reads and verify they create zero audit events.
 
 Expected outcome: results are exact and deterministic per request. In the agreed
 environment, at least 95% of requested administrator pages render within two
 seconds. Capture API/query timing and `EXPLAIN ANALYZE` for any route missing its
-diagnostic budget before adding or changing an index.
+diagnostic budget. Record an index candidate as advisory only; do not implement
+it until the exact proposal receives explicit maintainer approval, all governed
+artifacts are synchronized, and a new reviewable migration is planned.
 
 ## 7. Validate themes, accessibility, and responsive behavior
 
 At 360 px, 768 px, and 1440 px widths, use keyboard-only navigation through
 authentication, user files/folders, profile, admin dashboard, users, files, and
 audit history.
+
+Create `async-workflows.md` as the authoritative inventory of every
+user-facing asynchronous page and action. For every entry, exercise loading,
+empty, validation, success, and error states where applicable and record a
+specific reason for each state that does not apply. The gate fails if any
+inventory entry lacks evidence; representative sampling is not sufficient.
 
 For each `light`, `dark`, and `system` selection:
 

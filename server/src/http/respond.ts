@@ -6,8 +6,9 @@ export function success(
   response: Response,
   status: number,
   data: unknown,
+  meta?: Record<string, unknown>,
 ): void {
-  response.status(status).json({ success: true, data });
+  response.status(status).json({ success: true, data, ...(meta ? { meta } : {}) });
 }
 /** Sends a safe failure using the one public error envelope. */
 export function failure(

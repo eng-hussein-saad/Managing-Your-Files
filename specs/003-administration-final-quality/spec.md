@@ -65,12 +65,12 @@ An administrator sees accurate platform totals and recent activity, and inspects
 
 **Why this priority**: Operational visibility makes the administrator capabilities accountable and enables the team to identify abnormal usage or cleanup failures.
 
-**Independent Test**: Create known users, files, sizes, types, uploads, and audit events; verify dashboard figures and filtered audit results exactly match the eligible records and remain inaccessible to normal users.
+**Independent Test**: Create known users, files, sizes, types, uploads, and audit events; verify dashboard figures and filtered audit results exactly match eligible records, administrator reads do not create audit events, and all resources remain inaccessible to normal users.
 
 **Acceptance Scenarios**:
 
 1. **Given** a known platform data set, **When** an administrator opens the dashboard, **Then** total users, total files, current stored bytes, most-uploaded file types, and recent uploads match the current records and stored-file semantics.
-2. **Given** accumulated audit events, **When** an administrator searches, filters, or paginates audit history, **Then** results show timestamp, actor when retained, action, entity type, target identifier, and safe useful metadata in deterministic order.
+2. **Given** accumulated audit events, **When** an administrator searches, filters, or paginates audit history, **Then** results show timestamp, actor when retained, action, entity type, target identifier, and safe useful metadata in deterministic order without creating an audit event for the read.
 3. **Given** an audit event whose actor was later permanently deleted, **When** an administrator inspects history, **Then** the actor appears as "Deleted user," the event's action, target, and timestamp remain usable, and no actor name or email snapshot is retained.
 4. **Given** a normal user, **When** they request statistics or audit history directly, **Then** access is denied and no operational information is disclosed.
 
@@ -114,11 +114,11 @@ Users and administrators can complete common workflows across mobile, tablet, an
 
 **Why this priority**: Phase 3 is the final application-quality pass, so existing capabilities must behave as one coherent product rather than isolated features.
 
-**Independent Test**: Exercise representative authentication, file, folder, dashboard, and administrator journeys under slow, empty, successful, validation-failure, and service-failure conditions using keyboard-only interaction at common viewport sizes.
+**Independent Test**: Enumerate every user-facing asynchronous authentication, file, folder, dashboard, profile, and administrator workflow, then exercise every applicable loading, empty, successful, validation-failure, and service-failure state using keyboard-only interaction at common viewport sizes; record any state that does not apply with a reason.
 
 **Acceptance Scenarios**:
 
-1. **Given** an asynchronous page or action, **When** it is loading, empty, successful, invalid, or failed, **Then** the person sees a consistent state that explains what happened and offers a useful next action where one exists.
+1. **Given** the maintained inventory of every user-facing asynchronous page and action, **When** each applicable loading, empty, successful, invalid, and failed state is exercised, **Then** the person sees a consistent state that explains what happened and offers a useful next action where one exists, and any inapplicable state is explicitly recorded with a reason.
 2. **Given** a permanent file, folder, or user deletion, **When** it is initiated, **Then** a specific confirmation identifies the target and irreversible consequence before the action can proceed.
 3. **Given** a keyboard user at a mobile, tablet, or desktop viewport, **When** they navigate forms, dialogs, tables, pagination, and menus, **Then** focus order, labels, controls, dismissal, and responsive layout permit task completion without pointer-only interaction.
 4. **Given** dates, file sizes, pagination, or query state displayed in different user and administrator areas, **When** equivalent values or actions appear, **Then** their presentation and behavior are consistent.
@@ -184,9 +184,9 @@ A maintainer can set up, run, test, review, and troubleshoot the full applicatio
 
 - **FR-018**: The administrator dashboard MUST show total current users, total current files, total bytes consumed by currently stored file objects, most-uploaded file types, and recent uploads.
 - **FR-019**: Dashboard figures MUST use clearly defined current-record semantics and remain consistent after successful uploads and permanent deletions.
-- **FR-020**: Audit history MUST be visible only to authenticated administrators and MUST support deterministic pagination plus search or filtering by useful operational fields including action, entity type, actor when available, and time range.
+- **FR-020**: Audit history MUST be visible only to authenticated administrators and MUST support deterministic pagination plus search or filtering by useful operational fields including action, entity type, actor when available, and time range. Reading user lists/details, global-file lists/details, statistics, or audit history MUST NOT create audit events.
 - **FR-021**: Audit entries shown to administrators MUST include timestamp, action, entity type and target when applicable, actor information when the actor still exists, and only safe useful metadata.
-- **FR-022**: Important successful authentication, upload, download, permanent file deletion, permanent folder deletion, folder mutation, role change, permanent user deletion, and other administrator operations MUST attempt to emit centralized audit events.
+- **FR-022**: Important successful authentication, upload, download, permanent file deletion, permanent folder deletion, folder mutation, user role change, and permanent user deletion MUST attempt to emit centralized sanitized audit events. Within administrator capabilities, only user role change, permanent user deletion, and permanent administrator file deletion produce audit events; administrator list, detail, statistics, and audit-history reads MUST NOT. Audit-write failure MUST remain fail-open for the primary operation and MUST produce sanitized operational evidence.
 - **FR-023**: Audit history MUST remain usable after an actor is permanently deleted, MUST display that actor as "Deleted user" without retaining a name or email snapshot, and MUST be retained without automated deletion during this phase.
 - **FR-024**: Audit records, application responses, and operational errors MUST NOT expose passwords, tokens, verification codes, private file contents, storage credentials, or unnecessary implementation details.
 
@@ -200,7 +200,7 @@ A maintainer can set up, run, test, review, and troubleshoot the full applicatio
 - **FR-030**: System theme mode MUST follow the current operating-system preference without replacing the saved system selection.
 - **FR-031**: Charts, dialogs, tables, forms, empty states, file previews, administrator interfaces, navigation, and the footer MUST remain readable, perceivable, and operable in every supported theme.
 - **FR-032**: User and administrator interfaces MUST adapt without lost actions, clipped critical content, or unusable navigation at common mobile, tablet, and desktop viewport sizes.
-- **FR-033**: Every user-facing asynchronous workflow MUST provide appropriate loading, empty, success, validation, and error feedback with a useful recovery action where possible.
+- **FR-033**: Every user-facing asynchronous workflow MUST be listed in a maintained verification inventory and MUST provide appropriate loading, empty, success, validation, and error feedback with a useful recovery action where possible; the inventory MUST record and justify any state that does not apply to a workflow, and Phase 3 completion evidence MUST account for every inventory entry rather than a representative subset.
 - **FR-034**: Permanent file, folder, administrator file, and administrator user deletion MUST use clear target-specific confirmation and MUST not rely on color alone to communicate risk.
 - **FR-035**: Forms, dialogs, menus, tables, pagination, and navigation MUST have accessible labels, visible focus, logical keyboard behavior, and appropriate focus restoration.
 - **FR-036**: Motion MUST respect reduced-motion preferences, clarify state changes, and never block task completion or conceal loading.
@@ -208,16 +208,16 @@ A maintainer can set up, run, test, review, and troubleshoot the full applicatio
 
 #### Verification, Operations, and Documentation
 
-- **FR-038**: Automated verification MUST cover successful and failed registration, login validation, email verification, invalid or expired verification codes, refresh behavior, unauthenticated rejection, and administrator rejection for normal users.
+- **FR-038**: Automated verification MUST cover successful and failed registration, login validation, email verification, invalid or expired verification codes, refresh behavior, unauthenticated rejection, administrator rejection for normal users, and the required sanitized, fail-open audit attempt for every successful authentication operation.
 - **FR-039**: Automated verification MUST cover absence of user soft-deletion state, administrator user listing/search/pagination, safe role changes, permanent user deletion, session cleanup, dependent-record cleanup, stored-object cleanup, and unsafe self or last-administrator actions.
-- **FR-040**: Automated verification MUST cover upload constraints, ownership, important file queries, permanent file and folder deletion, stored-object cleanup, secure preview/download, folder ownership, and folder mutation rules without adding Trash or restoration tests.
-- **FR-041**: Automated verification MUST cover administrator authorization, global file owner visibility and queries, administrator permanent file deletion, statistics accuracy, and audit-history access control.
+- **FR-040**: Automated verification MUST cover upload constraints, ownership, important file queries, permanent file and folder deletion, stored-object cleanup, secure preview/download, folder ownership, folder mutation rules, and the required sanitized, fail-open audit attempt for every successful upload, download, deletion, and folder mutation without adding Trash or restoration tests.
+- **FR-041**: Automated verification MUST cover administrator authorization, global file owner visibility and queries, administrator permanent file deletion, statistics accuracy, audit-history access control, sanitized fail-open audit attempts for administrator file deletion, user deletion, and user role change, and absence of audit events for administrator reads.
 - **FR-042**: The project MUST provide a reproducible container-based workflow for its existing frontend, backend, and required local services without restructuring established feature domains.
 - **FR-043**: Container images and orchestration configuration MUST receive deployment-specific values through environment configuration, MUST NOT contain usable secrets, and MUST exclude unnecessary or sensitive build context.
 - **FR-044**: Missing or invalid required configuration MUST stop affected services with clear sanitized diagnostics, and every Phase 3 configuration change MUST be reflected consistently in example configuration, validation, tests, container settings, and documentation.
 - **FR-045**: Security and reliability verification MUST cover authentication and administrator authorization, file/folder ownership, upload validation, filename and path safety, credential and token handling, deletion cleanup, sensitive response and audit data, role transitions, and destructive-action validation.
 - **FR-046**: Any critical authorization or file-access defect found during the Phase 3 review MUST be corrected and verified before the phase can complete; working authentication, storage, and authorization architecture MUST otherwise remain intact.
-- **FR-047**: Performance review MUST examine important paginated lists, platform statistics, audit queries, upload progress, preview/download paths, supporting indexes, cached query behavior, mutation refresh behavior, and unnecessary refetching; changes MUST address an identified issue rather than speculative redesign.
+- **FR-047**: Performance review MUST examine important paginated lists, platform statistics, audit queries, upload progress, preview/download paths, supporting indexes, cached query behavior, mutation refresh behavior, and unnecessary refetching; changes MUST address an identified issue rather than speculative redesign. The review MUST NOT add or alter an index unless the exact index, rationale, migration and compatibility effects are first recorded in the feature artifacts, explicitly approved by the maintainer under the database approval process, synchronized with `database-schema.mmd`, and implemented through a new reviewable migration rather than by rewriting an applied migration.
 - **FR-048**: The frontend and backend MUST each build successfully, and the automated test suite MUST pass consistently before Phase 3 is declared complete.
 - **FR-049**: The README MUST accurately document Fileora's overview, features, architecture, repository structure, prerequisites, environment variables, migrations, administrator initialization, local and container execution, testing, storage configuration, deployment, assumptions, and notable design decisions.
 - **FR-050**: The README MUST state that administrator user deletion and current file/folder deletion are permanent, the user model has no soft-deletion field, and file/folder Trash and restoration are not part of the current product.
@@ -241,6 +241,7 @@ A maintainer can set up, run, test, review, and troubleshoot the full applicatio
 - The approved change removes nullable `deletedAt` from `USER` and removes any index defined exclusively for user soft-deletion queries.
 - Planning and implementation MUST update `database-schema.mmd`, the runtime schema, migration history, fixtures, application contracts, tests, and documentation as one synchronized change.
 - No soft-deletion field is added to `FILE` or `FOLDER`, and no other entity or relationship change is authorized by this approval.
+- The 2026-08-23 approval does not authorize any new or altered index. A performance review that identifies an index candidate must remain advisory until a separate exact schema proposal is recorded, explicitly approved, and synchronized across all governed artifacts.
 - Audit history must tolerate a missing actor relationship after permanent user deletion while retaining safe historical event data.
 
 ## Success Criteria *(mandatory)*
@@ -252,7 +253,7 @@ A maintainer can set up, run, test, review, and troubleshoot the full applicatio
 - **SC-003**: In failure-injection scenarios for required storage cleanup, 100% of affected permanent user and file deletions avoid reporting false success and leave no newly unauthorized content exposure; every retried partial user deletion completes after all remaining objects are removed while already-securely-absent objects are accepted as cleaned.
 - **SC-004**: Administrator user and file directories return the correct search/filter result counts and deterministic page contents for data sets of at least 1,000 users and 10,000 files, with 95% of tested interactions presenting the requested page within 2 seconds under the agreed test environment.
 - **SC-005**: Dashboard totals and distributions match the seeded source data exactly before and after representative uploads and permanent deletions, including byte totals and recent-upload ordering.
-- **SC-006**: 100% of tested audit-history requests from normal users are denied, while administrators can locate a known event by supported filters in no more than three interactions.
+- **SC-006**: 100% of tested audit-history requests from normal users are denied, administrators can locate a known event by supported filters in no more than three interactions, and administrator read-only requests create zero audit events.
 - **SC-007**: A review of authentication, navigation, dashboards, empty states, page titles, and product-facing documentation finds zero unintended user-facing references to Gold Era and confirms Fileora plus the tagline in all designated locations.
 - **SC-008**: All critical user and administrator journeys remain completable at representative mobile, tablet, and desktop widths in light, dark, and system modes, with no unreadable critical content or inaccessible primary action.
 - **SC-009**: Keyboard-only checks complete 100% of representative forms, dialogs, menus, tables, pagination, and destructive confirmations, with visible focus and correct dialog focus restoration.

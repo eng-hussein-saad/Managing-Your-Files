@@ -1,3 +1,4 @@
+/** Defines the canonical permanent-lifecycle verified user input. */
 export const verifiedUserFixture = {
   name: "Verified User",
   email: "verified@example.invalid",

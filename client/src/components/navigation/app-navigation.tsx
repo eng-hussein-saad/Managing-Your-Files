@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { LogoutButton } from "../auth/logout-button";
+import { FileoraBrand } from "../brand/fileora-brand";
+import { ThemeSelector } from "../theme/theme-selector";
 
 type UserRole = AccessSession["user"]["role"];
 
@@ -32,7 +34,7 @@ export function AppNavigation({ role }: { role: UserRole }) {
   return (
     <header className="app-header">
       <div className="app-header-inner">
-        <Link className="brand" href="/dashboard">Gold Era<span>.</span></Link>
+        <FileoraBrand href="/dashboard" />
         <nav className="desktop-nav" aria-label="Account">
           {role === "ADMIN" ? link("/admin", "Admin") : null}
           {link("/dashboard", "Overview")}
@@ -40,6 +42,7 @@ export function AppNavigation({ role }: { role: UserRole }) {
           {link("/profile", "Profile")}
         </nav>
         <div className="app-header-actions">
+          <ThemeSelector />
           <LogoutButton />
           <button
             className="mobile-nav-trigger"
@@ -70,7 +73,7 @@ export function AppNavigation({ role }: { role: UserRole }) {
           >
             <div className="mobile-nav-drawer-header">
               <div>
-                <span className="eyebrow">Gold Era</span>
+                <span className="eyebrow">Fileora</span>
                 <h2 id="mobile-nav-title">Navigate</h2>
               </div>
               <button

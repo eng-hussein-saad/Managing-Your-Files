@@ -47,6 +47,7 @@ export const integrationEnv = parseServerEnv({
 
 export const primaryUserId = "11111111-1111-4111-8111-111111111111";
 export const secondaryUserId = "22222222-2222-4222-8222-222222222222";
+export const administratorUserId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 
 /** Creates a migrated-database integration harness and resets it between cases. */
 export function integrationHarness(): {
@@ -124,6 +125,54 @@ export function fileManagementHarness(): {
   });
   afterAll(async () => disconnectPrisma(prisma));
   return { app, prisma, storage, extractor };
+}
+
+/** Creates a deterministic administrator app with fake private storage. */
+export function administratorHarness(): {
+  app: Express;
+  prisma: ReturnType<typeof createPrismaClient>;
+  storage: FakeStorage;
+} {
+  const prisma = createPrismaClient(databaseUrl);
+  const storage = new FakeStorage();
+  const app = createApp(integrationEnv, prisma, new FakeMailer(), {
+    storage,
+    extractor: new FakeExtractor(),
+    authenticatedUserId: administratorUserId,
+    authenticatedRole: "ADMIN",
+  });
+  beforeEach(async () => {
+    await resetDatabase(prisma);
+    storage.objects.clear();
+    storage.calls.length = 0;
+    storage.failNext = undefined;
+    await prisma.user.createMany({
+      data: [
+        {
+          id: administratorUserId,
+          name: "Administrator",
+          email: "administrator@example.invalid",
+          passwordHash: "test",
+          role: "ADMIN",
+          isEmailVerified: true,
+          createdAt: new Date("2026-08-01T00:00:00Z"),
+          updatedAt: new Date("2026-08-01T00:00:00Z"),
+        },
+        {
+          id: primaryUserId,
+          name: "Primary User",
+          email: "primary@example.invalid",
+          passwordHash: "test",
+          role: "USER",
+          isEmailVerified: true,
+          createdAt: new Date("2026-08-02T00:00:00Z"),
+          updatedAt: new Date("2026-08-02T00:00:00Z"),
+        },
+      ],
+    });
+  });
+  afterAll(async () => disconnectPrisma(prisma));
+  return { app, prisma, storage };
 }
 
 /** Registers and verifies one user through the public HTTP contract. */

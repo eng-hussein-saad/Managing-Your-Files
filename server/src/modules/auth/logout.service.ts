@@ -1,8 +1,8 @@
 import type { PrismaClient } from "@prisma/client";
 import type { Clock } from "../../infrastructure/runtime/clock.js";
-import type { Logger } from "../../infrastructure/observability/logger.js";
 import { hashRefreshToken } from "../../infrastructure/security/refresh-tokens.js";
-import { AuditRepository } from "../audit/audit.repository.js";
+import type { AuditService } from "../audit/audit.service.js";
+import { authAudit } from "../audit/auth-audit.js";
 
 /** Revokes the presented device credential with idempotent semantics. */
 export class LogoutService {
@@ -10,8 +10,7 @@ export class LogoutService {
   constructor(
     private readonly prisma: PrismaClient,
     private readonly clock: Clock,
-    private readonly log: Logger,
-    private readonly audit = new AuditRepository(),
+    private readonly audit: AuditService,
   ) {}
   /** Revokes a known active token while remaining safe for absent or repeated input. */
   async logout(rawToken?: string): Promise<{ loggedOut: true }> {
@@ -25,25 +24,13 @@ export class LogoutService {
       where: { id: persisted.id, revokedAt: null },
       data: { revokedAt: now },
     });
-    try {
-      await this.prisma.$transaction((transaction) =>
-        this.audit.append(
-          transaction,
-          {
-            actorId: persisted.userId,
-            action: "auth.logout",
-            entityType: "REFRESH_TOKEN",
-            entityId: persisted.id,
-            metadata: { outcome: "SUCCESS" },
-          },
-          now,
-        ),
-      );
-    } catch {
-      this.log.critical("Logout audit persistence failed", {
+    await this.audit.bestEffort(
+      authAudit("auth.logout", "SUCCESS", {
+        actorId: persisted.userId,
+        entityType: "REFRESH_TOKEN",
         entityId: persisted.id,
-      });
-    }
+      }),
+    );
     return { loggedOut: true };
   }
 }

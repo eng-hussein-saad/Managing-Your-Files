@@ -9,7 +9,8 @@ import {
   generateRefreshToken,
   hashRefreshToken,
 } from "../../infrastructure/security/refresh-tokens.js";
-import { AuditRepository } from "../audit/audit.repository.js";
+import type { AuditService } from "../audit/audit.service.js";
+import { authAudit } from "../audit/auth-audit.js";
 import { toSafeUser } from "../users/user.mapper.js";
 import { AppError } from "./auth.errors.js";
 
@@ -24,7 +25,7 @@ export class LoginService {
     private readonly accessTokens: AccessTokenService,
     private readonly accessTtl: number,
     private readonly refreshTtl: number,
-    private readonly audit = new AuditRepository(),
+    private readonly audit: AuditService,
   ) {}
   /** Validates credentials generically and issues a distinct per-device credential pair. */
   async login(email: string, password: string): Promise<TrustedAuthResult> {
@@ -54,18 +55,14 @@ export class LoginService {
           createdAt: now,
         },
       });
-      await this.audit.append(
-        transaction,
-        {
-          actorId: user.id,
-          action: "auth.login",
-          entityType: "USER",
-          entityId: user.id,
-          metadata: { outcome: "SUCCESS" },
-        },
-        now,
-      );
     });
+    await this.audit.bestEffort(
+      authAudit("auth.login", "SUCCESS", {
+        actorId: user.id,
+        entityType: "USER",
+        entityId: user.id,
+      }),
+    );
     const safeUser: SafeUser = toSafeUser(user);
     const accessToken = await this.accessTokens.issue({
       subject: user.id,

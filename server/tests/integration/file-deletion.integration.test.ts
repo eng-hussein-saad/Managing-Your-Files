@@ -36,19 +36,18 @@ describeDatabase("provider-first file deletion", () => {
   });
   it("reports a retryable partial outcome when metadata removal fails after provider removal", async () => {
     const file = await seedFile(prisma, { ownerId: primaryUserId, storage });
-    storage.afterRemove = async () => {
-      await prisma.$executeRawUnsafe(
-        'ALTER TABLE "FILE" RENAME TO "FILE_UNAVAILABLE"',
-      );
-    };
+    await prisma.$executeRawUnsafe(
+      'CREATE FUNCTION fail_file_delete() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION \'injected delete failure\'; END $$',
+    );
+    await prisma.$executeRawUnsafe(
+      'CREATE TRIGGER fail_file_delete BEFORE DELETE ON "FILE" FOR EACH ROW EXECUTE FUNCTION fail_file_delete()',
+    );
     try {
       await supertest(app).delete(`/api/v1/files/${file.id}`).expect(503);
       expect(storage.objects.has(file.storageKey)).toBe(false);
     } finally {
-      storage.afterRemove = undefined;
-      await prisma.$executeRawUnsafe(
-        'ALTER TABLE "FILE_UNAVAILABLE" RENAME TO "FILE"',
-      );
+      await prisma.$executeRawUnsafe('DROP TRIGGER fail_file_delete ON "FILE"');
+      await prisma.$executeRawUnsafe("DROP FUNCTION fail_file_delete()");
     }
     expect(
       await prisma.file.findUnique({ where: { id: file.id } }),

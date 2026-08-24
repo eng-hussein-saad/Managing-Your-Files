@@ -34,3 +34,5 @@
 - Validation passed on the first review iteration.
 - The maintainer explicitly approved removal of `USER.deletedAt` from the canonical schema on 2026-08-23. The specification limits that approval to the synchronized Phase 3 schema, migration, contract, test, and documentation change.
 - Product constraints name existing concepts such as the canonical schema artifact and private stored objects only where needed to preserve approved security, migration, and scope boundaries; they do not prescribe new implementation architecture.
+- Validation was repeated after the C1-C3 remediation: speculative indexes now stop at an explicit approval gate, mandatory audit-producing operations have testable verification requirements, and every asynchronous workflow must be inventoried with complete applicable-state evidence.
+- The maintainer clarified that administrator reads create no audit events; only administrator file deletion, user deletion, and user role change are audited.

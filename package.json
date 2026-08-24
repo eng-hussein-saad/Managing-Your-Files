@@ -5,15 +5,23 @@
   "engines": { "node": ">=24 <25" },
   "packageManager": "pnpm@10.17.1",
   "scripts": {
+    "contracts:build": "pnpm --filter @gold-era/contracts build",
+    "predev": "pnpm contracts:build",
     "build": "pnpm -r build",
     "dev": "pnpm -r --parallel dev",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
-    "test": "vitest run --project unit --project contract --project component --maxWorkers=1 --no-file-parallelism",
+    "pretest": "pnpm contracts:build",
+    "test": "vitest run --project unit --maxWorkers=1 --no-file-parallelism && vitest run --project contract --maxWorkers=1 --no-file-parallelism && vitest run --project component --maxWorkers=1 --no-file-parallelism",
+    "pretest:integration": "pnpm contracts:build",
     "test:integration": "vitest run --project integration --maxWorkers=1 --no-file-parallelism",
+    "pretest:e2e": "pnpm contracts:build",
     "test:e2e": "playwright test --workers=1",
+    "pretest:security": "pnpm contracts:build",
     "test:security": "vitest run --project security --maxWorkers=1 --no-file-parallelism",
-    "audit:comments": "node scripts/intent-comment-audit.mjs"
+    "audit:comments": "node scripts/intent-comment-audit.mjs",
+    "verify:phase3": "node scripts/verify-phase-3.mjs",
+    "verify:critical:triple": "node scripts/verify-phase-3.mjs --critical-triple"
   },
   "devDependencies": {
     "@playwright/test": "1.55.1",

@@ -1,12 +1,12 @@
 <!--
 Sync Impact Report
-- Version change: 2.0.0 -> 3.0.0
+- Version change: 3.0.0 -> 3.0.1
 - Modified principles:
-  - VI. Audit Important State Changes -> VI. Audit Important Operations
-    (best-effort, fail-open recording; limited administrator visibility; no cross-system atomicity)
+  - VI. Audit Important Operations
+    (clarified that administrator actions means administrative mutations, while ordinary
+    administrator reads do not generate audit events)
 - Added principles: none
-- Modified sections:
-  - Delivery Workflow and Quality Gates (Clarify adopts the new default audit behavior)
+- Modified sections: none
 - Added sections: none
 - Removed sections: none
 - Follow-up TODOs: none
@@ -66,9 +66,13 @@ artifacts in the same change.
 ### VI. Audit Important Operations
 Important successful security-relevant and data-changing operations MUST attempt to emit audit
 events through one centralized audit service. At minimum, successful authentication, uploads,
-downloads, deletions, folder mutations, role changes, and administrator actions MUST attempt to
-record actor, action, target, timestamp, and only safe, useful metadata. Ordinary failed requests,
-validation failures, and denied operations are not required to generate audit events.
+downloads, deletions, folder mutations, role changes, and administrative mutations MUST attempt to
+record actor, action, target, timestamp, and only safe, useful metadata. For currently approved
+administrator capabilities, the only audit-producing administrative mutations are user role
+changes, permanent user deletions, and permanent administrator file deletions. Ordinary
+administrator list, detail, statistics, and audit-history reads MUST NOT generate audit events.
+Ordinary failed requests, validation failures, and denied operations are not required to generate
+audit events.
 
 Audit logging MUST remain lightweight and MUST NOT become a secondary store of credentials, tokens,
 OTPs, private file contents, storage keys, or other sensitive data. Audit records MAY be exposed only
@@ -207,4 +211,4 @@ principles, MINOR for new principles or materially expanded obligations, and PAT
 that do not change obligations. The ratification date remains the date of initial adoption; the last
 amended date changes whenever constitutional content changes.
 
-**Version**: 3.0.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-22
+**Version**: 3.0.1 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-23

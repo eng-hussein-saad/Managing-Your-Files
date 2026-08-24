@@ -13,7 +13,6 @@ model User {
   passwordHash      String
   role              String
   isEmailVerified   Boolean
-  deletedAt         DateTime?          @db.Timestamptz(3)
   createdAt         DateTime           @db.Timestamptz(3)
   updatedAt         DateTime           @db.Timestamptz(3)
   verificationCodes VerificationCode[]

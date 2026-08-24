@@ -4,9 +4,6 @@ import { VerifyEmailForm } from "../../../features/auth/components/verify-email-
 export default function VerifyEmailPage() {
   return (
     <main id="main" className="auth-page">
-      <a className="brand corner" href="/">
-        Gold Era<span>.</span>
-      </a>
       <Suspense fallback={<p>Loading verification…</p>}>
         <VerifyEmailForm />
       </Suspense>

@@ -92,6 +92,11 @@ rows render as `Deleted user`. An originally actorless event has no discriminato
 and renders as `System`. Audit write failure is fail-open for the primary
 successful operation and emits sanitized operational logging.
 
+Within administrator capabilities, the centralized action allowlist includes
+only user role change, permanent user deletion, and permanent administrator file
+deletion. Administrator list/detail, statistics, and audit-history reads create
+no audit records.
+
 ## Non-persisted models
 
 ### Theme preference

@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
-:root { --ink:#171714; --paper:#f6f3ea; --card:#fffdf7; --gold:#a77b2b; --gold-light:#e7d3a4; --muted:#68675f; --line:#d9d3c5; --soft:#eee9de; --danger:#9d382e; color-scheme:light; }
+:root { --ink:#171714; --paper:#f6f3ea; --card:#fffdf7; --gold:#8b6219; --gold-light:#e7d3a4; --muted:#68675f; --line:#d9d3c5; --soft:#eee9de; --danger:#9d382e; --success:#285841; --overlay:rgba(23,23,20,.38); color-scheme:light; }
+:root[data-theme="dark"] { --ink:#f5f0e5; --paper:#171713; --card:#24231e; --gold:#e0b55d; --gold-light:#6a5327; --muted:#bbb4a5; --line:#49463e; --soft:#302e28; --danger:#ff9185; --success:#8ed1ae; --overlay:rgba(0,0,0,.68); color-scheme:dark; }
 * { box-sizing:border-box; }
 html { background:var(--paper); scroll-behavior:smooth; }
-body { margin:0; color:var(--ink); background:radial-gradient(circle at 90% 10%,rgba(231,211,164,.26),transparent 30rem),var(--paper); font-family:Arial,Helvetica,sans-serif; line-height:1.55; min-height:100vh; }
+body { margin:0; color:var(--ink); background:radial-gradient(circle at 90% 10%,rgba(167,123,43,.16),transparent 30rem),var(--paper); font-family:Arial,Helvetica,sans-serif; line-height:1.55; min-height:100vh; }
 a { color:inherit; text-underline-offset:.22em; }
 button,input,select { font:inherit; }
 button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible { outline:3px solid var(--gold); outline-offset:3px; }
@@ -155,11 +156,11 @@ progress::-webkit-progress-bar { background:var(--soft); } progress::-webkit-pro
 .file-pagination button { border:0; background:transparent; font-weight:700; color:var(--gold); cursor:pointer; } .file-pagination button:disabled { color:var(--line); cursor:not-allowed; }
 .file-pagination span { color:var(--muted); font-size:.75rem; }
 .collection-loading { display:grid; gap:1px; } .collection-loading span { height:4.6rem; }
-.detail-overlay,.dialog-backdrop { position:fixed; inset:0; z-index:80; background:rgba(23,23,20,.38); backdrop-filter:blur(3px); }
+.detail-overlay,.dialog-backdrop { position:fixed; inset:0; z-index:80; background:var(--overlay); backdrop-filter:blur(3px); }
 .detail-overlay { display:flex; justify-content:flex-end; }
 .detail-drawer { position:relative; width:min(100%,36rem); height:100%; overflow:auto; background:var(--card); padding:clamp(2rem,5vw,3.5rem); box-shadow:-20px 0 60px rgba(23,23,20,.18); }
 .drawer-close { position:absolute; right:1.2rem; top:1.1rem; border:0; background:transparent; font-size:2rem; color:var(--muted); cursor:pointer; }
-.filter-drawer-overlay,.mobile-nav-overlay { position:fixed; inset:0; z-index:80; background:rgba(23,23,20,.38); backdrop-filter:blur(3px); }
+.filter-drawer-overlay,.mobile-nav-overlay { position:fixed; inset:0; z-index:80; background:var(--overlay); backdrop-filter:blur(3px); }
 .filter-drawer-overlay { display:flex; justify-content:flex-end; }
 .filter-drawer { position:relative; width:min(100%,25rem); height:100%; overflow:auto; background:var(--card); padding:2rem 1.5rem; box-shadow:-20px 0 60px rgba(23,23,20,.18); }
 .filter-drawer-header,.mobile-nav-drawer-header { display:flex; align-items:start; justify-content:space-between; gap:1rem; padding-right:2rem; }
@@ -254,3 +255,36 @@ progress::-webkit-progress-bar { background:var(--soft); } progress::-webkit-pro
   .file-grid { grid-template-columns:1fr; }
 }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }
+
+.admin-section-nav,.admin-actions { display:flex; gap:.6rem; flex-wrap:wrap; }
+.admin-section-nav a,.admin-actions button { border:1px solid var(--line); background:var(--card); padding:.55rem .8rem; text-decoration:none; font-weight:700; cursor:pointer; }
+.admin-actions .danger { color:var(--danger); }
+.admin-directory { border:1px solid var(--line); background:var(--card); }
+.admin-toolbar { display:grid; grid-template-columns:minmax(14rem,1fr) repeat(3,minmax(8rem,auto)); gap:1rem; padding:1rem; border-bottom:1px solid var(--line); }
+.admin-toolbar label { display:grid; gap:.3rem; color:var(--muted); font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.07em; }
+.admin-toolbar input,.admin-toolbar select { min-height:2.6rem; padding:.5rem .65rem; border:1px solid var(--line); background:var(--paper); color:var(--ink); text-transform:none; letter-spacing:normal; }
+.table-scroll { overflow-x:auto; }
+.admin-directory table { width:100%; border-collapse:collapse; min-width:48rem; }
+.admin-directory th,.admin-directory td { padding:.85rem 1rem; border-bottom:1px solid var(--line); text-align:left; vertical-align:middle; }
+.admin-directory th { color:var(--muted); font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; }
+.admin-directory td small { display:block; color:var(--muted); }
+.admin-dashboard { display:grid; gap:1.5rem; }
+.admin-dashboard ul { list-style:none; padding:0; }
+.admin-dashboard li { display:flex; justify-content:space-between; gap:1rem; padding:.65rem 0; border-bottom:1px solid var(--line); }
+.app-shell { min-height:100vh; display:flex; flex-direction:column; }
+.app-shell>main,.app-shell>.auth-page { flex:1; }
+.fileora-identity { display:inline-flex; flex-direction:column; align-items:flex-start; }
+.fileora-identity small { color:var(--muted); font-size:.67rem; letter-spacing:.03em; }
+.app-footer { margin-top:auto; display:flex; justify-content:space-between; align-items:center; gap:2rem; padding:1.4rem clamp(1.25rem,4vw,4rem); border-top:1px solid var(--line); background:var(--card); }
+.app-footer p { color:var(--muted); font-size:.78rem; margin:0; }
+.auth-shell-header { position:absolute; z-index:10; top:1.5rem; left:clamp(1.25rem,4vw,4rem); right:clamp(1.25rem,4vw,4rem); display:flex; justify-content:space-between; align-items:start; }
+.theme-selector select { min-height:2.45rem; border:1px solid var(--line); background:var(--card); color:var(--ink); padding:.4rem .65rem; }
+.landing-actions { display:flex; gap:1rem; align-items:center; }
+:root[data-theme="dark"] .auth-card,:root[data-theme="dark"] .app-header,:root[data-theme="dark"] .file-toolbar,:root[data-theme="dark"] .file-list li button:hover { background:var(--card); }
+:root[data-theme="dark"] input,:root[data-theme="dark"] select { background:var(--soft); color:var(--ink); border-color:var(--line); }
+@media (max-width:760px) {
+  .admin-toolbar { grid-template-columns:1fr; }
+  .admin-section-nav { width:100%; }
+  .app-footer { align-items:flex-start; flex-direction:column; gap:.7rem; }
+  .fileora-identity small { display:none; }
+}

@@ -23,6 +23,19 @@ const categoryMimes: Record<FileTypeCategory, string[]> = {
 
 /** Encapsulates owner-scoped file persistence, discovery, and quota calculations. */
 export class FileRepository {
+  /** Serializes all storage and lifecycle changes for one owner. */
+  async lockOwnerLifecycle(
+    database: Database,
+    ownerId: string,
+  ): Promise<boolean> {
+    await database.$queryRaw`
+      SELECT pg_advisory_xact_lock(hashtextextended(${ownerId}, 0))::text AS lock
+    `;
+    const rows = await database.$queryRaw<Array<{ id: string }>>`
+      SELECT id FROM "USER" WHERE id = ${ownerId}::uuid FOR UPDATE
+    `;
+    return rows.length === 1;
+  }
   /** Returns retained bytes for display without acquiring an admission lock. */
   async usedBytesForOwner(
     database: Database,
@@ -36,7 +49,7 @@ export class FileRepository {
   }
   /** Locks a user row and returns authoritative retained bytes. */
   async quotaForOwner(database: Database, ownerId: string): Promise<bigint> {
-    await database.$queryRaw`SELECT id FROM "USER" WHERE id = ${ownerId}::uuid FOR UPDATE`;
+    await this.lockOwnerLifecycle(database, ownerId);
     return this.usedBytesForOwner(database, ownerId);
   }
   /** Ensures an optional destination folder belongs to the requesting owner. */

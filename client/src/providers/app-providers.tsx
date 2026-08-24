@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type PropsWithChildren } from "react";
 import { ToastProvider } from "../components/toast/toast-provider";
 import { AuthProvider } from "./auth-provider";
+import { ThemeProvider } from "./theme-provider";
 /** Provides one stable query cache and the authentication lifecycle. */
 export function AppProviders({ children }: PropsWithChildren) {
   const [client] = useState(
@@ -10,9 +11,9 @@ export function AppProviders({ children }: PropsWithChildren) {
   );
   return (
     <QueryClientProvider client={client}>
-      <ToastProvider>
+      <ThemeProvider><ToastProvider>
         <AuthProvider>{children}</AuthProvider>
-      </ToastProvider>
+      </ToastProvider></ThemeProvider>
     </QueryClientProvider>
   );
 }

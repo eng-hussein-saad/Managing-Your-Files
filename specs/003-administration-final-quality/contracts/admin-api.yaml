@@ -4,8 +4,15 @@ info:
   version: 0.1.0-phase3
   description: >-
     Administrator-only metadata and lifecycle operations. Authentication and
-    ADMIN authorization run before any response data is disclosed. This API
-    deliberately defines no administrator preview or download operation.
+    ADMIN authorization run before any response data is disclosed. Successful
+    user role changes, permanent user deletions, and permanent administrator
+    file deletions attempt one centralized sanitized audit event after the
+    authoritative result is fixed. Administrator read operations create no
+    audit events. Audit persistence failure does not change the documented
+    mutation success response and produces sanitized operational evidence.
+    Audit metadata never copies names, emails, filenames, storage identifiers,
+    or content. This API deliberately defines no administrator preview or
+    download operation.
 servers:
   - url: /api/v1
 security:

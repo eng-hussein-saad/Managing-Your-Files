@@ -1,25 +1,25 @@
-/** Introduces the product and directs visitors into authentication journeys. */
+import { FileoraBrand } from "../components/brand/fileora-brand";
+import { AppFooter } from "../components/layout/app-footer";
+import { ThemeSelector } from "../components/theme/theme-selector";
+
+/** Introduces Fileora and directs visitors into authentication journeys. */
 export default function HomePage() {
   return (
-    <main id="main" className="landing">
+    <div className="app-shell"><main id="main" className="landing">
       <nav>
-        <a className="brand" href="/">
-          Gold Era<span>.</span>
-        </a>
-        <a className="nav-link" href="/login">
-          Sign in
-        </a>
+        <FileoraBrand tagline />
+        <span className="landing-actions"><ThemeSelector /><a className="nav-link" href="/login">Sign in</a></span>
       </nav>
       <section className="hero">
         <div>
-          <span className="eyebrow">Your work. Kept with intention.</span>
+          <span className="eyebrow">Your files. Organized your way.</span>
           <h1>
             Build an archive
             <br />
             that outlives the moment.
           </h1>
           <p>
-            Gold Era gives your most valuable files and ideas a calm, secure
+            Fileora gives your most valuable files and ideas a calm, secure
             place to grow.
           </p>
           <div className="actions">
@@ -49,6 +49,6 @@ export default function HomePage() {
           </dl>
         </aside>
       </section>
-    </main>
+    </main><AppFooter /></div>
   );
 }

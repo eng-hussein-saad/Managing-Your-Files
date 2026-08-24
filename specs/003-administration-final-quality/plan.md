@@ -45,7 +45,9 @@ avoid full-table transfer and unnecessary React Query refetches
 preview/download privilege; permanent cleanup must not report false success;
 stale mutations return 409 without automatic retry; no user/file/folder Trash
 or recovery state; best-effort sanitized audit writes; no new secrets or
-parallel infrastructure; all project-authored functions remain intent-commented
+parallel infrastructure; all project-authored functions remain intent-commented;
+no index may be added or altered without an exact recorded proposal, explicit
+maintainer approval, synchronized canonical artifacts, and a new migration
 
 **Scale/Scope**: Four administrator capabilities (users, global files,
 statistics, audit history), application-wide branding/theme/UX completion,
@@ -68,7 +70,7 @@ README completion across the existing three workspaces
 | VI. Audit important operations | New actions use the centralized best-effort audit service and allowlisted metadata; read access is admin-only and failure logs remain sanitized. | PASS |
 | VII. Spec-driven delivery | Contracts, data design, validation scenarios, risk-based tests, and completion evidence are defined before tasks or implementation. | PASS |
 | VIII. Comment every function | The comment audit remains a required verification command and applies to all changed functions/callbacks. | PASS |
-| IX. Approved database contract | The maintainer explicitly approved removal of `USER.deletedAt` on 2026-08-23. This plan records exact impact and synchronizes `database-schema.mmd`; no other stored field or relationship changes are proposed. | PASS |
+| IX. Approved database contract | The maintainer explicitly approved removal of `USER.deletedAt` on 2026-08-23. This plan records exact impact and synchronizes `database-schema.mmd`; no other stored field, relationship, or index change is authorized. Performance analysis may identify index candidates but cannot implement them until a separate exact proposal is explicitly approved and synchronized. | PASS |
 
 **Schema comparison and approval record**: The pre-plan baseline contained
 nullable `USER.deletedAt`, matching the current Prisma schema and migration
@@ -80,6 +82,13 @@ before deleting the user, so no foreign-key action or relationship change is
 needed. Runtime Prisma schema, a reviewable Phase 3 migration, generated client,
 fixtures, queries, contracts, tests, and docs must be synchronized during
 implementation.
+
+The approval does not cover new or altered indexes. Performance review records
+query-plan evidence and recommendations only. If that evidence identifies an
+index candidate, implementation pauses until the exact index, rationale,
+migration and compatibility effects are added to the governed artifacts and
+explicitly approved. An approved index uses a new reviewable migration; an
+already-applied Phase 3 migration is never rewritten.
 
 ### Post-design gate
 
@@ -182,6 +191,12 @@ parallel auth, storage, audit, query, or component system is introduced.
 - Administrator file deletion reuses the permanent file deletion semantics but
   supplies the owner from the trusted database row, never from caller authority.
   No admin preview or download endpoint exists.
+- The centralized audit matrix retains the constitution-required authentication,
+  upload, download, file/folder deletion, and folder-mutation events. Within the
+  administrator feature, only role change, permanent user deletion, and
+  permanent administrator file deletion emit audit events. User/file list and
+  detail reads, statistics reads, and audit-history reads emit none. Audit
+  persistence remains fail-open with sanitized operational evidence.
 
 ### Read models and frontend behavior
 
@@ -199,6 +214,11 @@ parallel auth, storage, audit, query, or component system is introduced.
 - Administrator query state is URL-backed. React Query keys include normalized
   filters, sort, and pagination; successful mutations invalidate only affected
   admin summaries/lists plus relevant existing owner statistics.
+- A maintained asynchronous-workflow inventory names every authentication,
+  file, folder, dashboard, profile, and administrator page or action. Component
+  and browser verification covers every applicable loading, empty, success,
+  validation, and error state for every entry; any inapplicable state requires
+  a recorded reason, so representative sampling cannot satisfy the gate.
 
 ### Configuration and deployment mapping
 
@@ -224,12 +244,19 @@ test-substituted as already designed; Phase 3 does not provision providers.
   invalidation, actor nulling, partial storage cleanup/retry, metadata-only file
   access, exact statistics, and sanitized audit projections.
 - Component tests cover URL query state, mutation invalidation, dialog focus
-  trapping/restoration, loading/empty/error/success states, theme persistence,
-  and system-theme changes.
+  trapping/restoration, theme persistence, and system-theme changes. A checked
+  inventory proves loading/empty/error/success/validation coverage for every
+  user-facing asynchronous workflow rather than a representative subset.
+- Authentication and file/folder regression tests preserve constitution-required
+  audit coverage. Administrator tests prove role change, permanent user deletion,
+  and permanent administrator file deletion attempt sanitized fail-open events,
+  while all administrator reads create no audit records.
 - Playwright covers representative journeys at 360, 768, and 1440 px in light,
   dark, and system modes with keyboard-only destructive workflows and reduced
   motion.
-- Migration tests compare `database-schema.mmd`, Prisma, and PostgreSQL; clean
+- Migration tests compare `database-schema.mmd`, Prisma, and PostgreSQL. Query
+  plan review may record index candidates but fails the implementation gate if
+  any unapproved index appears or an applied migration was rewritten. Clean
   container smoke tests start from non-secret example configuration. Lint,
   typecheck, intent-comment audit, all Vitest projects, three consecutive
   critical-suite runs, Playwright, and both production builds form the final

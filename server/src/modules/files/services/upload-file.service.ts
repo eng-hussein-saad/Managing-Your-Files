@@ -56,6 +56,8 @@ export class UploadFileService {
             ))
           )
             throw fileNotFound();
+          if (!(await this.repository.lockOwnerLifecycle(transaction, ownerId)))
+            throw fileNotFound();
           const used = await this.repository.quotaForOwner(
             transaction,
             ownerId,

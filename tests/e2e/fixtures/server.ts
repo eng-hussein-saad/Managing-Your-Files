@@ -31,8 +31,6 @@ async function start(): Promise<void> {
     host: env.SMTP_HOST,
     port: env.SMTP_PORT,
     secure: env.SMTP_SECURE,
-    user: env.SMTP_USER,
-    password: env.SMTP_PASSWORD,
     from: env.EMAIL_FROM,
   });
   const server = createApp(env, prisma, mailer, {

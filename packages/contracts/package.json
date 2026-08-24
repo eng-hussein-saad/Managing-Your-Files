@@ -4,12 +4,12 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": { "types": "./src/public/index.ts", "default": "./runtime/public.mjs" },
-    "./public": { "types": "./src/public/index.ts", "default": "./runtime/public.mjs" },
-    "./internal": { "types": "./src/internal/index.ts", "default": "./runtime/internal.mjs" }
+    ".": { "types": "./src/public/index.ts", "default": "./dist/public/index.js" },
+    "./public": { "types": "./src/public/index.ts", "default": "./dist/public/index.js" },
+    "./internal": { "types": "./src/internal/index.ts", "default": "./dist/internal/index.js" }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint src"
   },

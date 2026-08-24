@@ -18,13 +18,16 @@ export function FileQueryToolbar({
 }: FileQueryToolbarProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  useEffect(() => {
+  useEffect(
+    /** Keeps the responsive filter drawer dismissible by keyboard. */ () => {
     if (!filtersOpen) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
+    /** Closes the filter drawer when Escape is pressed. */
+    const closeOnEscape = /** Implements the local closeOnEscape operation. */ (event: KeyboardEvent) => {
       if (event.key === "Escape") setFiltersOpen(false);
     };
     document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
+    return /** Removes the temporary drawer keyboard listener. */ () =>
+      document.removeEventListener("keydown", closeOnEscape);
   }, [filtersOpen]);
 
   return (
@@ -49,7 +52,7 @@ export function FileQueryToolbar({
         type="button"
         aria-haspopup="dialog"
         aria-expanded={filtersOpen}
-        onClick={() => setFiltersOpen(true)}
+        onClick={/** Opens the responsive filter drawer. */ () => setFiltersOpen(true)}
       >
         Filters
       </button>
@@ -80,7 +83,7 @@ export function FileQueryToolbar({
         <div
           className="filter-drawer-overlay"
           role="presentation"
-          onMouseDown={(event) => {
+          onMouseDown={/** Dismisses the drawer only from its backdrop. */ (event) => {
             if (event.target === event.currentTarget) setFiltersOpen(false);
           }}
         >
@@ -99,7 +102,7 @@ export function FileQueryToolbar({
                 className="drawer-close"
                 type="button"
                 aria-label="Close filters"
-                onClick={() => setFiltersOpen(false)}
+                onClick={/** Closes the responsive filter drawer. */ () => setFiltersOpen(false)}
               >
                 ×
               </button>
@@ -111,7 +114,7 @@ export function FileQueryToolbar({
                   placeholder="Search your archive"
                   value={query.search ?? ""}
                   maxLength={200}
-                  onChange={(event) =>
+                  onChange={/** Updates drawer search state at the first page. */ (event) =>
                     onChange({ search: event.target.value, page: 1 })
                   }
                 />
@@ -136,7 +139,7 @@ function FilterControls({
         <span>Type</span>
         <select
           value={query.type ?? ""}
-          onChange={(event) =>
+          onChange={/** Updates the selected file type at the first page. */ (event) =>
             onChange({
               type: event.target.value
                 ? (event.target.value as FileQuery["type"])
@@ -156,7 +159,7 @@ function FilterControls({
         <span>Sort by</span>
         <select
           value={query.sort ?? "uploadedAt"}
-          onChange={(event) =>
+          onChange={/** Updates the selected file sort at the first page. */ (event) =>
             onChange({
               sort: event.target.value as FileQuery["sort"],
               page: 1,
@@ -172,7 +175,7 @@ function FilterControls({
         <span>Order</span>
         <select
           value={query.direction ?? "desc"}
-          onChange={(event) =>
+          onChange={/** Updates the selected sort direction at the first page. */ (event) =>
             onChange({
               direction: event.target.value as FileQuery["direction"],
               page: 1,
@@ -187,7 +190,7 @@ function FilterControls({
         <span>Files per page</span>
         <select
           value={query.pageSize ?? 20}
-          onChange={(event) =>
+          onChange={/** Updates the selected page size and returns to page one. */ (event) =>
             onChange({ pageSize: Number(event.target.value), page: 1 })
           }
         >

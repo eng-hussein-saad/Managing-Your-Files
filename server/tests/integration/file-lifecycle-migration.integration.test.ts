@@ -15,7 +15,7 @@ describe("file lifecycle migration", () => {
   it("keeps the canonical six entities with only the approved lifecycle difference", async () => {
     const schema = await readFile(schemaPath, "utf8");
     expect(schema).toContain("model User");
-    expect(schema).toContain("deletedAt         DateTime?");
+    expect(schema).not.toMatch(/model User[\s\S]*?deletedAt/);
     expect(schema).not.toMatch(/model File[\s\S]*?deletedAt/);
     expect(schema).not.toMatch(/model Folder[\s\S]*?deletedAt/);
   });

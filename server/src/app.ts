@@ -50,12 +50,20 @@ import { fileMoveController } from "./http/controllers/file-move.controller.js";
 import { DeleteFolderService } from "./modules/folders/services/delete-folder.service.js";
 import type { StoragePort } from "./modules/files/ports/storage.port.js";
 import type { ExtractionPort } from "./modules/files/ports/extraction.port.js";
+import { AdminUserService } from "./modules/users/admin-user.service.js";
+import { AdminUserDeletionService } from "./modules/users/admin-user-deletion.service.js";
+import { adminUserController } from "./http/controllers/admin-user.controller.js";
+import { AdminFileService } from "./modules/files/services/admin-file.service.js";
+import { adminFileController } from "./http/controllers/admin-file.controller.js";
+import { AdminStatisticsService } from "./modules/statistics/admin-statistics.service.js";
+import { adminMonitoringController } from "./http/controllers/admin-monitoring.controller.js";
 
 export interface FileManagementDependencies {
   storage?: StoragePort;
   extractor?: ExtractionPort;
   audit?: AuditService;
   authenticatedUserId?: string;
+  authenticatedRole?: "USER" | "ADMIN";
 }
 
 /** Composes the Express boundary around independently testable services. */
@@ -73,17 +81,21 @@ export function createApp(
     "gold-era-browser",
     accessTtl,
   );
+  const audit =
+    fileManagement.audit ?? new AuditService(prisma, systemClock, logger);
   const registration = new RegistrationService(
     prisma,
     systemClock,
     systemIdentifiers,
     passwordHasher,
     mailer,
+    audit,
   );
   const verification = new VerificationService(
     prisma,
     systemClock,
     passwordHasher,
+    audit,
   );
   const resend = new VerificationResendService(
     prisma,
@@ -100,6 +112,7 @@ export function createApp(
     accessTokens,
     accessTtl,
     refreshTtl,
+    audit,
   );
   const refresh = new RefreshService(
     prisma,
@@ -109,9 +122,24 @@ export function createApp(
     accessTtl,
     refreshTtl,
   );
-  const logout = new LogoutService(prisma, systemClock, logger);
-  const audit =
-    fileManagement.audit ?? new AuditService(prisma, systemClock, logger);
+  const logout = new LogoutService(prisma, systemClock, audit);
+  const adminDeletion = fileManagement.storage
+    ? new AdminUserDeletionService(prisma, fileManagement.storage, audit)
+    : undefined;
+  const adminFileDeletion = fileManagement.storage
+    ? new DeleteFileService(prisma, fileManagement.storage, audit)
+    : undefined;
+  const adminUsers = adminUserController(
+    new AdminUserService(prisma, audit, systemClock),
+    adminDeletion,
+  );
+  const adminFiles = adminFileController(
+    new AdminFileService(prisma, adminFileDeletion),
+  );
+  const adminMonitoring = adminMonitoringController(
+    new AdminStatisticsService(prisma),
+    audit,
+  );
   const registrationHandlers = registrationController(
     registration,
     verification,
@@ -124,11 +152,11 @@ export function createApp(
       ? (_request, response, next) => {
           response.locals.identity = {
             subject: fileManagement.authenticatedUserId,
-            role: "USER",
+            role: fileManagement.authenticatedRole ?? "USER",
           };
           next();
         }
-      : authenticate(accessTokens);
+      : authenticate(accessTokens, prisma);
   const app = express();
   app.set("fileManagement", fileManagement);
   app.disable("x-powered-by");
@@ -202,7 +230,14 @@ export function createApp(
   app.use("/api/v1/users", userRoutes(bearer, profileController(prisma)));
   app.use(
     "/api/v1/admin",
-    adminRoutes(bearer, requireAdmin(audit), adminAccessController),
+    adminRoutes(
+      bearer,
+      requireAdmin(audit),
+      adminAccessController,
+      adminUsers,
+      adminFiles,
+      adminMonitoring,
+    ),
   );
   app.use(notFound);
   app.use(errorHandler(logger));
