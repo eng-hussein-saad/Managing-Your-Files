@@ -152,8 +152,8 @@ tests/
 
 database-schema.mmd          # Canonical approved data baseline
 scripts/                     # Intent-comment and repository verification tools
-Dockerfile.client            # Planned multi-stage client image
-Dockerfile.server            # Planned multi-stage server image
+client/Dockerfile            # Planned multi-stage client image
+Dockerfile                   # Planned multi-stage server image
 compose.yaml                 # Planned app/PostgreSQL local workflow
 .dockerignore                # Planned secret/sensitive context exclusions
 ```

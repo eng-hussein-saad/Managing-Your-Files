@@ -225,7 +225,7 @@ description: "Dependency-ordered implementation tasks for Administration and Fin
 
 ### Implementation for User Story 7
 
-- [X] T082 [P] [US7] Create pinned Node 24 pnpm multi-stage server and client images in ./Dockerfile.server and ./Dockerfile.client
+- [X] T082 [P] [US7] Create pinned Node 24 pnpm multi-stage server and client images in ./Dockerfile and ./client/Dockerfile
 - [X] T083 [P] [US7] Exclude secrets, local environments, dependencies, test artifacts, and unnecessary repository context in ./.dockerignore
 - [X] T084 [US7] Define healthy PostgreSQL, one-shot migration, Express, and Next.js services with runtime-only configuration and persistent database data in ./compose.yaml
 - [X] T085 [US7] Synchronize all existing configuration keys, safe placeholders, classifications, and startup validation across server/.env.example, client/.env.example, server/src/config/env.ts, client/src/lib/config/server-env.ts, and client/src/lib/config/public-env.ts

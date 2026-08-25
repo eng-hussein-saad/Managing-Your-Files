@@ -15,7 +15,7 @@ tests/
 **/.env
 **/.env.*
 !**/.env.example
-Dockerfile*
+**/Dockerfile*
 .dockerignore
 *.tmp
 *.swp
