@@ -59,6 +59,7 @@ export default function FilesPage() {
       await files.refetch();
     };
   const hasFilters = Boolean(query.search || query.type);
+  const isUploading = queue.items.some((item) => item.status === "uploading");
   return (
     <main id="main" className="files-page app-page">
       <header className="page-heading files-heading">
@@ -196,13 +197,20 @@ export default function FilesPage() {
                 <button
                   className="ui-button primary"
                   type="button"
+                  disabled={isUploading}
+                  aria-busy={isUploading}
                   onClick={
                     /** Runs the approved upload queue and retains visible settled results. */ () => {
                       void upload();
                     }
                   }
                 >
-                  Upload queued files
+                  {isUploading ? (
+                    <span className="upload-action-spinner" aria-hidden="true" />
+                  ) : (
+                    <UploadIcon />
+                  )}
+                  {isUploading ? "Uploading files…" : "Upload queued files"}
                 </button>
               </section>
             ) : null}
