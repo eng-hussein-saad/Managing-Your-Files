@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { detectAllowedMime } from "../../src/infrastructure/file-content/content-detector.js";
-import { normalizeDisplayName } from "../../src/infrastructure/file-content/filename.js";
+import {
+  decodeMultipartFilename,
+  normalizeDisplayName,
+} from "../../src/infrastructure/file-content/filename.js";
 import {
   docxFile,
   jpegFile,
@@ -60,5 +63,15 @@ describe("authoritative file content validation", () => {
     expect(normalizeDisplayName("\u0000/\\")).toBe("unnamed-file");
     expect(normalizeDisplayName("e\u0301.txt")).toBe("é.txt");
     expect(normalizeDisplayName("x".repeat(300))).toHaveLength(255);
+  });
+
+  it("repairs UTF-8 multipart filenames without damaging valid names", () => {
+    const arabicName = "استبيان_متطلبات_منصة_الأمهات_المتميزات.txt";
+    const parserValue = Buffer.from(arabicName, "utf8").toString("latin1");
+
+    expect(decodeMultipartFilename(parserValue)).toBe(arabicName);
+    expect(decodeMultipartFilename(arabicName)).toBe(arabicName);
+    expect(decodeMultipartFilename("report.txt")).toBe("report.txt");
+    expect(decodeMultipartFilename("café.txt")).toBe("café.txt");
   });
 });

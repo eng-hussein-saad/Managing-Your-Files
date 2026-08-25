@@ -107,6 +107,16 @@ describe("file upload HTTP contract", () => {
     expect(response.body.data.sizeBytes).toBe("5242880");
   });
 
+  it("preserves Arabic filenames sent through multipart uploads", async () => {
+    const originalName = "استبيان_متطلبات_منصة_الأمهات_المتميزات.txt";
+    const response = await supertest(app)
+      .post("/api/v1/files")
+      .attach("file", Buffer.from("arabic filename"), originalName)
+      .expect(201);
+
+    expect(response.body.data.originalName).toBe(originalName);
+  });
+
   it("rejects a file over the boundary and more than one file with safe envelopes", async () => {
     const tooLarge = await supertest(app)
       .post("/api/v1/files")

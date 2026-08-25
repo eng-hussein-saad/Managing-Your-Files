@@ -7,7 +7,7 @@ COPY packages/eslint-config/package.json packages/eslint-config/package.json
 COPY packages/typescript-config/package.json packages/typescript-config/package.json
 COPY server/package.json server/package.json
 COPY client/package.json client/package.json
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --filter @gold-era/client...
 COPY packages/contracts/src packages/contracts/src
 COPY packages/contracts/tsconfig.json packages/contracts/tsconfig.build.json packages/contracts/
 COPY packages/typescript-config/tsconfig.json packages/typescript-config/tsconfig.json
@@ -19,15 +19,12 @@ RUN pnpm --filter @gold-era/contracts build && pnpm --filter @gold-era/client bu
 
 FROM node:24.7.0-bookworm-slim AS runtime
 ENV NODE_ENV=production
-ENV COREPACK_HOME=/opt/corepack
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
 WORKDIR /workspace
-RUN corepack enable && corepack prepare pnpm@10.17.1 --activate && chmod -R a+rX /opt/corepack
-COPY --from=build /workspace/package.json /workspace/pnpm-lock.yaml /workspace/pnpm-workspace.yaml /workspace/.npmrc ./
-COPY --from=build /workspace/node_modules node_modules
-COPY --from=build /workspace/packages packages
-COPY --from=build /workspace/client/package.json client/package.json
-COPY --from=build /workspace/client/node_modules client/node_modules
-COPY --from=build /workspace/client/.next client/.next
+COPY --from=build --chown=node:node /workspace/client/.next/standalone ./
+COPY --from=build --chown=node:node /workspace/client/.next/static ./client/.next/static
 USER node
 EXPOSE 3000
-CMD ["pnpm", "--filter", "@gold-era/client", "start"]
+CMD ["node", "client/server.js"]

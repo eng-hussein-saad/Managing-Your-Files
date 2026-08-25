@@ -3,6 +3,7 @@ import { success } from "../respond.js";
 import type { UploadFileService } from "../../modules/files/services/upload-file.service.js";
 import { uploadFileFieldSchema } from "../schemas/file-upload.schemas.js";
 import { failure } from "../respond.js";
+import { decodeMultipartFilename } from "../../infrastructure/file-content/filename.js";
 
 /** Builds request handlers for the upload-policy and one-file upload endpoints. */
 export function fileUploadController(
@@ -49,7 +50,7 @@ export function fileUploadController(
       }
       const result = await service.upload(identity.subject, {
         path: request.file.path,
-        originalName: request.file.originalname,
+        originalName: decodeMultipartFilename(request.file.originalname),
         folderId: fields.data.folderId,
       });
       success(response, 201, result);
