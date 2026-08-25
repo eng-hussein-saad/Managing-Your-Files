@@ -14,6 +14,8 @@ For Phase 2 add the eight server-only settings: `UPLOAD_MAX_FILE_SIZE_BYTES=5242
 
 Container deployments use the root `Dockerfile` for the server and `client/Dockerfile` for the client. Both Dockerfiles require the repository root as the build context because they install shared workspace packages. For example, build them with `docker build --target server .` and `docker build -f client/Dockerfile .`. On Back4App Containers, select the repository root so the platform finds the server Dockerfile and retains access to every workspace package.
 
+The server image provides runtime defaults for `PORT`, token lifetimes, upload limits, the MIME allowlist, and the extraction limit. Runtime environment variables can override those defaults. Keep environment-specific non-secrets such as origins, mail routing, and Supabase location in the deployment environment, and inject all credentials and secrets there; never bake them into the image.
+
 `CORS_ALLOWED_ORIGINS` must list the exact unrelated client origin; wildcard origins are rejected. Cross-origin API calls are credentialless and send only the short-lived bearer token.
 
 ## Release order
