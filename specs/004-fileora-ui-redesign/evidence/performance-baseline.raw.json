@@ -1,0 +1,365 @@
+{
+  "measuredAt": "2026-08-24T21:14:59.285Z",
+  "baseURL": "http://localhost:3000",
+  "repetitions": 7,
+  "browserVersion": "140.0.7339.186",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "medians": {
+    "sign-in": 317.24,
+    "dashboard": 167.05,
+    "files": 260.96,
+    "details-preview": 235.91,
+    "upload": 204.58,
+    "administrator": 338.24,
+    "landing": 281.91
+  },
+  "raw": [
+    {
+      "name": "sign-in",
+      "durationMs": 317.24,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "dashboard",
+      "durationMs": 167.05,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "files",
+      "durationMs": 246.49,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "details-preview",
+      "durationMs": 168.53,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "upload",
+      "durationMs": 182.09,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "administrator",
+      "durationMs": 276.72,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "landing",
+      "durationMs": 203.22,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "dashboard",
+      "durationMs": 157.09,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "files",
+      "durationMs": 261.3,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "details-preview",
+      "durationMs": 237.24,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "upload",
+      "durationMs": 321.09,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "administrator",
+      "durationMs": 350.5,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "landing",
+      "durationMs": 325.64,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "sign-in",
+      "durationMs": 371.48,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "files",
+      "durationMs": 484.19,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "details-preview",
+      "durationMs": 249.11,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "upload",
+      "durationMs": 204.58,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "administrator",
+      "durationMs": 338.24,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "landing",
+      "durationMs": 293.72,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "sign-in",
+      "durationMs": 321.12,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "dashboard",
+      "durationMs": 262.81,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "details-preview",
+      "durationMs": 241.88,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "upload",
+      "durationMs": 226.83,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "administrator",
+      "durationMs": 387.65,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "landing",
+      "durationMs": 292.58,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "sign-in",
+      "durationMs": 359.98,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "dashboard",
+      "durationMs": 266.68,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "files",
+      "durationMs": 260.96,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "upload",
+      "durationMs": 228.08,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "administrator",
+      "durationMs": 349.83,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "landing",
+      "durationMs": 272.35,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "sign-in",
+      "durationMs": 280.31,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "dashboard",
+      "durationMs": 183.84,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "files",
+      "durationMs": 267.45,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "details-preview",
+      "durationMs": 235.91,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "administrator",
+      "durationMs": 284.52,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "landing",
+      "durationMs": 229.84,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "sign-in",
+      "durationMs": 234.14,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "dashboard",
+      "durationMs": 140.84,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "files",
+      "durationMs": 221.23,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "details-preview",
+      "durationMs": 224.64,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "upload",
+      "durationMs": 140.63,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "landing",
+      "durationMs": 281.91,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "sign-in",
+      "durationMs": 215.23,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "dashboard",
+      "durationMs": 132.94,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "files",
+      "durationMs": 252.63,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "details-preview",
+      "durationMs": 176.13,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "upload",
+      "durationMs": 158.4,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    {
+      "name": "administrator",
+      "durationMs": 289.59,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    }
+  ]
+}

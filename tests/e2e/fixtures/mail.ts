@@ -11,13 +11,20 @@ export async function verificationCode(email: string): Promise<string> {
         items?: Array<{
           Content?: { Headers?: { To?: string[] }; Body?: string };
         }>;
+        messages?: Array<{
+          To?: Array<{ Address?: string }>;
+          Snippet?: string;
+        }>;
       };
-      const message = payload.items?.find((item) =>
+      const mailHogMessage = payload.items?.find((item) =>
         item.Content?.Headers?.To?.some((recipient) =>
           recipient.includes(email),
         ),
       );
-      const code = message?.Content?.Body?.match(/\b\d{8}\b/)?.[0];
+      const mailpitMessage = payload.messages?.find((item) =>
+        item.To?.some((recipient) => recipient.Address === email),
+      );
+      const code = (mailHogMessage?.Content?.Body ?? mailpitMessage?.Snippet)?.match(/\b\d{8}\b/)?.[0];
       if (code) return code;
     }
     await new Promise((resolve) => setTimeout(resolve, 500));

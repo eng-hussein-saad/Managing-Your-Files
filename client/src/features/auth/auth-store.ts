@@ -4,6 +4,7 @@ import type { AccessSession } from "@gold-era/contracts/public";
 import type { AuthState } from "./auth.types";
 
 let state: AuthState = { status: "loading", session: null };
+const serverState: AuthState = { status: "loading", session: null };
 const listeners = new Set<() => void>();
 /** Updates memory-only authentication state and notifies subscribed views. */
 export function setAuthState(next: AuthState): void {
@@ -30,6 +31,6 @@ export function useAuthState(): AuthState {
       return () => listeners.delete(listener);
     },
     () => state,
-    () => ({ status: "loading", session: null }),
+    () => serverState,
   );
 }

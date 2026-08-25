@@ -1,9 +1,8 @@
 "use client";
 import type { PropsWithChildren } from "react";
 import { useAuthState } from "../../features/auth/auth-store";
-import { AppNavigation } from "../../components/navigation/app-navigation";
+import { ConnectedAppNavigation } from "../../components/navigation/connected-app-navigation";
 import { PageState } from "../../components/status/page-state";
-import { AppFooter } from "../../components/layout/app-footer";
 /** Provides an administrator UX guard without replacing server authorization. */
 export default function AdminLayout({ children }: PropsWithChildren) {
   const auth = useAuthState();
@@ -12,7 +11,7 @@ export default function AdminLayout({ children }: PropsWithChildren) {
   if (auth.status === "anonymous")
     return (
       <PageState title="Sign in to continue">
-        <a className="button" href="/login">
+        <a className="ui-button primary" href="/login">
           Sign in
         </a>
       </PageState>
@@ -24,10 +23,9 @@ export default function AdminLayout({ children }: PropsWithChildren) {
       </PageState>
     );
   return (
-    <>
-      <AppNavigation role={auth.session.user.role} />
-      {children}
-      <AppFooter />
-    </>
+    <div className="authenticated-app restricted-app">
+      <ConnectedAppNavigation session={auth.session} />
+      <div className="app-shell-content">{children}</div>
+    </div>
   );
 }

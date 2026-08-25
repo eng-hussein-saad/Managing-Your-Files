@@ -94,9 +94,13 @@ persistence. Existing client/server example configuration already covers the com
 **Decision**: Create one reusable accessible dialog/drawer foundation that supplies purpose labeling,
 initial focus, focus containment, Escape and safe-backdrop dismissal, scroll management, background
 inertness where supported, and focus restoration. Preserve native structure and labels, visible focus,
-44 px targets, non-color-only status, chart text/table equivalents, skip navigation, logical DOM
-order, 200% zoom behavior, and reduced-motion styles. Add an axe-based Playwright route-family audit
-as a development-only test dependency and require zero critical violations on the named surfaces.
+44 by 44 CSS-pixel standalone targets, non-color-only status, chart text/table equivalents, skip
+navigation, logical DOM order, 200% zoom behavior, and reduced-motion styles. Use WCAG 2.2 Level AA
+as the baseline: normal text reaches 4.5:1; large text and meaningful non-text UI graphics/boundaries
+reach 3:1; inline text links and unmodified user-agent controls may use an applicable SC 2.5.8
+exception only when its 24 CSS-pixel size-or-spacing rule passes. Add an axe-based Playwright
+route-family audit as a development-only test dependency, require zero critical or serious violations,
+and remediate or document reproducible false-positive evidence for every other A/AA finding.
 
 **Rationale**: The prototype includes good visual cues, labels, reduced-motion CSS, and initial overlay
 focus, but its imperative overlay does not consistently trap focus, mark the background inert, or

@@ -57,7 +57,7 @@ A reusable visual and interaction primitive or composition.
 | `states` | Supported visible states | Include every applicable `InteractionState` |
 | `responsiveVariants` | Composition by width range | Must follow the approved breakpoint behavior |
 | `themeVariants` | Light and dark rendering | Both must remain legible and operable |
-| `accessibilityContract` | Required semantics, focus, labels, text equivalents, target size | Must satisfy FR-040 through FR-042 |
+| `accessibilityContract` | WCAG 2.2 AA semantics, focus, labels, text equivalents, contrast, and target-size/spacing evidence | Must satisfy FR-040 through FR-042, including the project's 44 by 44 CSS-pixel standalone-target rule and documented SC 2.5.8 exceptions |
 | `consumers` | Route surfaces that reuse the pattern | Repeated behavior must not be reimplemented per page |
 
 ### RouteSurface

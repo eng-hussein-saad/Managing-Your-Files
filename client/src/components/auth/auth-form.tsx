@@ -5,7 +5,7 @@ export function AuthForm({
   ...props
 }: PropsWithChildren<FormHTMLAttributes<HTMLFormElement>>) {
   return (
-    <form className="auth-card" {...props}>
+    <form className="auth-card ui-form-layout" {...props}>
       {children}
     </form>
   );

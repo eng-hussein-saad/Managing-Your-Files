@@ -7,7 +7,9 @@ test("verified profile is protected while trusted authority denies direct access
   const user = await createVerifiedUser(page);
   await signIn(page, user);
   await page.goto("/profile");
-  await expect(page.getByText(user.email)).toBeVisible();
+  await expect(
+    page.getByRole("main").getByText(user.email).first(),
+  ).toBeVisible();
   expect(
     await page.evaluate(() => ({
       local: localStorage.length,

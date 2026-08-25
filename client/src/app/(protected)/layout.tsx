@@ -3,9 +3,8 @@ import type { PropsWithChildren } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuthState } from "../../features/auth/auth-store";
-import { AppNavigation } from "../../components/navigation/app-navigation";
+import { ConnectedAppNavigation } from "../../components/navigation/connected-app-navigation";
 import { PageState } from "../../components/status/page-state";
-import { AppFooter } from "../../components/layout/app-footer";
 /** Provides a UX guard while Express remains the protected-data authority. */
 export default function ProtectedLayout({ children }: PropsWithChildren) {
   const auth = useAuthState();
@@ -28,10 +27,15 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
       </PageState>
     );
   return (
-    <>
-      <AppNavigation role={auth.session.user.role} />
-      {children}
-      <AppFooter />
-    </>
+    <div
+      className={`authenticated-app${pathname === "/dashboard" ? " dashboard-route" : ""}`}
+    >
+      <ConnectedAppNavigation session={auth.session} />
+      <div
+        className={`app-shell-content${pathname === "/dashboard" ? " dashboard-shell" : ""}`}
+      >
+        {children}
+      </div>
+    </div>
   );
 }

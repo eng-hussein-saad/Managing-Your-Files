@@ -24,9 +24,23 @@ export function FilePreview({
     [preview.data],
   );
   if (kind === "unavailable")
-    return <p>Preview is unavailable. Download the original file instead.</p>;
-  if (preview.isLoading) return <p>Loading preview…</p>;
-  if (preview.isError || !url) return <p>Preview could not be loaded.</p>;
+    return (
+      <p className="ui-status warning">
+        Preview is unavailable. Download the original file instead.
+      </p>
+    );
+  if (preview.isLoading)
+    return (
+      <p className="ui-status" role="status" aria-busy="true">
+        Loading preview…
+      </p>
+    );
+  if (preview.isError || !url)
+    return (
+      <p className="ui-status danger" role="alert">
+        Preview could not be loaded.
+      </p>
+    );
   if (kind === "image") return <img src={url} alt="File preview" />;
   if (kind === "pdf") return <iframe src={url} title="PDF preview" />;
   return <iframe src={url} title={`Text preview (${mimeType})`} />;

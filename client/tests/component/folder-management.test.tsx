@@ -39,6 +39,10 @@ describe("folder management components", () => {
     fireEvent.click(screen.getByRole("button", { name: "My Files" }));
     fireEvent.click(screen.getByRole("button", { name: "B" }));
     expect(navigate.mock.calls).toEqual([[null], ["b"]]);
+    expect(screen.getByRole("button", { name: "B" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
   });
   it("captures trimmed create and rename names with pending/error feedback", () => {
     const submit = vi.fn();

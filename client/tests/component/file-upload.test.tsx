@@ -36,6 +36,11 @@ describe("file upload queue", () => {
     input.dispatchEvent(new Event("change", { bubbles: true }));
     expect(onFiles).toHaveBeenCalledWith([file]);
     expect(container.querySelector("input[multiple]")).not.toBeNull();
+    expect(screen.getByText(/drop up to 10 files/i)).toHaveAttribute(
+      "id",
+      "upload-guidance",
+    );
+    expect(input).toHaveAttribute("aria-describedby", "upload-guidance");
   });
   it("rejects an eleven-file selection without truncating it", () => {
     const hook = renderHook(() => useUploadQueue());
@@ -120,5 +125,9 @@ describe("file upload queue", () => {
     expect(
       screen.getByRole("button", { name: /retry quota.txt/i }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/quota.txt: error/i)).toHaveAttribute(
+      "data-status",
+      "error",
+    );
   });
 });

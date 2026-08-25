@@ -2,8 +2,15 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import type { AdminFileFilters } from "../../../features/admin/api/admin-files.api";
 import { AdminFileDirectory } from "../../../features/admin/components/admin-file-directory";
+import { AdminPageHeader } from "../../../features/admin/components/admin-page-header";
 
-type CompleteFileQuery = AdminFileFilters & { page: number; pageSize: 5 | 10 | 20; sort: "name" | "owner" | "size" | "uploadedAt"; direction: "asc" | "desc"; folder: "any" | "root" | "foldered" };
+type CompleteFileQuery = AdminFileFilters & {
+  page: number;
+  pageSize: 5 | 10 | 20;
+  sort: "name" | "owner" | "size" | "uploadedAt";
+  direction: "asc" | "desc";
+  folder: "any" | "root" | "foldered";
+};
 
 /** Parses bounded global file filters from the current URL. */
 function fileQuery(params: URLSearchParams): CompleteFileQuery {
@@ -13,9 +20,18 @@ function fileQuery(params: URLSearchParams): CompleteFileQuery {
   const folder = params.get("folder");
   return {
     search: params.get("search") || undefined,
-    type: type === "pdf" || type === "text" || type === "image" || type === "document" ? type : undefined,
+    type:
+      type === "pdf" ||
+      type === "text" ||
+      type === "image" ||
+      type === "document"
+        ? type
+        : undefined,
     folder: folder === "root" || folder === "foldered" ? folder : "any",
-    sort: sort === "name" || sort === "owner" || sort === "size" ? sort : "uploadedAt",
+    sort:
+      sort === "name" || sort === "owner" || sort === "size"
+        ? sort
+        : "uploadedAt",
     direction: params.get("direction") === "asc" ? "asc" : "desc",
     page: Math.max(1, Number(params.get("page")) || 1),
     pageSize: pageSize === 5 || pageSize === 10 ? pageSize : 20,
@@ -32,8 +48,17 @@ export default function AdminFilesPage() {
     const values = { ...query, ...next };
     const updated = new URLSearchParams();
     for (const [key, value] of Object.entries(values))
-      if (value !== undefined && value !== "" && value !== "any") updated.set(key, String(value));
+      if (value !== undefined && value !== "" && value !== "any")
+        updated.set(key, String(value));
     router.replace(`/admin/files?${updated.toString()}`);
   };
-  return <main id="main" className="app-page"><header className="page-heading"><div><span className="eyebrow">Administration</span><h1>Global files</h1><p>Inspect safe metadata across owners. Administrator authority does not grant content access.</p></div></header><AdminFileDirectory query={query} update={update} /></main>;
+  return (
+    <main id="main" className="app-page">
+      <AdminPageHeader
+        title="Global file metadata"
+        description="Browse owner-safe metadata and permanently delete files. Preview and download are never available to administrators."
+      />
+      <AdminFileDirectory query={query} update={update} />
+    </main>
+  );
 }

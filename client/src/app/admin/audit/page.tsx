@@ -2,6 +2,7 @@
 import type { AdminAuditQuery } from "@gold-era/contracts/public";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AdminAuditHistory } from "../../../features/admin/components/admin-audit-history";
+import { AdminPageHeader } from "../../../features/admin/components/admin-page-header";
 
 /** Parses bounded sanitized audit filters from the current URL. */
 function auditQuery(params: URLSearchParams): AdminAuditQuery {
@@ -13,8 +14,16 @@ function auditQuery(params: URLSearchParams): AdminAuditQuery {
     action: undefined,
     entityType: undefined,
     actorId: undefined,
-    actorState: actorState === "user" || actorState === "deleted" || actorState === "system" ? actorState : undefined,
-    outcome: outcome === "SUCCESS" || outcome === "FAILURE" || outcome === "DENIED" ? outcome : undefined,
+    actorState:
+      actorState === "user" ||
+      actorState === "deleted" ||
+      actorState === "system"
+        ? actorState
+        : undefined,
+    outcome:
+      outcome === "SUCCESS" || outcome === "FAILURE" || outcome === "DENIED"
+        ? outcome
+        : undefined,
     createdFrom: undefined,
     createdBefore: undefined,
     direction: params.get("direction") === "asc" ? "asc" : "desc",
@@ -36,5 +45,13 @@ export default function AdminAuditPage() {
       if (value !== undefined && value !== "") updated.set(key, String(value));
     router.replace(`/admin/audit?${updated.toString()}`);
   };
-  return <main id="main" className="app-page"><header className="page-heading"><div><span className="eyebrow">Administration</span><h1>Audit history</h1><p>Retained security-relevant activity with sanitized metadata and safe actor states.</p></div></header><AdminAuditHistory query={query} update={update} /></main>;
+  return (
+    <main id="main" className="app-page">
+      <AdminPageHeader
+        title="Audit history"
+        description="Sanitized security-relevant activity, newest first. Audit reads do not generate additional events."
+      />
+      <AdminAuditHistory query={query} update={update} />
+    </main>
+  );
 }

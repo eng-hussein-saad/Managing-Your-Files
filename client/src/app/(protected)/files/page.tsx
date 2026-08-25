@@ -11,6 +11,7 @@ import { useFile, useFiles } from "../../../features/files/hooks/use-files";
 import { useUploadQueue } from "../../../features/files/upload/use-upload-queue";
 import { FileMoveDialog } from "../../../features/folders/components/file-move-dialog";
 import { FolderBrowser } from "../../../features/folders/components/folder-browser";
+import { CloseIcon, UploadIcon } from "../../../components/ui/icons";
 
 /** Composes upload, folder navigation, discovery, details, movement, and deletion. */
 export default function FilesPage() {
@@ -26,6 +27,7 @@ export default function FilesPage() {
   const [view, setView] = useState<"list" | "grid">("list");
   const [selected, setSelected] = useState<string | null>(null);
   const [moving, setMoving] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const effectiveQuery = {
     ...query,
     folderId: location ?? "root",
@@ -60,69 +62,187 @@ export default function FilesPage() {
   return (
     <main id="main" className="files-page app-page">
       <header className="page-heading files-heading">
-        <div><span className="eyebrow">Personal archive</span><h1>My Files</h1><p>Everything important, organized and close at hand.</p></div>
-        <span className="privacy-note"><i aria-hidden="true">✓</i> Private by default</span>
-      </header>
-      <UploadDropzone onFiles={queue.add} error={queue.selectionError} />
-      {queue.items.length > 0 ? (
-        <section className="upload-panel" aria-label="Files ready to upload">
-          <UploadQueue
-            items={queue.items}
-            onRetry={(id) => {
-              void queue.retry(id, location);
-            }}
-          />
-          <button className="button"
-            type="button"
-            onClick={() => {
-              void upload();
-            }}
-          >
-            Upload queued files
-          </button>
-        </section>
-      ) : null}
-      <div className="files-workspace">
-        <aside className="folders-panel"><div className="panel-title"><span>Browse</span><small>Folders</small></div><FolderBrowser location={location} onNavigate={navigate} /></aside>
-        <section className="collection-panel" aria-label="Files">
-          <div className="collection-heading"><div><h2>{location ? "Folder files" : "All files"}</h2><span>{meta.totalItems} {meta.totalItems === 1 ? "item" : "items"}</span></div></div>
-          <FileQueryToolbar query={query} view={view} onChange={changeQuery} onView={setView} />
-      {files.isLoading ? <div className="collection-loading" aria-busy="true"><span/><span/><span/></div> : null}
-      {files.isError ? (
-        <div className="inline-state error-state" role="alert"><span>
-          Files could not be loaded.{" "}
+        <div>
+          <span className="eyebrow">My workspace</span>
+          <h1>My Files</h1>
+          <p>Browse, upload, and organize everything you own.</p>
+        </div>
+        <div className="head-actions">
           <button
+            className="ui-button primary"
             type="button"
-            onClick={() => {
-              void files.refetch();
-            }}
+            onClick={
+              /** Opens the approved upload dialog without displacing the workspace. */ () =>
+                setUploadOpen(true)
+            }
           >
-            Retry
+            <UploadIcon />
+            Upload files
           </button>
-        </span></div>
-      ) : null}
-      {files.data ? (
-        <FileCollection
-          files={files.data.data}
-          view={view}
-          hasFilters={hasFilters}
-          onSelect={setSelected}
-        />
-      ) : null}
-      <FilePagination
-        page={meta.page}
-        totalPages={meta.totalPages}
-        onPage={(page) => changeQuery({ page })}
-      />
+        </div>
+      </header>
+      <div className="files-workspace">
+        <aside className="folders-panel">
+          <div className="panel-title">
+            <span>Folders</span>
+          </div>
+          <FolderBrowser location={location} onNavigate={navigate} />
+        </aside>
+        <section
+          className="collection-panel ui-local-scroll"
+          aria-label="Files"
+          tabIndex={0}
+        >
+          <div className="collection-heading">
+            <div>
+              <h2>{location ? "Folder files" : "All files"}</h2>
+              <span>
+                {meta.totalItems} {meta.totalItems === 1 ? "item" : "items"}
+              </span>
+            </div>
+          </div>
+          <FileQueryToolbar
+            query={query}
+            view={view}
+            onChange={changeQuery}
+            onView={setView}
+          />
+          {files.isLoading ? (
+            <div className="collection-loading" aria-busy="true">
+              <span />
+              <span />
+              <span />
+            </div>
+          ) : null}
+          {files.isError ? (
+            <div className="inline-state error-state" role="alert">
+              <span>
+                Files could not be loaded.{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    void files.refetch();
+                  }}
+                >
+                  Retry
+                </button>
+              </span>
+            </div>
+          ) : null}
+          {files.data ? (
+            <FileCollection
+              files={files.data.data}
+              view={view}
+              hasFilters={hasFilters}
+              onSelect={setSelected}
+            />
+          ) : null}
+          <FilePagination
+            page={meta.page}
+            totalPages={meta.totalPages}
+            onPage={(page) => changeQuery({ page })}
+          />
         </section>
       </div>
+      {uploadOpen ? (
+        <div
+          className="ui-overlay-backdrop"
+          onMouseDown={
+            /** Closes the upload dialog only from its safe backdrop. */ (
+              event,
+            ) => {
+              if (event.target === event.currentTarget) setUploadOpen(false);
+            }
+          }
+        >
+          <section
+            className="ui-overlay-panel dialog upload-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="upload-dialog-title"
+          >
+            <button
+              className="ui-icon-button upload-dialog-close"
+              type="button"
+              aria-label="Close upload"
+              onClick={
+                /** Closes the explicit upload dialog action. */ () =>
+                  setUploadOpen(false)
+              }
+            >
+              <CloseIcon />
+            </button>
+            <h2 id="upload-dialog-title">Upload to My Files</h2>
+            <p>
+              Select 1–10 files. Uploads run sequentially and earlier successes
+              remain if a later file fails.
+            </p>
+            <UploadDropzone onFiles={queue.add} error={queue.selectionError} />
+            {queue.items.length > 0 ? (
+              <section
+                className="upload-panel"
+                aria-label="Files ready to upload"
+              >
+                <UploadQueue
+                  items={queue.items}
+                  onRetry={
+                    /** Retries one failed upload without resetting successful queue items. */ (
+                      id,
+                    ) => {
+                      void queue.retry(id, location);
+                    }
+                  }
+                />
+                <button
+                  className="ui-button primary"
+                  type="button"
+                  onClick={
+                    /** Runs the approved upload queue and retains visible settled results. */ () => {
+                      void upload();
+                    }
+                  }
+                >
+                  Upload queued files
+                </button>
+              </section>
+            ) : null}
+          </section>
+        </div>
+      ) : null}
       {detail.isLoading ? <p>Loading file details…</p> : null}
       {detail.isError ? (
         <p role="alert">File details are unavailable.</p>
       ) : null}
       {detail.data ? (
-        <div className="detail-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>
-          <div className="detail-drawer"><button className="drawer-close" type="button" aria-label="Close file details" onClick={() => setSelected(null)}>×</button><FileDetails file={detail.data} onMove={() => setMoving(true)} onDeleted={() => { setSelected(null); void files.refetch(); }} /></div>
+        <div
+          className="detail-overlay ui-overlay-backdrop drawer"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setSelected(null);
+          }}
+        >
+          <div
+            className="detail-drawer ui-overlay-panel drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="File details"
+          >
+            <button
+              className="drawer-close ui-icon-button"
+              type="button"
+              aria-label="Close file details"
+              onClick={() => setSelected(null)}
+            >
+              ×
+            </button>
+            <FileDetails
+              file={detail.data}
+              onMove={() => setMoving(true)}
+              onDeleted={() => {
+                setSelected(null);
+                void files.refetch();
+              }}
+            />
+          </div>
         </div>
       ) : null}
       {moving && selected ? (

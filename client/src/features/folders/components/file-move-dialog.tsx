@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { useFolderContents, useFolderMutations } from "../hooks/use-folders";
 import { Breadcrumbs } from "./breadcrumbs";
+import { Dialog } from "../../../components/overlays/overlay";
+import { Button } from "../../../components/ui/controls";
 /** Selects virtual root or an owned folder and reports move outcomes safely. */
 export function FileMoveDialog({
   fileId,
@@ -22,8 +24,12 @@ export function FileMoveDialog({
         { onSuccess: onMoved },
       );
   return (
-    <div className="dialog-backdrop"><div className="app-dialog" role="dialog" aria-modal="true" aria-labelledby="move-title">
-      <h2 id="move-title">Move file</h2>
+    <Dialog
+      open
+      title="Move file"
+      description="Choose an owned destination folder."
+      onClose={onCancel}
+    >
       <Breadcrumbs
         items={contents.data?.breadcrumbs ?? []}
         onNavigate={setLocation}
@@ -51,12 +57,14 @@ export function FileMoveDialog({
       {mutation.isError ? (
         <p role="alert">The file could not be moved. Retry.</p>
       ) : null}
-      <div className="dialog-actions"><button type="button" onClick={onCancel}>
-        Cancel
-      </button>
-      <button type="button" onClick={confirm} disabled={mutation.isPending}>
-        Move here
-      </button>
-      </div></div></div>
+      <div className="dialog-actions">
+        <Button variant="secondary" type="button" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="button" onClick={confirm} busy={mutation.isPending}>
+          Move here
+        </Button>
+      </div>
+    </Dialog>
   );
 }

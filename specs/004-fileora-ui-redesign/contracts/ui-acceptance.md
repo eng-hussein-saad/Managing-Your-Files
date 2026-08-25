@@ -12,9 +12,13 @@ Every in-scope surface must:
   coherently between checkpoints and through orientation changes;
 - preserve every applicable default, loading, empty, validation, submitting, disabled, success,
   failure, retry, unauthenticated, unauthorized, forbidden, and confirmation state;
-- expose meaningful structure, associated labels, accessible names, visible focus, logical order,
-  keyboard/touch operation, non-color-only status, 44 px minimum targets, reduced-motion behavior,
-  and textual chart equivalents;
+- conform to applicable WCAG 2.2 Level AA requirements, including meaningful structure, associated
+  labels, accessible names, visible focus, logical order, keyboard/touch operation, non-color-only
+  status, reduced-motion behavior, and textual chart equivalents; normal text must reach 4.5:1,
+  large text and meaningful non-text user-interface graphics/boundaries must reach 3:1, and every
+  author-controlled standalone target must provide a 44 by 44 CSS-pixel hit area; inline text links
+  and unmodified user-agent controls may use an applicable SC 2.5.8 exception only when its 24
+  CSS-pixel size-or-spacing requirement is verified;
 - produce no page-level horizontal overflow, clipped primary action, missing required value/action,
   major console error, or runtime error;
 - preserve existing authorized outcomes and server-enforced security boundaries; and
@@ -63,11 +67,16 @@ Every in-scope surface must:
 
 Acceptance requires all of the following:
 
-1. Side-by-side maintainer review and screenshot evidence for every route family at 1440, 768, and
-   390 px in light and dark, plus 320 px overflow/action evidence.
+1. A versioned surface/state matrix seeded from every row above. Each applicable default, loading,
+   empty, validation, submitting/disabled, success, failure, retry, access-denied, and confirmation
+   state must link to side-by-side maintainer review and screenshot evidence at 1440, 768, and 390 px
+   in light and dark, plus its required 320 px overflow/action result. Each combination records pass,
+   approved deviation, or blocked; missing evidence cannot pass.
 2. Passed behavioral, contract, integration, security, component, and E2E regression suites.
-3. Zero critical automated accessibility violations on landing, auth, dashboard, files, profile, and
-   administrator route families, plus keyboard journey evidence.
+3. Zero critical or serious automated axe violations on landing, auth, dashboard, files, profile,
+   and administrator route families. Every other WCAG A/AA axe finding must be remediated or have
+   reproducible false-positive evidence. Manual evidence must cover contrast, target size/spacing,
+   permitted SC 2.5.8 exceptions, keyboard journeys, focus behavior, and 200% zoom/reflow.
 4. Versioned pass records for the latest two Chrome, Edge, Firefox, and Safari versions and current
    iOS Safari/Android Chrome. Emulation alone is insufficient.
 5. Performance measurements showing every critical route/interaction median is no more than 10% slower

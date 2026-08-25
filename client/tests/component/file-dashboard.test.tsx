@@ -26,6 +26,8 @@ describe("personal file dashboard", () => {
       />,
     );
     expect(screen.getByText(/2 files/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Total files: 2")).toBeVisible();
+    expect(screen.getByLabelText("Storage used: 50 B")).toBeVisible();
     expect(screen.getByRole("progressbar")).toHaveAttribute("value", "50");
     expect(screen.getByRole("table")).toHaveAccessibleName(/Africa\/Cairo/i);
     expect(screen.getAllByRole("row")).toHaveLength(31);
@@ -44,6 +46,7 @@ describe("personal file dashboard", () => {
       />,
     );
     expect(screen.getByText(/no stored file types/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Total files: 0")).toBeVisible();
     expect(screen.getAllByRole("row")).toHaveLength(31);
   });
 });

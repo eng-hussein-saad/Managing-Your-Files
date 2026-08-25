@@ -32,26 +32,51 @@ describe("file discovery components", () => {
       target: { value: "new" },
     });
     expect(onChange).toHaveBeenCalledWith({ search: "new", page: 1 });
+    fireEvent.click(screen.getByRole("button", { name: /more filters/i }));
+    const dialog = screen.getByRole("dialog", { name: "Filter files" });
     fireEvent.change(screen.getByLabelText(/files per page/i), {
       target: { value: "10" },
     });
-    expect(onChange).toHaveBeenCalledWith({ pageSize: 10, page: 1 });
-    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
-    const drawer = screen.getByRole("dialog", { name: "Filters" });
-    expect(within(drawer).getByLabelText("Type")).toBeInTheDocument();
-    expect(within(drawer).getByLabelText("Sort by")).toBeInTheDocument();
-    expect(within(drawer).getByLabelText("Order")).toBeInTheDocument();
-    expect(
-      within(drawer).getByLabelText("Files per page"),
-    ).toBeInTheDocument();
-    fireEvent.click(within(drawer).getByRole("button", { name: "Close filters" }));
-    expect(screen.queryByRole("dialog", { name: "Filters" })).toBeNull();
+    expect(within(dialog).getByLabelText("Type")).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("Sort by")).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("Order")).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("Files per page")).toBeInTheDocument();
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Apply filters" }),
+    );
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ pageSize: 10, page: 1 }),
+    );
+    expect(screen.queryByRole("dialog", { name: "Filter files" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Grid" }));
     expect(onView).toHaveBeenCalledWith("grid");
     expect(screen.getByRole("button", { name: "List" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
+    expect(screen.getByRole("region", { name: "File filters" })).toHaveClass(
+      "ui-collection-toolbar",
+    );
+  });
+
+  it("dismisses the centered filter modal without applying its draft", () => {
+    const onChange = vi.fn();
+    render(
+      <FileQueryToolbar
+        query={{ pageSize: 20 }}
+        view="list"
+        onChange={onChange}
+        onView={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /more filters/i }));
+    const dialog = screen.getByRole("dialog", { name: "Filter files" });
+    fireEvent.change(within(dialog).getByLabelText("Files per page"), {
+      target: { value: "10" },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog", { name: "Filter files" })).toBeNull();
   });
   it("renders list and grid summaries with a selectable owned file", () => {
     const onSelect = vi.fn();
@@ -74,6 +99,10 @@ describe("file discovery components", () => {
       />,
     );
     expect(screen.getByRole("list")).toHaveAttribute("data-view", "grid");
+    expect(screen.getByRole("list")).toHaveAttribute(
+      "aria-label",
+      "File collection",
+    );
   });
   it("distinguishes a new empty account from a no-match query", () => {
     const { rerender } = render(
@@ -97,5 +126,9 @@ describe("file discovery components", () => {
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(onPage.mock.calls).toEqual([[1], [3]]);
     expect(screen.getByText("Page 2 of 3")).toBeInTheDocument();
+    expect(screen.getByText("Page 2 of 3")).toHaveAttribute(
+      "aria-live",
+      "polite",
+    );
   });
 });

@@ -62,10 +62,14 @@ Expected outcome:
 
 - Chromium, Firefox, WebKit, configured Chrome/Edge channels, and representative mobile projects pass.
 - Existing same-origin/unrelated-origin security journeys still pass.
-- Screenshot checks cover all route families at 1440, 768, and 390 px in light/dark modes.
+- The surface/state matrix links evidence for every applicable state at 1440, 768, and 390 px in
+  light/dark modes, plus the required 320 px overflow/action result.
 - Dedicated 320 px checks find no page-level horizontal overflow or inaccessible required action.
 - No critical route produces an unexpected console or runtime error.
-- Automated route-family accessibility scans report zero critical violations.
+- Automated route-family axe scans report zero critical or serious WCAG 2.2 A/AA violations; every
+  other A/AA finding is remediated or has reproducible false-positive evidence.
+- Manual accessibility evidence confirms WCAG 2.2 AA contrast, keyboard/focus behavior, 200%
+  zoom/reflow, 44 by 44 CSS-pixel standalone targets, and any permitted SC 2.5.8 exception.
 
 Automation is not the final proof for Safari/iOS Safari/Android Chrome; complete Step 6 as well.
 

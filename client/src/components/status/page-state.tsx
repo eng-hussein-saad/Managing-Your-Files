@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Card } from "../ui/surfaces";
 /** Presents a focusable full-page loading, empty, unauthorized, forbidden, or failure state. */
 export function PageState({
   title,
@@ -13,11 +14,15 @@ export function PageState({
 }) {
   return (
     <main className="page-state" aria-busy={busy}>
-      <section className={`status-card ${tone}`} tabIndex={-1} role={tone === "error" ? "alert" : "status"}>
+      <Card
+        className={`status-card ${tone}`}
+        tabIndex={-1}
+        role={tone === "error" ? "alert" : "status"}
+      >
         <span className="eyebrow">Fileora</span>
         <h1>{title}</h1>
         {children}
-      </section>
+      </Card>
     </main>
   );
 }

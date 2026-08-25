@@ -19,11 +19,11 @@ clean-environment smoke test provide regression evidence.
 
 **Language/Version**: TypeScript 5.9.2 in strict mode; Node.js 24.x; HTML/CSS/JavaScript reference prototype
 
-**Primary Dependencies**: Next.js 16.0.0 App Router, React 19.1.1, Tailwind CSS 4.1.12, TanStack React Query 5.87.1, Axios 1.11.0, Framer Motion 12.23.12, Zod 4.1.5; existing Express 5.1.0 and `@gold-era/contracts` interfaces remain unchanged
+**Primary Dependencies**: Next.js 16.0.0 App Router, React 19.1.1, Tailwind CSS 4.1.12, TanStack React Query 5.87.1, Axios 1.11.0, Framer Motion 12.23.12, Zod 4.1.5; existing Express 5.1.0 and `@gold-era/contracts` interfaces remain unchanged. Phase 4 adds only the development dependency `@axe-core/playwright` 4.13.0 for automated accessibility scans; the existing `@playwright/test` 1.55.1 dependency remains the browser-test runner.
 
 **Storage**: No Phase 4 data change; existing PostgreSQL 17, Prisma 7.0.0, and private Supabase Storage integration remain authoritative
 
-**Testing**: Vitest 3.2.4, Testing Library 16.3.0, Playwright 1.55.1, existing contract/integration/security suites, side-by-side screenshot review, keyboard and reduced-motion checks, automated accessibility scanning, supported-browser/device acceptance, and moderated usability evidence
+**Testing**: Vitest 3.2.4, Testing Library 16.3.0, Playwright 1.55.1, existing contract/integration/security suites, exhaustive surface/state side-by-side screenshot review, keyboard and reduced-motion checks, WCAG 2.2 Level AA automated and manual accessibility evidence, supported-browser/device acceptance, and moderated usability evidence
 
 **Target Platform**: Responsive web application at 320 CSS px and wider; latest two major desktop versions of Chrome, Edge, Firefox, and Safari, plus current iOS Safari and Android Chrome
 
@@ -147,10 +147,35 @@ then remove a legacy presentation artifact only when no route, state, or test st
 
 ### 4. Regression and acceptance evidence
 
+- Add `@axe-core/playwright` 4.13.0 as an exact, development-only dependency. It is the official
+  Deque-maintained Playwright integration, provides typed `AxeBuilder` scans inside the existing
+  Playwright page lifecycle, and is required to produce repeatable automated evidence for SC-005.
+  It does not replace keyboard, zoom, contrast, touch-target, or other manual acceptance checks.
+- Do not add separate npm packages for Playwright browser projects. The existing
+  `@playwright/test` 1.55.1 package supplies project configuration, device descriptors, and browser
+  APIs for Chromium, Firefox, WebKit, and branded-browser channels; its matching managed browser
+  binaries are installed separately as test tooling. WebKit and device emulation supplement but do
+  not count as exact Safari, iOS Safari, or Android Chrome evidence, which remains part of the T077
+  external browser/device matrix.
 - Record pre-redesign route/interaction timing under controlled conditions before replacing each
   critical surface, then compare the redesigned result against the 10% threshold.
 - Extend component and Playwright coverage for semantic outcomes, keyboard focus, overlays, theme,
   reduced motion, 320 px overflow, approved viewport compositions, and console/runtime errors.
+- Seed a versioned surface/state evidence matrix from `contracts/ui-acceptance.md`. Every matrix row and
+  applicable default, loading, empty, validation, submitting/disabled, success, failure, retry,
+  access-denied, and confirmation state must link to its light/dark checkpoint evidence and 320 px
+  overflow/action result before SC-001 can pass.
+- Treat WCAG 2.2 Level AA as the accessibility baseline. Verify 4.5:1 normal-text contrast, 3:1
+  large-text and meaningful non-text contrast, and 44 by 44 CSS-pixel author-controlled standalone
+  targets. Only inline text links and unmodified user-agent controls may use an applicable WCAG 2.2
+  SC 2.5.8 exception, with its 24 CSS-pixel size-or-spacing rule still verified. Axe must report zero
+  critical or serious violations; other A/AA findings require remediation or reproducible
+  false-positive evidence, while keyboard, focus, zoom/reflow, target, and contrast checks retain
+  manual evidence.
+- Bound cross-route remediation before editing: accessibility, responsive, and async/overlay failures
+  are recorded with an exact route/state, failing assertion or criterion, and source path in named
+  remediation inventories. Legacy cleanup tasks consume the exact paths and T071/T072 ownership
+  assigned by T070 rather than searching whole directories for unspecified remaining work.
 - Use Playwright Chromium/Firefox/WebKit for repeatable engine coverage and complete the exact supported
   Chrome, Edge, Firefox, Safari, iOS Safari, and Android Chrome matrix on matching browser/device
   versions; record any unavailable environment as incomplete rather than inferring a pass.

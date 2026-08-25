@@ -28,7 +28,7 @@ export function FileDetails({
           },
       });
   return (
-    <aside className="file-details" aria-label="File details">
+    <aside className="file-details ui-form-layout" aria-label="File details">
       <span className="eyebrow">File details</span>
       <h2>{file.originalName}</h2>
       <dl>
@@ -63,17 +63,27 @@ export function FileDetails({
       ) : (
         <p>Extracted content is unavailable.</p>
       )}
-      <div className="detail-actions"><FileDownload id={file.id} name={file.originalName} />
-      {onMove ? <button type="button" onClick={onMove}>Move file</button> : null}
-      <button className="danger"
-        type="button"
-        onClick={
-          /** Handles the bound UI event or state projection for this JSX control. */ () =>
-            setConfirming(true)
-        }
-      >
-        Delete file
-      </button>
+      <div className="detail-actions">
+        <FileDownload id={file.id} name={file.originalName} />
+        {onMove ? (
+          <button
+            className="ui-button secondary"
+            type="button"
+            onClick={onMove}
+          >
+            Move file
+          </button>
+        ) : null}
+        <button
+          className="ui-button danger"
+          type="button"
+          onClick={
+            /** Handles the bound UI event or state projection for this JSX control. */ () =>
+              setConfirming(true)
+          }
+        >
+          Delete file
+        </button>
       </div>
       <PermanentDeleteDialog
         open={confirming}

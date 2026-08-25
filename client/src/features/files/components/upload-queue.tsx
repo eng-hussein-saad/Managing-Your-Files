@@ -14,7 +14,7 @@ export function UploadQueue({
           item,
         ) => (
           <li key={item.id}>
-            <span>
+            <span data-status={item.status}>
               {item.file.name}: {item.status}{" "}
               {item.status === "uploading"
                 ? `${item.progress}%`

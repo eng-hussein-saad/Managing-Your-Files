@@ -2,6 +2,7 @@
 import type { AdminUserQuery } from "@gold-era/contracts/public";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AdminUserDirectory } from "../../../features/admin/components/admin-user-directory";
+import { AdminPageHeader } from "../../../features/admin/components/admin-page-header";
 
 /** Parses bounded administrator user state from the current URL. */
 function userQuery(params: URLSearchParams): AdminUserQuery {
@@ -13,7 +14,10 @@ function userQuery(params: URLSearchParams): AdminUserQuery {
     search: params.get("search") || undefined,
     role: role === "USER" || role === "ADMIN" ? role : undefined,
     verified: undefined,
-    sort: sort === "name" || sort === "email" || sort === "role" ? sort : "createdAt",
+    sort:
+      sort === "name" || sort === "email" || sort === "role"
+        ? sort
+        : "createdAt",
     direction: direction === "asc" ? "asc" : "desc",
     page: Math.max(1, Number(params.get("page")) || 1),
     pageSize: pageSize === 5 || pageSize === 10 ? pageSize : 20,
@@ -33,5 +37,13 @@ export default function AdminUsersPage() {
       if (value !== undefined && value !== "") updated.set(key, String(value));
     router.replace(`/admin/users?${updated.toString()}`);
   };
-  return <main id="main" className="app-page"><header className="page-heading"><div><span className="eyebrow">Administration</span><h1>Users</h1><p>Search accounts, change eligible roles, and perform guarded permanent cleanup.</p></div></header><AdminUserDirectory query={query} update={update} /></main>;
+  return (
+    <main id="main" className="app-page">
+      <AdminPageHeader
+        title="User directory"
+        description="Search safe account metadata, manage eligible roles, or permanently remove an account and all owned state."
+      />
+      <AdminUserDirectory query={query} update={update} />
+    </main>
+  );
 }

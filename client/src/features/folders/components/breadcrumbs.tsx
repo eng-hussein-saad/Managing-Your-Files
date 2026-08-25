@@ -27,6 +27,8 @@ export function Breadcrumbs({
             <li key={item.id}>
               <button
                 type="button"
+                aria-current={item.id === items.at(-1)?.id ? "page" : undefined}
+                title={item.name}
                 onClick={
                   /** Handles the bound UI event or state projection for this JSX control. */ () =>
                     onNavigate(item.id)

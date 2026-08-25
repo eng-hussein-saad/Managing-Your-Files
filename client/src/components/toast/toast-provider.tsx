@@ -8,6 +8,7 @@ import {
   useState,
   type PropsWithChildren,
 } from "react";
+import { IconButton } from "../ui/controls";
 
 type ToastKind = "info" | "success" | "error";
 
@@ -49,16 +50,18 @@ function ToastItem({
       role={toast.kind === "error" ? "alert" : "status"}
       aria-atomic="true"
     >
-      <span className="toast-mark" aria-hidden="true" />
       <p>{toast.message}</p>
-      <button
+      <IconButton
         className="toast-dismiss"
         type="button"
-        aria-label="Dismiss notification"
-        onClick={() => dismiss(toast.id)}
+        label="Dismiss notification"
+        onClick={
+          /** Dismisses only this bounded notification. */ () =>
+            dismiss(toast.id)
+        }
       >
         ×
-      </button>
+      </IconButton>
     </div>
   );
 }

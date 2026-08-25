@@ -23,12 +23,12 @@ description: "Dependency-ordered implementation tasks for the Fileora UI redesig
 
 **Purpose**: Capture the pre-redesign baseline and prepare the acceptance harness before any legacy presentation is replaced.
 
-- [ ] T001 Record the fixed-data, browser, viewport, cache, network, machine, readiness-event, repetition, and median calculation protocol in specs/004-fileora-ui-redesign/evidence/performance-protocol.md
-- [ ] T002 Measure the legacy landing/sign-in, dashboard, files, details/preview, upload, and administrator journeys and record reproducible pre-redesign medians in specs/004-fileora-ui-redesign/evidence/performance-baseline.md
-- [ ] T003 [P] Add development-only axe accessibility tooling and browser-project dependencies to package.json and pnpm-lock.yaml without adding application environment keys
-- [ ] T004 Configure Chromium, Firefox, WebKit, branded Chrome/Edge, desktop viewport, and representative mobile projects while preserving the existing same-origin and unrelated-origin projects in playwright.config.ts
-- [ ] T005 [P] Create the visual review, 320 px overflow, keyboard, console-error, and accessibility fixture helpers in tests/e2e/fixtures/ui-acceptance.ts
-- [ ] T006 [P] Create versioned browser/device, visual review, deviation, performance, and usability evidence templates in specs/004-fileora-ui-redesign/evidence/README.md
+- [X] T001 Record the fixed-data, browser, viewport, cache, network, machine, readiness-event, repetition, and median calculation protocol in specs/004-fileora-ui-redesign/evidence/performance-protocol.md
+- [X] T002 Measure the legacy landing/sign-in, dashboard, files, details/preview, upload, and administrator journeys and record reproducible pre-redesign medians in specs/004-fileora-ui-redesign/evidence/performance-baseline.md
+- [X] T003 [P] Add the exact development dependency `@axe-core/playwright` 4.13.0 to package.json and pnpm-lock.yaml for typed AxeBuilder scans with the existing `@playwright/test` 1.55.1 runner; add no separate browser-project npm package and no application environment key
+- [X] T004 Configure Chromium, Firefox, WebKit, branded Chrome/Edge, desktop viewport, and representative mobile projects while preserving the existing same-origin and unrelated-origin projects in playwright.config.ts
+- [X] T005 [P] Create the visual review, 320 px overflow, keyboard, console-error, and accessibility fixture helpers in tests/e2e/fixtures/ui-acceptance.ts
+- [X] T006 [P] Create versioned browser/device, visual review, deviation, performance, and usability evidence templates in specs/004-fileora-ui-redesign/evidence/README.md and seed specs/004-fileora-ui-redesign/evidence/ui-surface-state-matrix.md from every surface row and applicable state in specs/004-fileora-ui-redesign/contracts/ui-acceptance.md
 
 ---
 
@@ -40,23 +40,23 @@ description: "Dependency-ordered implementation tasks for the Fileora UI redesig
 
 ### Tests for the shared foundation
 
-- [ ] T007 [P] Add component assertions for token-backed button, field, card, pill, table, pagination, feedback, and 44 px target states in client/tests/component/design-system.test.tsx
-- [ ] T008 [P] Extend focus containment, Escape/backdrop dismissal, scroll locking, background inertness, and focus restoration assertions for dialogs and drawers in client/tests/component/dialog-accessibility.test.tsx
-- [ ] T009 [P] Extend desktop sidebar, 820 px off-canvas navigation, backdrop, close-after-navigation, active-route, storage-summary, profile, theme, sign-out, and admin-link assertions in client/tests/component/app-navigation.test.tsx
-- [ ] T010 [P] Add light/dark/system token, live system-change, persistence, and reduced-motion assertions in client/tests/component/theme-provider.test.tsx
+- [X] T007 [P] Add component assertions for token-backed button, field, card, pill, table, pagination, feedback, 4.5:1 normal-text contrast, 3:1 large-text/non-text contrast, 44 by 44 CSS-pixel standalone targets, and permitted WCAG 2.2 SC 2.5.8 exceptions in client/tests/component/design-system.test.tsx
+- [X] T008 [P] Extend focus containment, Escape/backdrop dismissal, scroll locking, background inertness, and focus restoration assertions for dialogs and drawers in client/tests/component/dialog-accessibility.test.tsx
+- [X] T009 [P] Extend desktop sidebar, 820 px off-canvas navigation, backdrop, close-after-navigation, active-route, storage-summary, profile, theme, sign-out, and admin-link assertions in client/tests/component/app-navigation.test.tsx
+- [X] T010 [P] Add light/dark/system token, live system-change, persistence, and reduced-motion assertions in client/tests/component/theme-provider.test.tsx
 
 ### Implementation for the shared foundation
 
-- [ ] T011 Derive the approved OKLCH colors, typography, spacing, radii, shadows, sizes, 1100/820/560 px transitions, focus styles, and reduced-motion rules from specs/fileora-app.html into client/src/app/globals.css
-- [ ] T012 [P] Implement typed Fileora icon primitives using inline SVG with accessible decorative/action semantics in client/src/components/ui/icons.tsx
-- [ ] T013 [P] Implement token-backed button, icon-button, field, select, search, and form-layout primitives with labeled error/help states in client/src/components/ui/controls.tsx
-- [ ] T014 [P] Implement card, metric, pill, avatar, skeleton, empty, error, and status primitives with non-color-only state cues in client/src/components/ui/surfaces.tsx
-- [ ] T015 [P] Implement responsive table, local-scroll region, collection toolbar, view toggle, and pagination primitives in client/src/components/ui/data-display.tsx
-- [ ] T016 Implement the shared dialog and drawer foundation with labeling, initial focus, containment, safe dismissal, inert background, scroll management, and focus restoration in client/src/components/overlays/overlay.tsx
-- [ ] T017 Migrate permanent deletion, toast, error panel, page state, and form status onto the shared controls/surfaces/overlay language in client/src/components/confirmation/permanent-delete-dialog.tsx, client/src/components/toast/toast-provider.tsx, client/src/components/status/error-panel.tsx, client/src/components/status/page-state.tsx, and client/src/components/auth/form-status.tsx
-- [ ] T018 [P] Update Fileora branding and approved tagline rendering for public and protected compositions in client/src/components/brand/fileora-brand.tsx
-- [ ] T019 Implement the persistent 248 px desktop shell, sticky 72 px top bar, 276 px off-canvas compact navigation, role-aware links, storage summary, profile/theme/sign-out controls, and focus-safe resize behavior in client/src/components/navigation/app-navigation.tsx
-- [ ] T020 Compose the authenticated-user and restricted-administrator shells without changing route or authorization boundaries in client/src/app/(protected)/layout.tsx and client/src/app/admin/layout.tsx
+- [X] T011 Derive the approved OKLCH colors, typography, spacing, radii, shadows, sizes, 1100/820/560 px transitions, focus styles, and reduced-motion rules from specs/fileora-app.html into client/src/app/globals.css
+- [X] T012 [P] Implement typed Fileora icon primitives using inline SVG with accessible decorative/action semantics in client/src/components/ui/icons.tsx
+- [X] T013 [P] Implement token-backed button, icon-button, field, select, search, and form-layout primitives with labeled error/help states in client/src/components/ui/controls.tsx
+- [X] T014 [P] Implement card, metric, pill, avatar, skeleton, empty, error, and status primitives with non-color-only state cues in client/src/components/ui/surfaces.tsx
+- [X] T015 [P] Implement responsive table, local-scroll region, collection toolbar, view toggle, and pagination primitives in client/src/components/ui/data-display.tsx
+- [X] T016 Implement the shared dialog and drawer foundation with labeling, initial focus, containment, safe dismissal, inert background, scroll management, and focus restoration in client/src/components/overlays/overlay.tsx
+- [X] T017 Migrate permanent deletion, toast, error panel, page state, and form status onto the shared controls/surfaces/overlay language in client/src/components/confirmation/permanent-delete-dialog.tsx, client/src/components/toast/toast-provider.tsx, client/src/components/status/error-panel.tsx, client/src/components/status/page-state.tsx, and client/src/components/auth/form-status.tsx
+- [X] T018 [P] Update Fileora branding and approved tagline rendering for public and protected compositions in client/src/components/brand/fileora-brand.tsx
+- [X] T019 Implement the persistent 248 px desktop shell, sticky 72 px top bar, 276 px off-canvas compact navigation, role-aware links, storage summary, profile/theme/sign-out controls, and focus-safe resize behavior in client/src/components/navigation/app-navigation.tsx
+- [X] T020 Compose the authenticated-user and restricted-administrator shells without changing route or authorization boundaries in client/src/app/(protected)/layout.tsx and client/src/app/admin/layout.tsx
 
 **Checkpoint**: Shared presentation patterns and shells are independently component-tested and ready for route-family migration.
 
@@ -70,18 +70,18 @@ description: "Dependency-ordered implementation tasks for the Fileora UI redesig
 
 ### Tests for User Story 1
 
-- [ ] T021 [P] [US1] Extend landing/auth semantic, validation, submitting, success, safe failure, verification, resend, and access-outcome coverage in client/tests/component/auth-accessibility.test.tsx and client/tests/component/registration-flow.test.tsx
-- [ ] T022 [P] [US1] Add public/auth screenshot, responsive, keyboard, reduced-motion, session-failure, sign-out, and console-error journeys in tests/e2e/ui-public-auth.spec.ts
+- [X] T021 [P] [US1] Extend landing/auth semantic, validation, submitting, success, safe failure, verification, resend, and access-outcome coverage in client/tests/component/auth-accessibility.test.tsx and client/tests/component/registration-flow.test.tsx
+- [X] T022 [P] [US1] Add public/auth screenshot, responsive, keyboard, reduced-motion, session-failure, sign-out, and console-error journeys in tests/e2e/ui-public-auth.spec.ts
 
 ### Implementation for User Story 1
 
-- [ ] T023 [P] [US1] Recompose the landing navigation, two-column hero/workspace visual, feature cards, approved Fileora branding, theme control, and stacked narrow layout in client/src/app/page.tsx
-- [ ] T024 [US1] Implement the approved split story/form authentication shell and closest-equivalent access/error states in client/src/app/(auth)/layout.tsx and client/src/app/(auth)/error.tsx
-- [ ] T025 [P] [US1] Migrate registration validation, submitting, success, safe error, and verification transition states without changing hooks or contracts in client/src/features/auth/components/register-form.tsx
-- [ ] T026 [P] [US1] Migrate sign-in invalid/unverified/success/session-restoration states without exposing credential or token details in client/src/features/auth/components/sign-in-form.tsx
-- [ ] T027 [P] [US1] Migrate eight-digit verification, replacement/resend, expiry, invalid, success, and safe-enumeration states in client/src/features/auth/components/verify-email-form.tsx and client/src/components/auth/verification-code-input.tsx
-- [ ] T028 [US1] Integrate the redesigned forms and status outcomes into client/src/app/(auth)/register/page.tsx, client/src/app/(auth)/login/page.tsx, and client/src/app/(auth)/verify-email/page.tsx
-- [ ] T029 [US1] Verify unchanged login/refresh/logout cookie isolation and renewal behavior by running client/tests/integration/login-gateway.test.ts, client/tests/integration/refresh-gateway.test.ts, client/tests/integration/logout-gateway.test.ts, and client/tests/integration/renewal-concurrency.test.ts and record results in specs/004-fileora-ui-redesign/evidence/regression-results.md
+- [X] T023 [P] [US1] Recompose the landing navigation, two-column hero/workspace visual, feature cards, approved Fileora branding, theme control, and stacked narrow layout in client/src/app/page.tsx
+- [X] T024 [US1] Implement the approved split story/form authentication shell and closest-equivalent access/error states in client/src/app/(auth)/layout.tsx and client/src/app/(auth)/error.tsx
+- [X] T025 [P] [US1] Migrate registration validation, submitting, success, safe error, and verification transition states without changing hooks or contracts in client/src/features/auth/components/register-form.tsx
+- [X] T026 [P] [US1] Migrate sign-in invalid/unverified/success/session-restoration states without exposing credential or token details in client/src/features/auth/components/sign-in-form.tsx
+- [X] T027 [P] [US1] Migrate eight-digit verification, replacement/resend, expiry, invalid, success, and safe-enumeration states in client/src/features/auth/components/verify-email-form.tsx and client/src/components/auth/verification-code-input.tsx
+- [X] T028 [US1] Integrate the redesigned forms and status outcomes into client/src/app/(auth)/register/page.tsx, client/src/app/(auth)/login/page.tsx, and client/src/app/(auth)/verify-email/page.tsx
+- [X] T029 [US1] Verify unchanged login/refresh/logout cookie isolation and renewal behavior by running client/tests/integration/login-gateway.test.ts, client/tests/integration/refresh-gateway.test.ts, client/tests/integration/logout-gateway.test.ts, and client/tests/integration/renewal-concurrency.test.ts and record results in specs/004-fileora-ui-redesign/evidence/regression-results.md
 
 **Checkpoint**: Public and authentication entry journeys are functional, accessible, visually approved, and independently testable.
 
@@ -95,23 +95,23 @@ description: "Dependency-ordered implementation tasks for the Fileora UI redesig
 
 ### Tests for User Story 2
 
-- [ ] T030 [P] [US2] Extend list/grid, breadcrumbs, server-query controls, pagination, empty/no-results, long-content, and ownership assertions in client/tests/component/file-discovery.test.tsx and client/tests/component/folder-management.test.tsx
-- [ ] T031 [P] [US2] Extend picker/drop, authoritative validation, queued/uploading/success/failed/invalid/retry, partial-batch, and session-expiry assertions in client/tests/component/file-upload.test.tsx
-- [ ] T032 [P] [US2] Extend details, extracted text, supported/unsupported/loading/failure/denied preview, download, move, and permanent-delete assertions in client/tests/component/file-preview.test.tsx and client/tests/component/permanent-deletion.test.tsx
-- [ ] T033 [P] [US2] Add responsive workspace, overlay resize/orientation, keyboard, screenshot, 320 px overflow, and console-error journeys in tests/e2e/ui-file-workspace.spec.ts
+- [X] T030 [P] [US2] Extend list/grid, breadcrumbs, server-query controls, pagination, empty/no-results, long-content, and ownership assertions in client/tests/component/file-discovery.test.tsx and client/tests/component/folder-management.test.tsx
+- [X] T031 [P] [US2] Extend picker/drop, authoritative validation, queued/uploading/success/failed/invalid/retry, partial-batch, and session-expiry assertions in client/tests/component/file-upload.test.tsx
+- [X] T032 [P] [US2] Extend details, extracted text, supported/unsupported/loading/failure/denied preview, download, move, and permanent-delete assertions in client/tests/component/file-preview.test.tsx and client/tests/component/permanent-deletion.test.tsx
+- [X] T033 [P] [US2] Add responsive workspace, overlay resize/orientation, keyboard, screenshot, 320 px overflow, and console-error journeys in tests/e2e/ui-file-workspace.spec.ts
 
 ### Implementation for User Story 2
 
-- [ ] T034 [P] [US2] Rebuild breadcrumbs and folder browser with approved responsive hierarchy, long-name handling, and unchanged nesting/navigation semantics in client/src/features/folders/components/breadcrumbs.tsx and client/src/features/folders/components/folder-browser.tsx
-- [ ] T035 [P] [US2] Rebuild search, filter, sort, and collection presentation controls while retaining server-driven query values in client/src/features/files/components/file-query-toolbar.tsx
-- [ ] T036 [P] [US2] Rebuild responsive list/grid file and folder collection items with required metadata and actions in client/src/features/files/components/file-collection.tsx
-- [ ] T037 [P] [US2] Rebuild accessible server-pagination controls and narrow-width behavior in client/src/features/files/components/file-pagination.tsx
-- [ ] T038 [US2] Compose the approved folder-panel-plus-collection workspace, page actions, empty/no-results states, and local-scroll regions in client/src/app/(protected)/files/page.tsx
-- [ ] T039 [P] [US2] Rebuild the dropzone and queue with per-file non-color-only queued/uploading/success/failed/invalid/retry states and partial-batch feedback in client/src/features/files/components/upload-dropzone.tsx and client/src/features/files/components/upload-queue.tsx
-- [ ] T040 [US2] Preserve queue progress, retry, validation, and active-queue revisit behavior while adapting it to the redesigned upload presentation in client/src/features/files/upload/use-upload-queue.ts
-- [ ] T041 [P] [US2] Rebuild the responsive details drawer with safe metadata, extracted content, authorized actions, and narrow-screen layout in client/src/features/files/components/file-details.tsx
-- [ ] T042 [P] [US2] Rebuild supported image/document/text preview plus unsupported/loading/failure/denied states and download presentation in client/src/features/files/components/file-preview.tsx and client/src/features/files/components/file-download.tsx
-- [ ] T043 [US2] Migrate create/rename/delete folder and move-file workflows onto shared dialogs while preserving fixed-parent, depth, naming, uniqueness, ownership, empty-folder, and irreversible-deletion rules in client/src/features/folders/components/folder-dialogs.tsx and client/src/features/folders/components/file-move-dialog.tsx
+- [X] T034 [P] [US2] Rebuild breadcrumbs and folder browser with approved responsive hierarchy, long-name handling, and unchanged nesting/navigation semantics in client/src/features/folders/components/breadcrumbs.tsx and client/src/features/folders/components/folder-browser.tsx
+- [X] T035 [P] [US2] Rebuild search, filter, sort, and collection presentation controls while retaining server-driven query values in client/src/features/files/components/file-query-toolbar.tsx
+- [X] T036 [P] [US2] Rebuild responsive list/grid file and folder collection items with required metadata and actions in client/src/features/files/components/file-collection.tsx
+- [X] T037 [P] [US2] Rebuild accessible server-pagination controls and narrow-width behavior in client/src/features/files/components/file-pagination.tsx
+- [X] T038 [US2] Compose the approved folder-panel-plus-collection workspace, page actions, empty/no-results states, and local-scroll regions in client/src/app/(protected)/files/page.tsx
+- [X] T039 [P] [US2] Rebuild the dropzone and queue with per-file non-color-only queued/uploading/success/failed/invalid/retry states and partial-batch feedback in client/src/features/files/components/upload-dropzone.tsx and client/src/features/files/components/upload-queue.tsx
+- [X] T040 [US2] Preserve queue progress, retry, validation, and active-queue revisit behavior while adapting it to the redesigned upload presentation in client/src/features/files/upload/use-upload-queue.ts
+- [X] T041 [P] [US2] Rebuild the responsive details drawer with safe metadata, extracted content, authorized actions, and narrow-screen layout in client/src/features/files/components/file-details.tsx
+- [X] T042 [P] [US2] Rebuild supported image/document/text preview plus unsupported/loading/failure/denied states and download presentation in client/src/features/files/components/file-preview.tsx and client/src/features/files/components/file-download.tsx
+- [X] T043 [US2] Migrate create/rename/delete folder and move-file workflows onto shared dialogs while preserving fixed-parent, depth, naming, uniqueness, ownership, empty-folder, and irreversible-deletion rules in client/src/features/folders/components/folder-dialogs.tsx and client/src/features/folders/components/file-move-dialog.tsx
 
 **Checkpoint**: The primary file-management journey is complete and independently testable without dashboard or administrator migration.
 
@@ -125,15 +125,15 @@ description: "Dependency-ordered implementation tasks for the Fileora UI redesig
 
 ### Tests for User Story 3
 
-- [ ] T044 [P] [US3] Extend exact file-count/byte-string, zero/loading/error, local-time, chart-text-equivalent, and responsive assertions in client/tests/component/file-dashboard.test.tsx
-- [ ] T045 [P] [US3] Add dashboard/profile screenshot, theme, keyboard, long-identity, 320 px overflow, and console-error journeys in tests/e2e/ui-dashboard-profile.spec.ts
+- [X] T044 [P] [US3] Extend exact file-count/byte-string, zero/loading/error, local-time, chart-text-equivalent, and responsive assertions in client/tests/component/file-dashboard.test.tsx
+- [X] T045 [P] [US3] Add dashboard/profile screenshot, theme, keyboard, long-identity, 320 px overflow, and console-error journeys in tests/e2e/ui-dashboard-profile.spec.ts
 
 ### Implementation for User Story 3
 
-- [ ] T046 [P] [US3] Rebuild file totals, storage usage, file-type distribution, upload history, zero/loading/error states, and accessible chart equivalents in client/src/features/dashboard/components/file-statistics.tsx
-- [ ] T047 [US3] Compose the approved page header, metric grid, activity, and storage/type summaries with tablet/mobile rearrangement in client/src/app/(protected)/dashboard/page.tsx
-- [ ] T048 [P] [US3] Rebuild the profile identity/account card with safe name, email, role, and verification data only in client/src/app/(protected)/profile/page.tsx
-- [ ] T049 [US3] Verify statistics and profile API/query outcomes remain unchanged by running tests/e2e/file-statistics.spec.ts and tests/e2e/sign-in-profile.spec.ts and append results to specs/004-fileora-ui-redesign/evidence/regression-results.md
+- [X] T046 [P] [US3] Rebuild file totals, storage usage, file-type distribution, upload history, zero/loading/error states, and accessible chart equivalents in client/src/features/dashboard/components/file-statistics.tsx
+- [X] T047 [US3] Compose the approved page header, metric grid, activity, and storage/type summaries with tablet/mobile rearrangement in client/src/app/(protected)/dashboard/page.tsx
+- [X] T048 [P] [US3] Rebuild the profile identity/account card with safe name, email, role, and verification data only in client/src/app/(protected)/profile/page.tsx
+- [X] T049 [US3] Verify statistics and profile API/query outcomes remain unchanged by running tests/e2e/file-statistics.spec.ts and tests/e2e/sign-in-profile.spec.ts and append results to specs/004-fileora-ui-redesign/evidence/regression-results.md
 
 **Checkpoint**: Dashboard and profile work independently with accurate, accessible data in every supported theme and layout.
 
@@ -147,19 +147,19 @@ description: "Dependency-ordered implementation tasks for the Fileora UI redesig
 
 ### Tests for User Story 4
 
-- [ ] T050 [P] [US4] Extend restricted dashboard, zero/loading/error statistics, recent activity, and safe aggregate assertions in client/tests/component/admin-monitoring.test.tsx
-- [ ] T051 [P] [US4] Extend responsive user-table, role, exact deletion, self/final-admin, session, cascade, and audit assertions in client/tests/component/admin-users.test.tsx
-- [ ] T052 [P] [US4] Extend safe owner-metadata, search/filter/page, permanent-delete, and no preview/download/content assertions in client/tests/component/admin-files.test.tsx
-- [ ] T053 [P] [US4] Add administrator screenshots, narrow-table behavior, keyboard, authorization denial, 320 px overflow, and console-error journeys in tests/e2e/ui-admin-workspace.spec.ts
+- [X] T050 [P] [US4] Extend restricted dashboard, zero/loading/error statistics, recent activity, and safe aggregate assertions in client/tests/component/admin-monitoring.test.tsx
+- [X] T051 [P] [US4] Extend responsive user-table, role, exact deletion, self/final-admin, session, cascade, and audit assertions in client/tests/component/admin-users.test.tsx
+- [X] T052 [P] [US4] Extend safe owner-metadata, search/filter/page, permanent-delete, and no preview/download/content assertions in client/tests/component/admin-files.test.tsx
+- [X] T053 [P] [US4] Add administrator screenshots, narrow-table behavior, keyboard, authorization denial, 320 px overflow, and console-error journeys in tests/e2e/ui-admin-workspace.spec.ts
 
 ### Implementation for User Story 4
 
-- [ ] T054 [P] [US4] Rebuild restricted administrator metrics, recent uploads, file-type summaries, and populated/zero/loading/error states in client/src/features/admin/components/admin-dashboard.tsx
-- [ ] T055 [P] [US4] Rebuild the user directory toolbar/table/pagination and narrow-screen condensation with safe metadata in client/src/features/admin/components/admin-user-directory.tsx
-- [ ] T056 [US4] Migrate role-change and exact permanent-user-deletion confirmations while preserving version, self/final-admin, session, cascade, and audit outcomes in client/src/features/admin/components/admin-user-actions.tsx
-- [ ] T057 [P] [US4] Rebuild the global file metadata directory with safe owner data, filters, pagination, local scrolling, and no content affordance in client/src/features/admin/components/admin-file-directory.tsx
-- [ ] T058 [US4] Migrate exact permanent administrator-file deletion while preserving storage cleanup and audit outcomes in client/src/features/admin/components/admin-file-actions.tsx
-- [ ] T059 [P] [US4] Rebuild safe filterable/paginated audit history with deleted-actor/system, loading/empty/error, and sanitized metadata states in client/src/features/admin/components/admin-audit-history.tsx
+- [X] T054 [P] [US4] Rebuild restricted administrator metrics, recent uploads, file-type summaries, and populated/zero/loading/error states in client/src/features/admin/components/admin-dashboard.tsx
+- [X] T055 [P] [US4] Rebuild the user directory toolbar/table/pagination and narrow-screen condensation with safe metadata in client/src/features/admin/components/admin-user-directory.tsx
+- [X] T056 [US4] Migrate role-change and exact permanent-user-deletion confirmations while preserving version, self/final-admin, session, cascade, and audit outcomes in client/src/features/admin/components/admin-user-actions.tsx
+- [X] T057 [P] [US4] Rebuild the global file metadata directory with safe owner data, filters, pagination, local scrolling, and no content affordance in client/src/features/admin/components/admin-file-directory.tsx
+- [X] T058 [US4] Migrate exact permanent administrator-file deletion while preserving storage cleanup and audit outcomes in client/src/features/admin/components/admin-file-actions.tsx
+- [X] T059 [P] [US4] Rebuild safe filterable/paginated audit history with deleted-actor/system, loading/empty/error, and sanitized metadata states in client/src/features/admin/components/admin-audit-history.tsx
 
 **Checkpoint**: Authorized administrators retain all existing operations; normal users remain server-denied and administrators gain no file-content access.
 
@@ -173,17 +173,17 @@ description: "Dependency-ordered implementation tasks for the Fileora UI redesig
 
 ### Tests for User Story 5
 
-- [ ] T060 [P] [US5] Add axe scans with zero critical violations for landing, authentication, dashboard, files, profile, and administrator route families in tests/e2e/ui-accessibility.spec.ts
-- [ ] T061 [P] [US5] Add keyboard-only, 200% zoom, reduced-motion, live system-theme, touch-target, and overlay focus journeys in tests/e2e/ui-inclusive-interactions.spec.ts
-- [ ] T062 [P] [US5] Extend loading, empty, validation, submitting/disabled, success, failure, retry, toast, confirmation, and bounded-announcement assertions in client/tests/component/async-workflow-states.test.tsx and client/tests/component/toast-provider.test.tsx
+- [X] T060 [P] [US5] Add WCAG 2.2 A/AA axe scans with zero critical or serious violations for landing, authentication, dashboard, files, profile, and administrator route families, failing on every other A/AA finding unless reproducible evidence classifies it as a false positive, in tests/e2e/ui-accessibility.spec.ts
+- [X] T061 [P] [US5] Add keyboard-only, 200% zoom/reflow, reduced-motion, live system-theme, 4.5:1 normal-text and 3:1 large-text/non-text contrast, 44 by 44 CSS-pixel standalone-target, permitted SC 2.5.8 exception, and overlay-focus journeys in tests/e2e/ui-inclusive-interactions.spec.ts
+- [X] T062 [P] [US5] Extend loading, empty, validation, submitting/disabled, success, failure, retry, toast, confirmation, and bounded-announcement assertions in client/tests/component/async-workflow-states.test.tsx and client/tests/component/toast-provider.test.tsx
 
 ### Implementation for User Story 5
 
-- [ ] T063 [US5] Resolve route-family axe, semantic structure, associated label, accessible name, focus order, contrast, and 44 px target failures in client/src/components/ui/
-- [ ] T064 [US5] Ensure light/dark/system persistence, live system preference changes, pre-hydration theme application, and theme-selector accessibility across public and protected routes in client/src/providers/theme-provider.tsx, client/src/components/theme/theme-script.tsx, and client/src/components/theme/theme-selector.tsx
-- [ ] T065 [US5] Ensure Framer Motion and CSS transitions communicate state without blocking interaction and honor reduced motion in client/src/app/globals.css
-- [ ] T066 [US5] Resolve 320 px overflow, long-content, 200% zoom, orientation-change, local-scroll, and clipped-action failures across route layouts in client/src/app/
-- [ ] T067 [US5] Normalize accessible async and overlay feedback across redesigned feature components in client/src/features/
+- [X] T063 [US5] Run the component and E2E accessibility suites created by T007-T010 and T060-T061, record each failure with its WCAG criterion, route/state, failing assertion, exact source path, owner, and status in specs/004-fileora-ui-redesign/evidence/accessibility-remediation-inventory.md, then edit only the recorded paths to resolve every open item and attach passing evidence or reproducible false-positive proof
+- [X] T064 [US5] Ensure light/dark/system persistence, live system preference changes, pre-hydration theme application, and theme-selector accessibility across public and protected routes in client/src/providers/theme-provider.tsx, client/src/components/theme/theme-script.tsx, and client/src/components/theme/theme-selector.tsx
+- [X] T065 [US5] Ensure Framer Motion and CSS transitions communicate state without blocking interaction and honor reduced motion in client/src/app/globals.css
+- [X] T066 [US5] Run the responsive E2E journeys created by T022, T033, T045, T053, and T061 using the T005 fixtures, record each 320 px overflow, long-content, 200% zoom/reflow, orientation-change, local-scroll, or clipped-action failure with its viewport, route/state, failing assertion, exact source path, owner, and status in specs/004-fileora-ui-redesign/evidence/responsive-remediation-inventory.md, then edit only the recorded paths to resolve every open item and attach passing evidence for every open item
+- [X] T067 [US5] Run the overlay and async-state suites created by T008 and T062 against the shared status components migrated by T017, record each feedback failure with its route/state, expected announcement/focus behavior, failing assertion, exact source path, owner, and status in specs/004-fileora-ui-redesign/evidence/async-overlay-remediation-inventory.md, then edit only the recorded paths to resolve every open item and attach passing evidence for every open item
 
 **Checkpoint**: Every major route family passes automated accessibility and manual keyboard/theme/motion/responsive acceptance.
 
@@ -197,15 +197,15 @@ description: "Dependency-ordered implementation tasks for the Fileora UI redesig
 
 ### Tests for User Story 6
 
-- [ ] T068 [P] [US6] Expand route-wide obsolete-branding, mixed-token, legacy-class, duplicate-pattern, and user-accessible fallback checks in tests/security/user-facing-branding.test.ts and tests/security/prohibited-patterns.ts
-- [ ] T069 [P] [US6] Add a complete public/user/admin route-and-state coherence journey with approved branding assertions in tests/e2e/ui-coherence.spec.ts
+- [X] T068 [P] [US6] Expand route-wide obsolete-branding, mixed-token, legacy-class, duplicate-pattern, and user-accessible fallback checks in tests/security/user-facing-branding.test.ts and tests/security/prohibited-patterns.ts
+- [X] T069 [P] [US6] Add a complete public/user/admin route-and-state coherence journey with approved branding assertions in tests/e2e/ui-coherence.spec.ts
 
 ### Implementation for User Story 6
 
-- [ ] T070 [US6] Inventory each legacy component, class, token, asset, utility, import, and unique behavior before removal in specs/004-fileora-ui-redesign/evidence/legacy-migration-inventory.md
-- [ ] T071 [US6] Replace remaining page-specific legacy controls and surfaces with shared approved patterns across client/src/app/
-- [ ] T072 [US6] Replace remaining duplicated or legacy feature presentation with shared approved patterns across client/src/features/
-- [ ] T073 [US6] Remove only inventory entries proven to have no remaining consumer or unique behavior, and record the proof and affected paths in specs/004-fileora-ui-redesign/evidence/legacy-migration-inventory.md
+- [X] T070 [US6] Inventory each legacy component, class, token, asset, utility, import, and unique behavior with its exact source path, current consumers, replacement/protection evidence, status, and an exclusive T071 or T072 owner before removal in specs/004-fileora-ui-redesign/evidence/legacy-migration-inventory.md
+- [X] T071 [US6] Replace only the open page/layout entries assigned to T071 by specs/004-fileora-ui-redesign/evidence/legacy-migration-inventory.md, preserve every recorded unique behavior, and attach passing evidence and final status to each entry
+- [X] T072 [US6] Replace only the open feature-component entries assigned to T072 by specs/004-fileora-ui-redesign/evidence/legacy-migration-inventory.md, preserve every recorded unique behavior, and attach passing evidence and final status to each entry
+- [X] T073 [US6] Remove only inventory entries proven to have no remaining consumer or unique behavior, and record the proof and affected paths in specs/004-fileora-ui-redesign/evidence/legacy-migration-inventory.md
 
 **Checkpoint**: No user-accessible surface mixes obsolete and approved visual systems.
 
@@ -215,13 +215,13 @@ description: "Dependency-ordered implementation tasks for the Fileora UI redesig
 
 **Purpose**: Complete the human, browser/device, performance, regression, operational, and governance evidence required for Phase 4 acceptance.
 
-- [ ] T074 [P] Run lint, typecheck, unit/component, integration, security, intent-comment, build, Phase 3, and critical-triple gates and record commands and results in specs/004-fileora-ui-redesign/evidence/regression-results.md
-- [ ] T075 [P] Capture side-by-side light/dark evidence for every route family at 1440, 768, and 390 px plus 320 px overflow/action evidence in specs/004-fileora-ui-redesign/evidence/visual-review.md
+- [X] T074 [P] Run lint, typecheck, unit/component, integration, security, intent-comment, build, Phase 3, and critical-triple gates and record commands and results in specs/004-fileora-ui-redesign/evidence/regression-results.md
+- [ ] T075 [P] Complete every row in specs/004-fileora-ui-redesign/evidence/ui-surface-state-matrix.md with linked side-by-side light/dark evidence at 1440, 768, and 390 px for each applicable default, loading, empty, validation, submitting/disabled, success, failure, retry, access-denied, and confirmation state, plus its required 320 px overflow/action result, and record the evidence index in specs/004-fileora-ui-redesign/evidence/visual-review.md; no missing or blocked combination may pass SC-001
 - [ ] T076 Resolve every material difference or record its surface/state, reference expectation, implementation difference, rationale, impacts, dated maintainer decision, and evidence in specs/004-fileora-ui-redesign/evidence/deviations.md
 - [ ] T077 Run the exact latest-two Chrome/Edge/Firefox/Safari and current iOS Safari/Android Chrome visual, responsive, functional, keyboard/touch, and critical-journey matrix and record version, OS/device, viewport, theme, tester, evidence, and pass/fail/blocked result in specs/004-fileora-ui-redesign/evidence/browser-device-matrix.md
 - [ ] T078 Conduct the 10-participant desktop/mobile usability study for sign-in, locate-file, upload, inspect-file, and initiate/cancel-destructive-action and record first-attempt assistance-free outcomes in specs/004-fileora-ui-redesign/evidence/usability-study.md
 - [ ] T079 Compare redesigned repeated-run medians with the T002 baseline, investigate any regression above 10%, and record metrics and disposition in specs/004-fileora-ui-redesign/evidence/performance-results.md
-- [ ] T080 [P] Verify API, BFF session, schema, storage, audit, environment-key, security, and database-schema invariants remain unchanged and record the comparison in specs/004-fileora-ui-redesign/evidence/invariants-review.md
+- [X] T080 [P] Verify API, BFF session, schema, storage, audit, environment-key, security, and database-schema invariants remain unchanged and record the comparison in specs/004-fileora-ui-redesign/evidence/invariants-review.md
 - [ ] T081 Review redesign-affected setup, Docker, migration, production configuration, security, reliability, and performance instructions and update only inaccurate guidance in README.md
 - [ ] T082 Run the documented clean-environment container start and public/authentication, normal-user file-management, and administrator smoke journeys, then record schema/configuration parity and results in specs/004-fileora-ui-redesign/evidence/clean-environment-smoke.md
 

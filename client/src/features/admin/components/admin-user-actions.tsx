@@ -1,27 +1,28 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { AdminUser } from "@gold-era/contracts/public";
 import { apiErrorCode, apiErrorMessage } from "../../../lib/api/api-error";
 import { useToast } from "../../../components/toast/toast-provider";
-import { useChangeAdminUserRole, useDeleteAdminUser } from "../hooks/use-admin-users";
+import {
+  useChangeAdminUserRole,
+  useDeleteAdminUser,
+} from "../hooks/use-admin-users";
+import { Dialog } from "../../../components/overlays/overlay";
+import { Button, Field } from "../../../components/ui/controls";
 
 /** Presents target-specific guarded administrator user mutations. */
-export function AdminUserActions({ user, onStale }: { user: AdminUser; onStale: () => void }) {
+export function AdminUserActions({
+  user,
+  onStale,
+}: {
+  user: AdminUser;
+  onStale: () => void;
+}) {
   const [mode, setMode] = useState<"role" | "delete" | null>(null);
   const [confirmation, setConfirmation] = useState("");
-  const firstControl = useRef<HTMLButtonElement>(null);
-  const previousFocus = useRef<HTMLElement | null>(null);
   const role = useChangeAdminUserRole();
   const deletion = useDeleteAdminUser();
   const toast = useToast();
-  useEffect(() => {
-    if (mode) {
-      previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      firstControl.current?.focus();
-      return;
-    }
-    previousFocus.current?.focus();
-  }, [mode]);
   /** Closes the mutation dialog and clears target confirmation state. */
   const close = () => {
     setMode(null);
@@ -41,7 +42,10 @@ export function AdminUserActions({ user, onStale }: { user: AdminUser; onStale: 
     try {
       await role.mutateAsync({
         id: user.id,
-        input: { role: user.role === "ADMIN" ? "USER" : "ADMIN", expectedUpdatedAt: user.updatedAt },
+        input: {
+          role: user.role === "ADMIN" ? "USER" : "ADMIN",
+          expectedUpdatedAt: user.updatedAt,
+        },
       });
       toast.notify("User role updated.", { kind: "success" });
       close();
@@ -54,7 +58,10 @@ export function AdminUserActions({ user, onStale }: { user: AdminUser; onStale: 
     try {
       await deletion.mutateAsync({
         id: user.id,
-        input: { expectedUpdatedAt: user.updatedAt, confirmationEmail: confirmation },
+        input: {
+          expectedUpdatedAt: user.updatedAt,
+          confirmationEmail: confirmation,
+        },
       });
       toast.notify("User permanently deleted.", { kind: "success" });
       close();
@@ -66,36 +73,66 @@ export function AdminUserActions({ user, onStale }: { user: AdminUser; onStale: 
   const error = role.error ?? deletion.error;
   return (
     <div className="admin-actions">
-      <button type="button" onClick={() => setMode("role")}>Change role</button>
-      <button className="danger" type="button" onClick={() => setMode("delete")}>Delete permanently</button>
+      <Button variant="secondary" type="button" onClick={() => setMode("role")}>
+        Change role
+      </Button>
+      <Button variant="danger" type="button" onClick={() => setMode("delete")}>
+        Delete
+      </Button>
       {mode ? (
-        <div className="dialog-backdrop" onKeyDown={(event) => event.key === "Escape" && !pending && close()}>
-          <section className="app-dialog" role="dialog" aria-modal="true" aria-labelledby="admin-user-action-title">
-            <h2 id="admin-user-action-title">
-              {mode === "role" ? `Change ${user.name}'s role?` : `Permanently delete ${user.name}?`}
-            </h2>
-            {mode === "delete" ? (
-              <label>
-                Type {user.email} to confirm
-                <input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="off" />
-              </label>
-            ) : (
-              <p>The new role will be {user.role === "ADMIN" ? "User" : "Administrator"}. Active sessions will be invalidated.</p>
-            )}
-            {error ? <p role="alert">{apiErrorMessage(error)}</p> : null}
-            <div className="dialog-actions">
-              <button ref={firstControl} type="button" onClick={close} disabled={pending}>Cancel</button>
-              <button
-                className={mode === "delete" ? "danger" : undefined}
-                type="button"
-                disabled={pending || (mode === "delete" && confirmation !== user.email)}
-                onClick={() => void (mode === "role" ? confirmRole() : confirmDelete())}
-              >
-                {pending ? "Saving…" : "Confirm"}
-              </button>
-            </div>
-          </section>
-        </div>
+        <Dialog
+          open
+          title={
+            mode === "role"
+              ? `Change ${user.name}'s role?`
+              : `Permanently delete ${user.name}?`
+          }
+          description={
+            mode === "role"
+              ? "Changing role invalidates active sessions."
+              : "This removes the account and its owned data permanently."
+          }
+          onClose={close}
+          dismissible={!pending}
+        >
+          {mode === "delete" ? (
+            <Field
+              label={`Type ${user.email} to confirm`}
+              value={confirmation}
+              onChange={(event) => setConfirmation(event.target.value)}
+              autoComplete="off"
+            />
+          ) : (
+            <p>
+              The new role will be{" "}
+              {user.role === "ADMIN" ? "User" : "Administrator"}. Active
+              sessions will be invalidated.
+            </p>
+          )}
+          {error ? <p role="alert">{apiErrorMessage(error)}</p> : null}
+          <div className="dialog-actions">
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={close}
+              disabled={pending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant={mode === "delete" ? "danger" : "primary"}
+              type="button"
+              disabled={
+                pending || (mode === "delete" && confirmation !== user.email)
+              }
+              onClick={() =>
+                void (mode === "role" ? confirmRole() : confirmDelete())
+              }
+            >
+              {pending ? "Saving…" : "Confirm"}
+            </Button>
+          </div>
+        </Dialog>
       ) : null}
     </div>
   );

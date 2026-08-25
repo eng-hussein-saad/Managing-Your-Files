@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthForm } from "../../../components/auth/auth-form";
 import { FormStatus } from "../../../components/auth/form-status";
+import { Button, Field } from "../../../components/ui/controls";
 import { useToast } from "../../../components/toast/toast-provider";
 import { apiErrorCode, apiErrorMessage } from "../../../lib/api/api-error";
 import { useSignIn } from "../hooks/use-sign-in";
@@ -32,10 +33,9 @@ export function SignInForm() {
     <AuthForm onSubmit={submit}>
       <div>
         <span className="eyebrow">Welcome back</span>
-        <h1>Return to your archive</h1>
+        <h1>Sign in to Fileora</h1>
         <p className="lede">
-          Continue where you left off, with your session protected by
-          short-lived access.
+          Use your Verified account to return to your workspace.
         </p>
       </div>
       {search.get("verified") ? (
@@ -44,37 +44,33 @@ export function SignInForm() {
           message="Email verified. You can sign in now."
         />
       ) : null}
-      <label>
-        Email
-        <input
-          required
-          type="email"
-          autoComplete="email"
-          value={values.email}
-          onChange={(event) =>
-            setValues({ ...values, email: event.target.value })
-          }
-        />
-      </label>
-      <label>
-        Password
-        <input
-          required
-          type="password"
-          autoComplete="current-password"
-          value={values.password}
-          onChange={(event) =>
-            setValues({ ...values, password: event.target.value })
-          }
-        />
-      </label>
+      <Field
+        label="Email"
+        required
+        type="email"
+        autoComplete="email"
+        value={values.email}
+        onChange={(event) =>
+          setValues({ ...values, email: event.target.value })
+        }
+      />
+      <Field
+        label="Password"
+        required
+        type="password"
+        autoComplete="current-password"
+        value={values.password}
+        onChange={(event) =>
+          setValues({ ...values, password: event.target.value })
+        }
+      />
       <FormStatus
         kind="error"
         message={signIn.error ? apiErrorMessage(signIn.error) : undefined}
       />
-      <button className="button" disabled={signIn.isPending}>
+      <Button busy={signIn.isPending}>
         {signIn.isPending ? "Signing in…" : "Sign in"}
-      </button>
+      </Button>
       <p className="switch">
         New here? <a href="/register">Create an account</a>
       </p>

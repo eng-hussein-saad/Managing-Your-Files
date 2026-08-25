@@ -62,13 +62,16 @@ describe("authorized file preview", () => {
     const { rerender } = render(
       <FilePreview id="file" mimeType="text/plain" kind="text" />,
     );
-    expect(screen.getByText(/loading preview/i)).toBeInTheDocument();
+    expect(screen.getByText(/loading preview/i)).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
     previewHook.mockReturnValue({
       isLoading: false,
       isError: true,
     } as ReturnType<typeof useFilePreview>);
     rerender(<FilePreview id="file" mimeType="text/plain" kind="text" />);
-    expect(screen.getByText(/could not be loaded/i)).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(/could not be loaded/i);
   });
   it("downloads through the authorized server endpoint and cleans its object URL", async () => {
     download.mockResolvedValue(new Blob(["download"]));

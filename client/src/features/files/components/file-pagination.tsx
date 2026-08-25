@@ -9,7 +9,7 @@ export function FilePagination({
   onPage: (page: number) => void;
 }) {
   return (
-    <nav className="file-pagination" aria-label="File pages">
+    <nav className="file-pagination ui-pagination" aria-label="File pages">
       <button
         type="button"
         disabled={page <= 1}
@@ -20,7 +20,7 @@ export function FilePagination({
       >
         Previous
       </button>
-      <span>
+      <span aria-live="polite">
         Page {page} of {Math.max(totalPages, 1)}
       </span>
       <button

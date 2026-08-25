@@ -36,7 +36,7 @@ describe("file-management accessibility", () => {
     expect(contrast("#171714", "#f6f3ea")).toBeGreaterThanOrEqual(4.5);
     expect(contrast("#68675f", "#f6f3ea")).toBeGreaterThanOrEqual(4.5);
     expect(css).toMatch(/:focus-visible\s*\{[^}]*outline:/s);
-    expect(css).toContain("@media (max-width:760px)");
+    expect(css).toContain("@media (max-width:820px)");
     expect(css).toContain("@media (prefers-reduced-motion:reduce)");
   });
 

@@ -1,6 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { FileQuery } from "../api/files.api";
+import {
+  FilterIcon,
+  GridIcon,
+  ListIcon,
+  SearchIcon,
+} from "../../../components/ui/icons";
+import { Dialog } from "../../../components/overlays/overlay";
 
 type FileQueryToolbarProps = {
   query: FileQuery;
@@ -17,118 +24,154 @@ export function FileQueryToolbar({
   onView,
 }: FileQueryToolbarProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [draft, setDraft] = useState<FileQuery>(query);
 
-  useEffect(
-    /** Keeps the responsive filter drawer dismissible by keyboard. */ () => {
-    if (!filtersOpen) return;
-    /** Closes the filter drawer when Escape is pressed. */
-    const closeOnEscape = /** Implements the local closeOnEscape operation. */ (event: KeyboardEvent) => {
-      if (event.key === "Escape") setFiltersOpen(false);
+  const openFilters =
+    /** Opens the centered filter dialog with a fresh copy of the active query. */ () => {
+      setDraft(query);
+      setFiltersOpen(true);
     };
-    document.addEventListener("keydown", closeOnEscape);
-    return /** Removes the temporary drawer keyboard listener. */ () =>
-      document.removeEventListener("keydown", closeOnEscape);
-  }, [filtersOpen]);
+
+  const applyFilters =
+    /** Commits all modal filter choices together and returns to the first page. */ () => {
+      onChange({
+        type: draft.type,
+        sort: draft.sort,
+        direction: draft.direction,
+        pageSize: draft.pageSize,
+        page: 1,
+      });
+      setFiltersOpen(false);
+    };
 
   return (
     <>
-      <section className="file-toolbar" aria-label="File filters">
-      <label className="search-field">
-        <span className="sr-only">Search files</span><span aria-hidden="true">⌕</span>
-        <input
-          placeholder="Search your archive"
-          value={query.search ?? ""}
-          maxLength={200}
-          onChange={
-            /** Handles the bound UI event or state projection for this JSX control. */ (
-              event,
-            ) => onChange({ search: event.target.value, page: 1 })
-          }
-        />
-      </label>
-      <FilterControls query={query} onChange={onChange} />
-      <button
-        className="filter-trigger"
-        type="button"
-        aria-haspopup="dialog"
-        aria-expanded={filtersOpen}
-        onClick={/** Opens the responsive filter drawer. */ () => setFiltersOpen(true)}
+      <section
+        className="file-toolbar ui-collection-toolbar"
+        aria-label="File filters"
       >
-        Filters
-      </button>
-      <div className="view-switch" role="group" aria-label="File view">
-        <button
-          type="button"
-          aria-pressed={view === "list"}
-          onClick={
-            /** Handles the bound UI event or state projection for this JSX control. */ () =>
-              onView("list")
-          }
-        >
-          <span aria-hidden="true">☷</span><span className="sr-only">List</span>
-        </button>
-        <button
-          type="button"
-          aria-pressed={view === "grid"}
-          onClick={
-            /** Handles the bound UI event or state projection for this JSX control. */ () =>
-              onView("grid")
-          }
-        >
-          <span aria-hidden="true">⊞</span><span className="sr-only">Grid</span>
-        </button>
-      </div>
-      </section>
-      {filtersOpen ? (
-        <div
-          className="filter-drawer-overlay"
-          role="presentation"
-          onMouseDown={/** Dismisses the drawer only from its backdrop. */ (event) => {
-            if (event.target === event.currentTarget) setFiltersOpen(false);
-          }}
-        >
-          <aside
-            className="filter-drawer"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="file-filter-drawer-title"
+        <label className="search-field">
+          <span className="sr-only">Search files</span>
+          <SearchIcon />
+          <input
+            placeholder="Search this location"
+            value={query.search ?? ""}
+            maxLength={200}
+            onChange={
+              /** Handles the bound UI event or state projection for this JSX control. */ (
+                event,
+              ) => onChange({ search: event.target.value, page: 1 })
+            }
+          />
+        </label>
+        <label className="toolbar-type">
+          <span className="sr-only">File type</span>
+          <select
+            value={query.type ?? ""}
+            onChange={
+              /** Applies the reference toolbar's primary type filter at page one. */ (
+                event,
+              ) =>
+                onChange({
+                  type: event.target.value
+                    ? (event.target.value as FileQuery["type"])
+                    : undefined,
+                  page: 1,
+                })
+            }
           >
-            <div className="filter-drawer-header">
-              <div>
-                <span className="eyebrow">Refine your archive</span>
-                <h2 id="file-filter-drawer-title">Filters</h2>
-              </div>
-              <button
-                className="drawer-close"
-                type="button"
-                aria-label="Close filters"
-                onClick={/** Closes the responsive filter drawer. */ () => setFiltersOpen(false)}
-              >
-                ×
-              </button>
-            </div>
-            <div className="filter-drawer-fields">
-              <label>
-                <span>Search files</span>
-                <input
-                  placeholder="Search your archive"
-                  value={query.search ?? ""}
-                  maxLength={200}
-                  onChange={/** Updates drawer search state at the first page. */ (event) =>
-                    onChange({ search: event.target.value, page: 1 })
-                  }
-                />
-              </label>
-              <FilterControls query={query} onChange={onChange} />
-            </div>
-          </aside>
+            <option value="">All types</option>
+            <option value="pdf">PDF</option>
+            <option value="text">Text</option>
+            <option value="image">Images</option>
+            <option value="document">Documents</option>
+          </select>
+        </label>
+        <button
+          className="filter-trigger"
+          type="button"
+          aria-label="More filters"
+          aria-haspopup="dialog"
+          aria-expanded={filtersOpen}
+          onClick={openFilters}
+        >
+          <FilterIcon />
+        </button>
+        <div className="view-switch" role="group" aria-label="File view">
+          <button
+            type="button"
+            aria-pressed={view === "list"}
+            onClick={
+              /** Handles the bound UI event or state projection for this JSX control. */ () =>
+                onView("list")
+            }
+          >
+            <ListIcon />
+            <span className="sr-only">List</span>
+          </button>
+          <button
+            type="button"
+            aria-pressed={view === "grid"}
+            onClick={
+              /** Handles the bound UI event or state projection for this JSX control. */ () =>
+                onView("grid")
+            }
+          >
+            <GridIcon />
+            <span className="sr-only">Grid</span>
+          </button>
         </div>
-      ) : null}
+      </section>
+      <Dialog
+        open={filtersOpen}
+        title="Filter files"
+        description="Changes apply together and return the collection to page 1."
+        onClose={
+          /** Discards uncommitted filter changes on Escape, backdrop, or Cancel. */ () =>
+            setFiltersOpen(false)
+        }
+        backdropTestId="file-filter-backdrop"
+      >
+        <div className="filter-modal-fields">
+          <FilterControls
+            query={draft}
+            onChange={
+              /** Merges one field into the modal draft without querying prematurely. */ (
+                change,
+              ) =>
+                setDraft(
+                  /** Preserves untouched modal fields while updating the selected control. */ (
+                    current,
+                  ) => ({ ...current, ...change }),
+                )
+            }
+          />
+        </div>
+        <div className="filter-modal-actions">
+          <button
+            className="ui-button secondary"
+            type="button"
+            onClick={
+              /** Closes the modal without applying its draft values. */ () =>
+                setFiltersOpen(false)
+            }
+          >
+            Cancel
+          </button>
+          <button
+            className="ui-button primary"
+            type="button"
+            onClick={applyFilters}
+          >
+            Apply filters
+          </button>
+        </div>
+      </Dialog>
     </>
   );
 }
 
-/** Renders the shared filter fields for inline and drawer presentations. */
+/** Renders the reference modal's server-backed filter fields. */
 function FilterControls({
   query,
   onChange,
@@ -139,13 +182,14 @@ function FilterControls({
         <span>Type</span>
         <select
           value={query.type ?? ""}
-          onChange={/** Updates the selected file type at the first page. */ (event) =>
-            onChange({
-              type: event.target.value
-                ? (event.target.value as FileQuery["type"])
-                : undefined,
-              page: 1,
-            })
+          onChange={
+            /** Updates the selected file type at the first page. */ (event) =>
+              onChange({
+                type: event.target.value
+                  ? (event.target.value as FileQuery["type"])
+                  : undefined,
+                page: 1,
+              })
           }
         >
           <option value="">All types</option>
@@ -159,11 +203,12 @@ function FilterControls({
         <span>Sort by</span>
         <select
           value={query.sort ?? "uploadedAt"}
-          onChange={/** Updates the selected file sort at the first page. */ (event) =>
-            onChange({
-              sort: event.target.value as FileQuery["sort"],
-              page: 1,
-            })
+          onChange={
+            /** Updates the selected file sort at the first page. */ (event) =>
+              onChange({
+                sort: event.target.value as FileQuery["sort"],
+                page: 1,
+              })
           }
         >
           <option value="uploadedAt">Uploaded</option>
@@ -175,11 +220,14 @@ function FilterControls({
         <span>Order</span>
         <select
           value={query.direction ?? "desc"}
-          onChange={/** Updates the selected sort direction at the first page. */ (event) =>
-            onChange({
-              direction: event.target.value as FileQuery["direction"],
-              page: 1,
-            })
+          onChange={
+            /** Updates the selected sort direction at the first page. */ (
+              event,
+            ) =>
+              onChange({
+                direction: event.target.value as FileQuery["direction"],
+                page: 1,
+              })
           }
         >
           <option value="desc">Descending</option>
@@ -190,8 +238,10 @@ function FilterControls({
         <span>Files per page</span>
         <select
           value={query.pageSize ?? 20}
-          onChange={/** Updates the selected page size and returns to page one. */ (event) =>
-            onChange({ pageSize: Number(event.target.value), page: 1 })
+          onChange={
+            /** Updates the selected page size and returns to page one. */ (
+              event,
+            ) => onChange({ pageSize: Number(event.target.value), page: 1 })
           }
         >
           <option value="5">5</option>

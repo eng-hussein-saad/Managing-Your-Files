@@ -1,3 +1,5 @@
+import { Status } from "../ui/surfaces";
+
 /** Announces a form outcome without moving keyboard focus unexpectedly. */
 export function FormStatus({
   message,
@@ -7,12 +9,5 @@ export function FormStatus({
   kind?: "info" | "error" | "success";
 }) {
   if (!message) return null;
-  return (
-    <p
-      className={`form-status ${kind}`}
-      role={kind === "error" ? "alert" : "status"}
-    >
-      {message}
-    </p>
-  );
+  return <Status tone={kind === "error" ? "danger" : kind}>{message}</Status>;
 }

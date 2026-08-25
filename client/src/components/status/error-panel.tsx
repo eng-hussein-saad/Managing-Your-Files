@@ -1,3 +1,6 @@
+import { Button } from "../ui/controls";
+import { ErrorState } from "../ui/surfaces";
+
 /** Displays a reusable actionable failure region. */
 export function ErrorPanel({
   title = "Something went wrong",
@@ -9,14 +12,10 @@ export function ErrorPanel({
   retry?: () => void;
 }) {
   return (
-    <section className="error-panel" role="alert">
-      <h2>{title}</h2>
-      <p>{message}</p>
-      {retry ? (
-        <button className="button" onClick={retry}>
-          Try again
-        </button>
-      ) : null}
-    </section>
+    <ErrorState
+      title={title}
+      description={message}
+      action={retry ? <Button onClick={retry}>Try again</Button> : undefined}
+    />
   );
 }

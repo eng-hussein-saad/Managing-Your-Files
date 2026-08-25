@@ -13,6 +13,7 @@ export function FileDownload({ id, name }: { id: string; name: string }) {
   };
   return (
     <button
+      className="ui-button secondary"
       type="button"
       onClick={
         /** Handles the bound UI event or state projection for this JSX control. */ () =>

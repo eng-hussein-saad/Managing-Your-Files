@@ -5,6 +5,7 @@ import { AuthForm } from "../../../components/auth/auth-form";
 import { FormStatus } from "../../../components/auth/form-status";
 import { useToast } from "../../../components/toast/toast-provider";
 import { VerificationCodeInput } from "../../../components/auth/verification-code-input";
+import { Button, Field } from "../../../components/ui/controls";
 import { apiErrorMessage } from "../../../lib/api/api-error";
 import {
   useResendVerification,
@@ -48,18 +49,17 @@ export function VerifyEmailForm() {
           message="Your account was created, but the first message could not be delivered. Wait one minute, then request a new code below."
         />
       ) : null}
-      <label>
-        Email
-        <input
-          required
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-        />
-      </label>
-      <label>
-        Verification code
+      <Field
+        label="Email"
+        required
+        type="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+      />
+      <label className="ui-field" htmlFor="verification-code">
+        <span className="ui-field-label">Verification code</span>
         <VerificationCodeInput
+          id="verification-code"
           required
           value={code}
           onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
@@ -75,11 +75,11 @@ export function VerifyEmailForm() {
               : undefined
         }
       />
-      <button className="button" disabled={verification.isPending}>
+      <Button busy={verification.isPending}>
         {verification.isPending ? "Verifying…" : "Verify email"}
-      </button>
-      <button
-        className="text-button"
+      </Button>
+      <Button
+        variant="ghost"
         type="button"
         disabled={resend.isPending || !email}
         onClick={() =>
@@ -89,7 +89,7 @@ export function VerifyEmailForm() {
         }
       >
         {resend.isPending ? "Sending…" : "Send a new code"}
-      </button>
+      </Button>
       <FormStatus
         message={resend.error ? apiErrorMessage(resend.error) : undefined}
         kind="error"

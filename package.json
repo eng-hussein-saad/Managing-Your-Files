@@ -2,7 +2,9 @@
   "name": "gold-era",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node": ">=24 <25" },
+  "engines": {
+    "node": ">=24 <25"
+  },
   "packageManager": "pnpm@10.17.1",
   "scripts": {
     "contracts:build": "pnpm --filter @gold-era/contracts build",
@@ -24,6 +26,7 @@
     "verify:critical:triple": "node scripts/verify-phase-3.mjs --critical-triple"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@playwright/test": "1.55.1",
     "@testing-library/jest-dom": "6.8.0",
     "@testing-library/react": "16.3.0",
