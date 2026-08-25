@@ -27,3 +27,28 @@ export function formatBytes(value: string): string {
 export function formatPage(page: number, totalPages: number): string {
   return `Page ${page} of ${Math.max(totalPages, 1)}`;
 }
+
+const auditActionLabels: Readonly<Record<string, string>> = {
+  "admin.bootstrap": "Administrator Created",
+  "admin.user.role_changed": "User Role Changed",
+  "admin.user.permanently_deleted": "User Permanently Deleted",
+  "admin.file.permanently_deleted": "File Permanently Deleted",
+  "file.upload": "File Upload",
+  "file.move": "File Move",
+  "file.delete": "File Deletion",
+  "folder.create": "Folder Creation",
+  "folder.rename": "Folder Rename",
+  "folder.delete": "Folder Deletion",
+};
+
+/** Converts a stored audit action identifier into a descriptive UI label. */
+export function formatAuditAction(action: string): string {
+  return (
+    auditActionLabels[action] ??
+    action
+      .split(/[._-]+/)
+      .filter(Boolean)
+      .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+      .join(" ")
+  );
+}

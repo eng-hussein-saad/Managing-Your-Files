@@ -20,7 +20,7 @@ export class DeleteFileService {
   async delete(ownerId: string, id: string): Promise<void> {
     await this.removeTrusted(ownerId, id);
     await this.audit.bestEffort(
-      fileAudit("file.delete", ownerId, "FILE", id, "SUCCESS"),
+      fileAudit("file.delete", ownerId, "FILE", id),
     );
   }
   /** Permanently removes a confirmed file under trusted administrator authority. */

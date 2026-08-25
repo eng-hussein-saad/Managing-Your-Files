@@ -5,7 +5,6 @@ import type { PasswordHasher } from "../../infrastructure/security/password-hash
 import type { MailPort } from "./ports/mail.port.js";
 import { generateVerificationCode } from "../../infrastructure/security/code-hasher.js";
 import { serializable } from "../../infrastructure/persistence/transactions.js";
-import { AuditRepository } from "../audit/audit.repository.js";
 import { AppError } from "./auth.errors.js";
 
 /** Replaces unused verification codes under database-backed abuse limits. */
@@ -17,7 +16,6 @@ export class VerificationResendService {
     private readonly identifiers: Identifiers,
     private readonly hasher: PasswordHasher,
     private readonly mailer: MailPort,
-    private readonly audit = new AuditRepository(),
   ) {}
   /** Issues a replacement code subject to per-minute and rolling-hour limits. */
   async resend(email: string): Promise<{ message: string }> {
@@ -62,17 +60,6 @@ export class VerificationResendService {
           createdAt: now,
         },
       });
-      await this.audit.append(
-        transaction,
-        {
-          actorId: user.id,
-          action: "auth.registration",
-          entityType: "USER",
-          entityId: user.id,
-          metadata: { outcome: "SUCCESS", reasonCode: "VERIFICATION_RESENT" },
-        },
-        now,
-      );
     });
     try {
       await this.mailer.sendVerification({

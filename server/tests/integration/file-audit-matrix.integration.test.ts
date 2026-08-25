@@ -9,7 +9,6 @@ import { seedFile } from "../fixtures/file-management.js";
 
 const expectedActions = [
   "file.upload",
-  "file.download",
   "file.move",
   "file.delete",
   "folder.create",
@@ -17,11 +16,11 @@ const expectedActions = [
   "folder.delete",
 ] as const;
 
-/** Exercises every Phase 2 lifecycle audit and its fail-open boundary. */
+/** Exercises every important file/folder mutation audit and its fail-open boundary. */
 describeDatabase("file-management audit matrix", () => {
   const { app, prisma, storage } = fileManagementHarness();
 
-  it("records one sanitized allowlisted event for every successful lifecycle", async () => {
+  it("records successful mutations while excluding downloads", async () => {
     await supertest(app)
       .post("/api/v1/files")
       .attach("file", Buffer.from("upload"), "upload.txt")
@@ -65,6 +64,7 @@ describeDatabase("file-management audit matrix", () => {
     );
     for (const row of rows)
       expect(row.metadata).toEqual({ outcome: "SUCCESS" });
+    expect(await prisma.auditLog.count({ where: { action: "file.download" } })).toBe(0);
     const serialized = JSON.stringify(rows.map((row) => row.metadata));
     expect(serialized).not.toMatch(
       /storageKey|users\/|supabase|filename|extracted|password|token|temp/i,

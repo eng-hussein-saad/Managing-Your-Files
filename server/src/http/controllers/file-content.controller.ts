@@ -29,12 +29,6 @@ export function fileContentController(service: GetFileContentService) {
         };
         request.once("aborted", stopStream);
         response.once("close", stopStream);
-        if (mode === "download") {
-          /** Audits only downloads whose full response finished. */
-          response.once("finish", () => {
-            void service.auditDownload(ownerId, content.fileId);
-          });
-        }
         /** Avoids writing an error envelope after binary headers have already been sent. */
         content.stream.once("error", (error) => {
           if (response.headersSent) response.destroy(error);

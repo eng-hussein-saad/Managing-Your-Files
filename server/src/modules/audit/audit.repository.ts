@@ -1,6 +1,7 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import type { AdminAuditQuery } from "@gold-era/contracts/public";
 import type { AuditEvent } from "./audit.types.js";
+import { auditActions } from "./audit.types.js";
 
 /** Owns append-only persistence for allowlisted audit events. */
 export class AuditRepository {
@@ -32,6 +33,7 @@ export class AuditRepository {
             ? { actorId: null, NOT: { metadata: { path: ["actorState"], equals: "DELETED" } } }
             : {};
     const where: Prisma.AuditLogWhereInput = {
+      action: { in: [...auditActions] },
       ...actorState,
       ...(query.search
         ? {
@@ -41,7 +43,9 @@ export class AuditRepository {
             ],
           }
         : {}),
-      ...(query.action ? { action: query.action } : {}),
+      ...(query.action
+        ? { action: { equals: query.action, in: [...auditActions] } }
+        : {}),
       ...(query.entityType ? { entityType: query.entityType } : {}),
       ...(query.actorId ? { actorId: query.actorId } : {}),
       ...(query.outcome

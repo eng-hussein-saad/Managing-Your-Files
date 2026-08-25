@@ -114,7 +114,7 @@ export class UploadFileService {
         },
       );
       await this.audit.bestEffort(
-        fileAudit("file.upload", ownerId, "FILE", result.id, "SUCCESS"),
+        fileAudit("file.upload", ownerId, "FILE", result.id),
       );
       return result;
     } catch (error) {

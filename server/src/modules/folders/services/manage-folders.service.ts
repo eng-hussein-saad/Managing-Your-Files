@@ -137,7 +137,7 @@ export class ManageFoldersService {
       },
     );
     await this.audit.bestEffort(
-      fileAudit("folder.create", ownerId, "FOLDER", folder.id, "SUCCESS"),
+      fileAudit("folder.create", ownerId, "FOLDER", folder.id),
     );
     const path = await this.repository.ancestry(
       this.prisma,
@@ -174,7 +174,7 @@ export class ManageFoldersService {
       },
     );
     await this.audit.bestEffort(
-      fileAudit("folder.rename", ownerId, "FOLDER", folder.id, "SUCCESS"),
+      fileAudit("folder.rename", ownerId, "FOLDER", folder.id),
     );
     const path = await this.repository.ancestry(
       this.prisma,

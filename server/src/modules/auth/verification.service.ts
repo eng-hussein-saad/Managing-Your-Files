@@ -3,8 +3,6 @@ import type { VerifyEmailRequest, SafeUser } from "@gold-era/contracts/public";
 import type { Clock } from "../../infrastructure/runtime/clock.js";
 import type { PasswordHasher } from "../../infrastructure/security/password-hasher.js";
 import { serializable } from "../../infrastructure/persistence/transactions.js";
-import type { AuditService } from "../audit/audit.service.js";
-import { authAudit } from "../audit/auth-audit.js";
 import { toSafeUser } from "../users/user.mapper.js";
 import { AppError } from "./auth.errors.js";
 
@@ -15,7 +13,6 @@ export class VerificationService {
     private readonly prisma: PrismaClient,
     private readonly clock: Clock,
     private readonly hasher: PasswordHasher,
-    private readonly audit: AuditService,
   ) {}
   /** Consumes only the current eligible matching code in one serializable transition. */
   async verify(input: VerifyEmailRequest): Promise<SafeUser> {
@@ -81,13 +78,6 @@ export class VerificationService {
       });
       return updated;
     });
-    await this.audit.bestEffort(
-      authAudit("auth.verification", "SUCCESS", {
-        actorId: user.id,
-        entityType: "USER",
-        entityId: user.id,
-      }),
-    );
     return toSafeUser(verified);
   }
 }

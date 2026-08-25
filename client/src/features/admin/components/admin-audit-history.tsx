@@ -1,7 +1,11 @@
 "use client";
 import type { AdminAuditQuery } from "@gold-era/contracts/public";
 import { ErrorPanel } from "../../../components/status/error-panel";
-import { formatDate, formatPage } from "../../../lib/presentation/format";
+import {
+  formatAuditAction,
+  formatDate,
+  formatPage,
+} from "../../../lib/presentation/format";
 import { useAdminAuditEvents } from "../hooks/use-admin-monitoring";
 
 /** Renders searchable sanitized audit history with safe actor states. */
@@ -43,25 +47,6 @@ export function AdminAuditHistory({
           />
         </label>
         <label>
-          <span className="sr-only">Outcome</span>
-          <select
-            aria-label="Outcome"
-            value={query.outcome ?? ""}
-            onChange={(event) =>
-              update({
-                outcome: (event.target.value ||
-                  undefined) as AdminAuditQuery["outcome"],
-                page: 1,
-              })
-            }
-          >
-            <option value="">All outcomes</option>
-            <option value="SUCCESS">SUCCESS</option>
-            <option value="FAILURE">FAILURE</option>
-            <option value="DENIED">DENIED</option>
-          </select>
-        </label>
-        <label>
           <span className="sr-only">Actor</span>
           <select
             aria-label="Actor"
@@ -98,7 +83,6 @@ export function AdminAuditHistory({
                 <th>Actor</th>
                 <th>Action</th>
                 <th>Entity</th>
-                <th>Outcome</th>
               </tr>
             </thead>
             <tbody>
@@ -110,15 +94,8 @@ export function AdminAuditHistory({
                       ? event.actor.name
                       : event.actor.label}
                   </td>
-                  <td>{event.action}</td>
+                  <td>{formatAuditAction(event.action)}</td>
                   <td>{event.entityType ?? "—"}</td>
-                  <td>
-                    <span
-                      className={`ui-pill ${event.metadata.outcome === "SUCCESS" ? "success" : event.metadata.outcome === "DENIED" || event.metadata.outcome === "FAILURE" ? "danger" : "neutral"}`}
-                    >
-                      {event.metadata.outcome ?? "—"}
-                    </span>
-                  </td>
                 </tr>
               ))}
             </tbody>

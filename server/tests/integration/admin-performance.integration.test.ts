@@ -14,7 +14,7 @@ describeDatabase("administrator scale queries", () => {
     await prisma.user.createMany({ data: users });
     for (let offset = 0; offset < 10_000; offset += 1_000)
       await prisma.file.createMany({ data: Array.from({ length: 1_000 }, (_value, index) => { const sequence = offset + index; const ownerId = users[sequence % users.length]!.id; const id = randomUUID(); return { id, ownerId, folderId: null, originalName: `scale-${sequence}.txt`, storageKey: `users/${ownerId}/files/${id}`, mimeType: "text/plain", size: 1024n, extractedContent: null, createdAt: new Date(now.getTime() + sequence), updatedAt: now }; }) });
-    await prisma.auditLog.createMany({ data: Array.from({ length: 1_000 }, (_value, index) => ({ action: "auth.login", entityType: "USER", entityId: users[index]!.id, actorId: users[index]!.id, metadata: { outcome: "SUCCESS" }, createdAt: new Date(now.getTime() + index) })) });
+    await prisma.auditLog.createMany({ data: Array.from({ length: 1_000 }, (_value, index) => ({ action: "file.upload", entityType: "FILE", entityId: `scale-file-${index}`, actorId: users[index]!.id, metadata: { outcome: "SUCCESS" }, createdAt: new Date(now.getTime() + index) })) });
     const started = performance.now();
     const userPage = await new UserRepository().adminList(prisma, { sort: "createdAt", direction: "desc", page: 1, pageSize: 20 });
     const filePage = await new AdminFileRepository().list(prisma, { folder: "any", sort: "uploadedAt", direction: "desc", page: 1, pageSize: 20 });

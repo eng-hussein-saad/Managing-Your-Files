@@ -26,7 +26,7 @@ describeDatabase("verified login", () => {
       .send({ email: "ada@example.invalid", password: "correct-password" })
       .expect(403);
   });
-  it("persists distinct refresh rows and audits each verified sign-in", async () => {
+  it("persists distinct refresh rows without auditing ordinary sign-ins", async () => {
     await registerVerified(app, mailer);
     await supertest(app)
       .post("/internal/v1/auth/login")
@@ -41,6 +41,6 @@ describeDatabase("verified login", () => {
     await expect(prisma.refreshToken.count()).resolves.toBe(2);
     await expect(
       prisma.auditLog.count({ where: { action: "auth.login" } }),
-    ).resolves.toBe(2);
+    ).resolves.toBe(0);
   });
 });

@@ -25,7 +25,7 @@ export class DeleteFolderService {
     if (result === "not-found") throw folderNotFound();
     if (result === "not-empty") throw folderNotEmpty();
     await this.audit.bestEffort(
-      fileAudit("folder.delete", ownerId, "FOLDER", id, "SUCCESS"),
+      fileAudit("folder.delete", ownerId, "FOLDER", id),
     );
   }
 }

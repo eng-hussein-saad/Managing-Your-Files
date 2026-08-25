@@ -43,7 +43,7 @@ Every in-scope surface must:
 | Admin dashboard `/admin` | Restricted cues, admin metrics, recent activity/type summaries | Admin-only server access, populated/zero/loading/error statistics, no private content |
 | Admin users `/admin/users` | Restricted toolbar/table with local narrow-screen scroll/condensation | Search/filter/sort/page, safe metadata, role change, exact delete confirmation, self/final-admin/session/cascade/audit rules |
 | Admin files `/admin/files` | Restricted metadata toolbar/table | Search/filter/page, safe owner metadata, exact permanent delete; never preview/download/content |
-| Audit `/admin/audit` | Restricted filterable/paginated history table | Safe actor/action/entity/time/metadata, loading/empty/error, deleted actor/system rendering, reads create no audit event |
+| Audit `/admin/audit` | Restricted filterable/paginated history table | Safe actor/entity/time, descriptive action labels such as `File Upload`, no outcome column/filter, loading/empty/error, deleted actor/system rendering, and reads create no audit event |
 | Feedback and overlays | Shared toast, alert, dialog, and drawer primitives | Announced status, bounded toast count, focus containment/restoration, Escape/safe backdrop dismissal, resize/orientation stability |
 
 ## Responsive contract

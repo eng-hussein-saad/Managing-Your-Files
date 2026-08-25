@@ -89,13 +89,11 @@ export function createApp(
     systemIdentifiers,
     passwordHasher,
     mailer,
-    audit,
   );
   const verification = new VerificationService(
     prisma,
     systemClock,
     passwordHasher,
-    audit,
   );
   const resend = new VerificationResendService(
     prisma,
@@ -112,7 +110,6 @@ export function createApp(
     accessTokens,
     accessTtl,
     refreshTtl,
-    audit,
   );
   const refresh = new RefreshService(
     prisma,
@@ -122,7 +119,7 @@ export function createApp(
     accessTtl,
     refreshTtl,
   );
-  const logout = new LogoutService(prisma, systemClock, audit);
+  const logout = new LogoutService(prisma, systemClock);
   const adminDeletion = fileManagement.storage
     ? new AdminUserDeletionService(prisma, fileManagement.storage, audit)
     : undefined;
@@ -189,7 +186,7 @@ export function createApp(
         uploadController,
         fileQueryController(new FindFilesService(prisma)),
         fileContentController(
-          new GetFileContentService(prisma, fileManagement.storage, audit),
+          new GetFileContentService(prisma, fileManagement.storage),
         ),
         fileDeleteController(
           new DeleteFileService(prisma, fileManagement.storage, audit),
@@ -232,7 +229,7 @@ export function createApp(
     "/api/v1/admin",
     adminRoutes(
       bearer,
-      requireAdmin(audit),
+      requireAdmin(),
       adminAccessController,
       adminUsers,
       adminFiles,

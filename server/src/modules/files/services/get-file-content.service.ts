@@ -1,6 +1,4 @@
 import type { PrismaClient } from "@prisma/client";
-import type { AuditService } from "../../audit/audit.service.js";
-import { fileAudit } from "../../audit/file-audit.js";
 import {
   fileNotFound,
   previewUnavailable,
@@ -11,11 +9,10 @@ import { StorageError, type StoragePort } from "../ports/storage.port.js";
 
 /** Authorizes current ownership before and after retrieving private content. */
 export class GetFileContentService {
-  /** Creates request-bound content access over private storage and audit boundaries. */
+  /** Creates request-bound content access over private storage. */
   constructor(
     private readonly prisma: PrismaClient,
     private readonly storage: StoragePort,
-    private readonly audit: AuditService,
   ) {}
   /** Returns one verified owner-scoped object only while its metadata remains current. */
   async get(ownerId: string, fileId: string, mode: "preview" | "download") {
@@ -55,11 +52,5 @@ export class GetFileContentService {
       mimeType: file.mimeType,
       originalName: file.originalName,
     };
-  }
-  /** Attempts a sanitized download audit after the response finishes successfully. */
-  async auditDownload(ownerId: string, fileId: string): Promise<void> {
-    await this.audit.bestEffort(
-      fileAudit("file.download", ownerId, "FILE", fileId, "SUCCESS"),
-    );
   }
 }

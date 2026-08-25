@@ -5,9 +5,9 @@ import {
   integrationHarness,
   registerVerified,
 } from "../helpers/integration.js";
-describeDatabase("authentication audit matrix", () => {
+describeDatabase("authentication audit exclusion", () => {
   const { app, mailer, prisma, trust } = integrationHarness();
-  it("records structurally complete allowlisted lifecycle events without secrets", async () => {
+  it("does not audit ordinary authentication lifecycle operations", async () => {
     await registerVerified(app, mailer);
     const login = await supertest(app)
       .post("/internal/v1/auth/login")
@@ -22,25 +22,7 @@ describeDatabase("authentication audit matrix", () => {
       .set(trust)
       .send({ refreshToken: refresh.body.data.refreshToken as string });
     const rows = await prisma.auditLog.findMany();
-    expect(new Set(rows.map((row) => row.action))).toEqual(
-      expect.objectContaining(
-        new Set([
-          "auth.registration",
-          "auth.verification",
-          "auth.login",
-          "auth.logout",
-        ]),
-      ),
-    );
-    expect(rows.map((row) => row.action)).not.toContain("auth.refresh");
+    expect(rows).toHaveLength(0);
     expect(JSON.stringify(rows)).not.toContain("correct-password");
-    expect(
-      rows.every(
-        (row) =>
-          row.createdAt instanceof Date &&
-          typeof (row.metadata as { outcome?: unknown } | null)?.outcome ===
-            "string",
-      ),
-    ).toBe(true);
   });
 });

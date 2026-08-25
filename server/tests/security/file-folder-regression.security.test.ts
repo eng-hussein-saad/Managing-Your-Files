@@ -4,7 +4,8 @@ import { auditActions } from "../../src/modules/audit/audit.types.js";
 
 describe("file and folder security regression", () => {
   it("retains every centralized successful file/folder audit action", () => {
-    expect(auditActions).toEqual(expect.arrayContaining(["file.upload", "file.download", "file.move", "file.delete", "folder.create", "folder.rename", "folder.delete"]));
+    expect(auditActions).toEqual(expect.arrayContaining(["file.upload", "file.move", "file.delete", "folder.create", "folder.rename", "folder.delete"]));
+    expect(auditActions).not.toContain("file.download");
   });
   it("keeps administrator content capabilities absent while owner routes remain protected", async () => {
     const [adminRoutes, ownerRoutes] = await Promise.all([

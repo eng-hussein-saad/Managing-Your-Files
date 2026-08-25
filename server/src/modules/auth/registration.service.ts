@@ -6,8 +6,6 @@ import type { PasswordHasher } from "../../infrastructure/security/password-hash
 import type { MailPort } from "./ports/mail.port.js";
 import { generateVerificationCode } from "../../infrastructure/security/code-hasher.js";
 import { serializable } from "../../infrastructure/persistence/transactions.js";
-import type { AuditService } from "../audit/audit.service.js";
-import { authAudit } from "../audit/auth-audit.js";
 import { AppError } from "./auth.errors.js";
 
 /** Creates normalized unverified accounts and initiates verification. */
@@ -19,7 +17,6 @@ export class RegistrationService {
     private readonly identifiers: Identifiers,
     private readonly hasher: PasswordHasher,
     private readonly mailer: MailPort,
-    private readonly audit: AuditService,
   ) {}
   /** Creates one unverified identity and current code atomically before mail delivery. */
   async register(
@@ -66,13 +63,6 @@ export class RegistrationService {
         );
       throw error;
     }
-    await this.audit.bestEffort(
-      authAudit("auth.registration", "SUCCESS", {
-        actorId: user.id,
-        entityType: "USER",
-        entityId: user.id,
-      }),
-    );
     try {
       await this.mailer.sendVerification({
         recipient: user.email,

@@ -8,7 +8,6 @@ import { AdminPageHeader } from "../../../features/admin/components/admin-page-h
 function auditQuery(params: URLSearchParams): AdminAuditQuery {
   const pageSize = Number(params.get("pageSize"));
   const actorState = params.get("actorState");
-  const outcome = params.get("outcome");
   return {
     search: params.get("search") || undefined,
     action: undefined,
@@ -20,10 +19,7 @@ function auditQuery(params: URLSearchParams): AdminAuditQuery {
       actorState === "system"
         ? actorState
         : undefined,
-    outcome:
-      outcome === "SUCCESS" || outcome === "FAILURE" || outcome === "DENIED"
-        ? outcome
-        : undefined,
+    outcome: undefined,
     createdFrom: undefined,
     createdBefore: undefined,
     direction: params.get("direction") === "asc" ? "asc" : "desc",
@@ -49,7 +45,7 @@ export default function AdminAuditPage() {
     <main id="main" className="app-page">
       <AdminPageHeader
         title="Audit history"
-        description="Sanitized security-relevant activity, newest first. Audit reads do not generate additional events."
+        description="Successful file, folder, and administrator-controlled changes, newest first."
       />
       <AdminAuditHistory query={query} update={update} />
     </main>

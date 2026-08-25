@@ -36,7 +36,7 @@ export class MoveFileService {
       },
     );
     await this.audit.bestEffort(
-      fileAudit("file.move", ownerId, "FILE", id, "SUCCESS"),
+      fileAudit("file.move", ownerId, "FILE", id),
     );
     return {
       id: row.id,

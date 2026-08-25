@@ -26,7 +26,7 @@ describeDatabase("file content contract", () => {
     expect(response.headers["cache-control"]).toBe("private, no-store");
     expect(response.headers["x-content-type-options"]).toBe("nosniff");
   });
-  it("returns attachment headers for every accepted format and audits download", async () => {
+  it("returns attachment headers without auditing the read operation", async () => {
     const row = await seedFile(prisma, {
       ownerId: primaryUserId,
       name: "résumé.docx",
@@ -46,7 +46,7 @@ describeDatabase("file content contract", () => {
       await prisma.auditLog.count({
         where: { action: "file.download", entityId: row.id },
       }),
-    ).toBe(1);
+    ).toBe(0);
   });
   it("rejects unsupported preview and missing content with safe errors", async () => {
     const docx = await seedFile(prisma, {

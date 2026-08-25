@@ -24,7 +24,7 @@ Runtime Zod/type contracts remain under `packages/contracts/src/public` and
 | User statistics | `GET /api/v1/file-statistics?timeZone=...` | Cards/charts preserve exact counts/byte strings, type distribution, local-time meaning, and fixed history semantics. |
 | Admin users | Admin users list/detail/role/delete routes | Tables/dialogs preserve server pagination, expected-version guards, exact confirmation, self/final-admin protection, session invalidation, cascade, and audit behavior. |
 | Admin files | Admin files list/detail/delete routes | UI exposes safe owner/file metadata and permitted deletion only; no content, preview, or download affordance is introduced. |
-| Admin monitoring | Admin statistics and audit-event routes | Cards/tables preserve safe aggregates, sanitized audit fields, query behavior, and the rule that reads do not create audit events. |
+| Admin monitoring | Admin statistics and audit-event routes | Cards/tables preserve safe aggregates and expose only successful important file/folder and administrator-controlled mutations; authentication, authorization, content reads, and monitoring reads do not create audit events. |
 
 ## Security and behavior invariants
 
@@ -49,4 +49,3 @@ If implementation appears to require an API response change, new endpoint, envir
 field, migration, storage behavior, or authentication change, that is a requirement change. Stop the
 Phase 4 implementation and update specification, planning, contracts, schema approval, and dependent
 artifacts before proceeding.
-

@@ -8,8 +8,9 @@ describe("authentication regression contract", () => {
     expect(loginRequestSchema.safeParse({ email: "invalid", password: "" }).success).toBe(false);
     expect(verifyEmailRequestSchema.safeParse({ email: "user@example.invalid", code: "123" }).success).toBe(false);
   });
-  it("retains safe authentication failures and every required success audit action", () => {
+  it("retains safe authentication failures without ordinary authentication audit actions", () => {
     expect(errorEnvelopeSchema.safeParse({ success: false, error: { code: "AUTH_INVALID_CREDENTIALS", message: "Email or password is invalid." } }).success).toBe(true);
-    expect(auditActions).toEqual(expect.arrayContaining(["auth.registration", "auth.verification", "auth.login", "auth.logout"]));
+    expect(auditActions).not.toEqual(expect.arrayContaining(["auth.registration", "auth.verification", "auth.login", "auth.logout"]));
+    expect(auditActions.every((action) => !action.startsWith("auth."))).toBe(true);
   });
 });

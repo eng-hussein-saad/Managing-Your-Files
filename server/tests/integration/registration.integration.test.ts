@@ -6,7 +6,7 @@ import {
 } from "../helpers/integration.js";
 describeDatabase("registration persistence", () => {
   const { app, mailer, prisma } = integrationHarness();
-  it("normalizes email and commits user, code, and audit together", async () => {
+  it("normalizes email and commits user and code without an audit event", async () => {
     await supertest(app)
       .post("/api/v1/auth/register")
       .send({
@@ -17,7 +17,7 @@ describeDatabase("registration persistence", () => {
       .expect(201);
     await expect(
       prisma.user.count({ where: { email: "ada@example.invalid" } }),
-    ).resolves.toBe(1);
+    ).resolves.toBe(0);
     await expect(prisma.verificationCode.count()).resolves.toBe(1);
     await expect(
       prisma.auditLog.count({ where: { action: "auth.registration" } }),
