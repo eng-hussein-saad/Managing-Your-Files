@@ -6,6 +6,7 @@ import { useFolderContents, useFolderMutations } from "../hooks/use-folders";
 import { Breadcrumbs } from "./breadcrumbs";
 import { FolderNameDialog } from "./folder-dialogs";
 import { FolderIcon } from "../../../components/ui/icons";
+import { Skeleton } from "../../../components/ui/surfaces";
 
 /** Browses owned fixed-parent folders and composes accessible mutations. */
 export function FolderBrowser({
@@ -69,25 +70,12 @@ export function FolderBrowser({
         onNavigate={onNavigate}
       />
       {contents.isLoading ? (
-        <p className="muted-state">Loading folders…</p>
+        <Skeleton label="Loading folders" lines={2} />
       ) : null}
       {contents.isError ? (
         <p role="alert">Folders could not be loaded.</p>
       ) : null}
       <ul className="folder-list">
-        <li>
-          <button
-            className={`folder-entry ${location === null ? "active" : ""}`}
-            type="button"
-            onClick={
-              /** Returns the folder browser to the owner-scoped root. */ () =>
-                onNavigate(null)
-            }
-          >
-            <FolderIcon />
-            <span>My Files</span>
-          </button>
-        </li>
         {contents.data?.folders.map(
           /** Maps one source item into its derived public representation. */ (
             folder,

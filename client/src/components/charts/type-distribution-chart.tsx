@@ -56,23 +56,25 @@ export function TypeDistributionChart({
               </div>
             ))}
           </div>
-          <table className="sr-only">
-            <caption>{title}</caption>
-            <thead>
-              <tr>
-                <th scope="col">File type</th>
-                <th scope="col">Files</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ranked.map((item) => (
-                <tr key={item.type}>
-                  <th scope="row">{item.type}</th>
-                  <td>{item.count}</td>
+          <div className="sr-only">
+            <table>
+              <caption>{title}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">File type</th>
+                  <th scope="col">Files</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {ranked.map((item) => (
+                  <tr key={item.type}>
+                    <th scope="row">{item.type}</th>
+                    <td>{item.count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
     </figure>

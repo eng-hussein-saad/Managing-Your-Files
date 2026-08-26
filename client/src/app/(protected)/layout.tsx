@@ -27,15 +27,9 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
       </PageState>
     );
   return (
-    <div
-      className={`authenticated-app${pathname === "/dashboard" ? " dashboard-route" : ""}`}
-    >
+    <div className="authenticated-app">
       <ConnectedAppNavigation session={auth.session} />
-      <div
-        className={`app-shell-content${pathname === "/dashboard" ? " dashboard-shell" : ""}`}
-      >
-        {children}
-      </div>
+      <div className="app-shell-content">{children}</div>
     </div>
   );
 }

@@ -62,10 +62,9 @@ describe("authorized file preview", () => {
     const { rerender } = render(
       <FilePreview id="file" mimeType="text/plain" kind="text" />,
     );
-    expect(screen.getByText(/loading preview/i)).toHaveAttribute(
-      "aria-busy",
-      "true",
-    );
+    expect(
+      screen.getByRole("status", { name: "Loading preview" }),
+    ).toHaveAttribute("aria-busy", "true");
     previewHook.mockReturnValue({
       isLoading: false,
       isError: true,

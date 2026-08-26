@@ -33,13 +33,15 @@ describe("personal file dashboard", () => {
       name: /Uploads by local date in Africa\/Cairo/i,
     });
     expect(historyTable).toBeVisible();
+    expect(historyTable).not.toHaveClass("sr-only");
+    expect(historyTable.parentElement).toHaveClass("sr-only");
     expect(
       screen.getByRole("table", { name: "Files by type" }),
     ).toBeInTheDocument();
     expect(historyTable.querySelectorAll("tbody tr")).toHaveLength(30);
   });
   it("provides a useful empty distribution without hiding history", () => {
-    render(
+    const { container } = render(
       <FileStatistics
         data={{
           fileCount: 0,
@@ -54,5 +56,8 @@ describe("personal file dashboard", () => {
     expect(screen.getByText(/no stored file types/i)).toBeInTheDocument();
     expect(screen.getByLabelText("Total files: 0")).toBeVisible();
     expect(screen.getAllByRole("row")).toHaveLength(31);
+    expect(
+      container.querySelectorAll('.activity-chart span[data-empty="true"]'),
+    ).toHaveLength(30);
   });
 });

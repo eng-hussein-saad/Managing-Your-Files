@@ -65,7 +65,8 @@ Search, filter, sort, pagination, and totals are computed server-side. The clien
 3. `uploadFile` builds `FormData` with one `file` plus optional `folderId`.
 4. Axios sends `POST /api/v1/files` and maps `onUploadProgress` to integer percentages.
 5. Each successful item retains its returned summary; each failure captures the safe error and optional quota metadata for independent retry.
-6. After the sequential queue run, the page refetches its active file list and upload policy.
+6. After the sequential queue run, the page refetches its active file list and upload policy and invalidates personal statistics so sidebar usage updates immediately.
+7. Closing the uploader removes completed rows while retaining pending or failed entries that can still be retried.
 
 Other mutations use React Query invalidation. User file deletion invalidates files, folders, upload policy, and personal statistics only after success. Admin user deletion removes the selected detail and invalidates user/file/statistics/audit collections. Role changes update the detail cache and invalidate related summaries. Confirmation-sensitive mutations are not optimistically applied.
 

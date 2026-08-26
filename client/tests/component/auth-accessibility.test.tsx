@@ -1,11 +1,19 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PageState } from "../../src/components/status/page-state";
 import { VerificationCodeInput } from "../../src/components/auth/verification-code-input";
 import HomePage from "../../src/app/page";
 import AuthLayout from "../../src/app/(auth)/layout";
 import { ThemeProvider } from "../../src/providers/theme-provider";
+import { clearSession } from "../../src/features/auth/auth-store";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn() }),
+}));
+
 describe("accessible authentication states", () => {
+  beforeEach(() => clearSession());
+
   it("labels verification proof and exposes loading state", () => {
     render(
       <>

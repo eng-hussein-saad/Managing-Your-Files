@@ -4,22 +4,21 @@ import { ErrorPanel } from "../../../components/status/error-panel";
 import { formatDate, formatPage } from "../../../lib/presentation/format";
 import { useAdminUsers } from "../hooks/use-admin-users";
 import { AdminUserActions } from "./admin-user-actions";
+import { Skeleton } from "../../../components/ui/surfaces";
 
 /** Renders the server-driven searchable administrator user directory. */
 export function AdminUserDirectory({
   query,
   update,
+  currentUserId,
 }: {
   query: AdminUserQuery;
   update: (next: Partial<AdminUserQuery>) => void;
+  currentUserId?: string;
 }) {
   const users = useAdminUsers(query);
   if (users.isLoading)
-    return (
-      <p role="status" aria-busy="true">
-        Loading users…
-      </p>
-    );
+    return <Skeleton label="Loading users" lines={6} />;
   if (users.error)
     return (
       <ErrorPanel
@@ -115,10 +114,14 @@ export function AdminUserDirectory({
                   </td>
                   <td>{formatDate(user.createdAt)}</td>
                   <td>
-                    <AdminUserActions
-                      user={user}
-                      onStale={() => void users.refetch()}
-                    />
+                    {user.id === currentUserId ? (
+                      <span className="ui-pill neutral">Current account</span>
+                    ) : (
+                      <AdminUserActions
+                        user={user}
+                        onStale={() => void users.refetch()}
+                      />
+                    )}
                   </td>
                 </tr>
               ))}

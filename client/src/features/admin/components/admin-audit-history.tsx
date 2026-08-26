@@ -7,6 +7,7 @@ import {
   formatPage,
 } from "../../../lib/presentation/format";
 import { useAdminAuditEvents } from "../hooks/use-admin-monitoring";
+import { Skeleton } from "../../../components/ui/surfaces";
 
 /** Renders searchable sanitized audit history with safe actor states. */
 export function AdminAuditHistory({
@@ -18,11 +19,7 @@ export function AdminAuditHistory({
 }) {
   const audit = useAdminAuditEvents(query);
   if (audit.isLoading)
-    return (
-      <p role="status" aria-busy="true">
-        Loading audit history…
-      </p>
-    );
+    return <Skeleton label="Loading audit history" lines={6} />;
   if (audit.error)
     return (
       <ErrorPanel

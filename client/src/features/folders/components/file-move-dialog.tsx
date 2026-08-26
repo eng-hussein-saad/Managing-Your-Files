@@ -4,6 +4,7 @@ import { useFolderContents, useFolderMutations } from "../hooks/use-folders";
 import { Breadcrumbs } from "./breadcrumbs";
 import { Dialog } from "../../../components/overlays/overlay";
 import { Button } from "../../../components/ui/controls";
+import { Skeleton } from "../../../components/ui/surfaces";
 /** Selects virtual root or an owned folder and reports move outcomes safely. */
 export function FileMoveDialog({
   fileId,
@@ -34,7 +35,9 @@ export function FileMoveDialog({
         items={contents.data?.breadcrumbs ?? []}
         onNavigate={setLocation}
       />
-      {contents.isLoading ? <p>Loading folders…</p> : null}
+      {contents.isLoading ? (
+        <Skeleton label="Loading folders" lines={3} />
+      ) : null}
       <ul>
         {contents.data?.folders.map(
           /** Maps one source item into its derived public representation. */ (

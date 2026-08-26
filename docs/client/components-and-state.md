@@ -6,7 +6,7 @@ The frontend uses several small state mechanisms instead of a single global stor
 
 ### Shared components
 
-`src/components` contains cross-domain building blocks. UI primitives in `components/ui` expose consistent buttons, fields, tables/data display, icons, cards, avatars, and pills. Navigation/layout compose the application shell. Status components standardize loading/error states.
+`src/components` contains cross-domain building blocks. UI primitives in `components/ui` expose consistent buttons, fields, tables/data display, icons, cards, avatars, and pills. Navigation/layout compose the application shell. Query, Suspense, and session-restoration loading states use the shared accessible skeleton; status components handle empty, error, and settled outcomes.
 
 The overlay foundation is architecturally significant: it renders through a portal, traps focus, supports Escape/backdrop dismissal, marks background content inert, locks page scroll, and restores opener focus. Confirmation dialogs build on shared presentation so destructive actions remain explicit and accessible.
 
@@ -48,11 +48,11 @@ Admin list parameters are URL state. Pages normalize `useSearchParams` and call 
 
 Forms use controlled inputs plus HTML constraints for immediate accessibility and browser feedback. Shared Zod schemas validate requests at the Express boundary; BFF login also parses the shared login schema before forwarding. Feature code may perform policy-driven checks—especially upload size/type/count/quota—but those never replace server validation.
 
-Safe error helpers extract public API messages and codes. Flow-specific behavior includes redirecting an unverified login, showing pending email delivery, exposing resend throttling, keeping failed upload entries retryable, and leaving destructive dialogs open when a mutation fails.
+Safe error helpers extract public API messages and codes. Flow-specific behavior includes redirecting an unverified login, showing pending email delivery, displaying the verification resend countdown, keeping failed upload entries retryable, clearing completed upload rows when the uploader closes, and leaving destructive dialogs open when a mutation fails.
 
 ## Motion and accessibility
 
-Framer Motion is used in the dashboard and type-distribution chart for staged transitions. These components read `useReducedMotion` and reduce animation when the user requests it. Interaction components use semantic status/alert roles, busy attributes, skip navigation, keyboard handling, focus containment, and explicit labels.
+Framer Motion is used on the landing page, dashboard, and type-distribution chart for staged transitions. These components read `useReducedMotion` and reduce animation when the user requests it. Interaction components use semantic status/alert roles, busy attributes, skip navigation, keyboard handling, focus containment, and explicit labels.
 
 When adding animation, preserve settled content and reduced-motion behavior. Motion should not control data correctness or gate interaction.
 

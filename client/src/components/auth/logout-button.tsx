@@ -5,7 +5,7 @@ import { useLogout } from "../../features/auth/hooks/use-logout";
 import { IconButton } from "../ui/controls";
 import { LogoutIcon } from "../ui/icons";
 /** Provides an accessible logout action that clears all local authentication state. */
-export function LogoutButton() {
+export function LogoutButton({ redirectTo = "/login" }: { redirectTo?: string }) {
   const logout = useLogout();
   const router = useRouter();
   const { notify } = useToast();
@@ -19,7 +19,7 @@ export function LogoutButton() {
             onSettled:
               /** Announces the completed local sign-out transition. */ () => {
                 notify("You have been signed out.", { kind: "success" });
-                router.replace("/login");
+                router.replace(redirectTo);
               },
           })
       }

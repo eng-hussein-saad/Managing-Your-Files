@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useFilePreview } from "../hooks/use-file-content";
+import { Skeleton } from "../../../components/ui/surfaces";
 /** Renders an owner-authorized image, PDF, text, or unavailable preview state. */
 export function FilePreview({
   id,
@@ -30,11 +31,7 @@ export function FilePreview({
       </p>
     );
   if (preview.isLoading)
-    return (
-      <p className="ui-status" role="status" aria-busy="true">
-        Loading preview…
-      </p>
-    );
+    return <Skeleton label="Loading preview" lines={5} />;
   if (preview.isError || !url)
     return (
       <p className="ui-status danger" role="alert">

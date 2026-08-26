@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { FileQuery } from "../../../features/files/api/files.api";
 import { FileCollection } from "../../../features/files/components/file-collection";
 import { FileDetails } from "../../../features/files/components/file-details";
@@ -13,9 +14,11 @@ import { useUploadPolicy } from "../../../features/files/hooks/use-upload-policy
 import { FileMoveDialog } from "../../../features/folders/components/file-move-dialog";
 import { FolderBrowser } from "../../../features/folders/components/folder-browser";
 import { CloseIcon, UploadIcon } from "../../../components/ui/icons";
+import { Skeleton } from "../../../components/ui/surfaces";
 
 /** Composes upload, folder navigation, discovery, details, movement, and deletion. */
 export default function FilesPage() {
+  const queryClient = useQueryClient();
   const uploadPolicy = useUploadPolicy();
   const queue = useUploadQueue(uploadPolicy.data);
   const [location, setLocation] = useState<string | null>(null);
@@ -58,8 +61,18 @@ export default function FilesPage() {
   /** Runs the deterministic upload queue and then refreshes the active collection. */ const upload =
     async () => {
       await queue.run(location);
-      await Promise.all([files.refetch(), uploadPolicy.refetch()]);
+      await Promise.all([
+        files.refetch(),
+        uploadPolicy.refetch(),
+        queryClient.invalidateQueries({ queryKey: ["file-statistics"] }),
+      ]);
     };
+  /** Closes the uploader and removes completed rows while retaining retryable work. */
+  const closeUpload = () => {
+    if (queue.items.some((item) => item.status === "uploading")) return;
+    queue.clearCompleted();
+    setUploadOpen(false);
+  };
   const hasFilters = Boolean(query.search || query.type);
   const isUploading = queue.items.some((item) => item.status === "uploading");
   return (
@@ -154,7 +167,7 @@ export default function FilesPage() {
             /** Closes the upload dialog only from its safe backdrop. */ (
               event,
             ) => {
-              if (event.target === event.currentTarget) setUploadOpen(false);
+              if (event.target === event.currentTarget) closeUpload();
             }
           }
         >
@@ -168,9 +181,10 @@ export default function FilesPage() {
               className="ui-icon-button upload-dialog-close"
               type="button"
               aria-label="Close upload"
+              disabled={isUploading}
               onClick={
                 /** Closes the explicit upload dialog action. */ () =>
-                  setUploadOpen(false)
+                  closeUpload()
               }
             >
               <CloseIcon />
@@ -230,7 +244,11 @@ export default function FilesPage() {
           </section>
         </div>
       ) : null}
-      {detail.isLoading ? <p>Loading file details…</p> : null}
+      {detail.isLoading ? (
+        <div className="detail-loading">
+          <Skeleton label="Loading file details" lines={5} />
+        </div>
+      ) : null}
       {detail.isError ? (
         <p role="alert">File details are unavailable.</p>
       ) : null}

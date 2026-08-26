@@ -1,12 +1,12 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthForm } from "../../../components/auth/auth-form";
 import { FormStatus } from "../../../components/auth/form-status";
 import { useToast } from "../../../components/toast/toast-provider";
 import { VerificationCodeInput } from "../../../components/auth/verification-code-input";
 import { Button, Field } from "../../../components/ui/controls";
-import { apiErrorMessage } from "../../../lib/api/api-error";
+import { apiErrorCode, apiErrorMessage } from "../../../lib/api/api-error";
 import {
   useResendVerification,
   useVerifyEmail,
@@ -18,8 +18,20 @@ export function VerifyEmailForm() {
   const { notify } = useToast();
   const [email, setEmail] = useState(search.get("email") ?? "");
   const [code, setCode] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(() => {
+    const seconds = Number(search.get("cooldown"));
+    return Number.isFinite(seconds) ? Math.max(0, Math.min(60, seconds)) : 0;
+  });
   const verification = useVerifyEmail();
   const resend = useResendVerification();
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = window.setInterval(
+      () => setResendCooldown((current) => Math.max(0, current - 1)),
+      1000,
+    );
+    return () => window.clearInterval(timer);
+  }, [resendCooldown]);
   const submit = (event: FormEvent) => {
     event.preventDefault();
     verification.mutate(
@@ -81,14 +93,25 @@ export function VerifyEmailForm() {
       <Button
         variant="ghost"
         type="button"
-        disabled={resend.isPending || !email}
+        disabled={resend.isPending || !email || resendCooldown > 0}
         onClick={() =>
           resend.mutate(email, {
-            onSuccess: (result) => notify(result.message, { kind: "success" }),
+            onSuccess: (result) => {
+              setResendCooldown(60);
+              notify(result.message, { kind: "success" });
+            },
+            onError: (error) => {
+              if (apiErrorCode(error) === "RATE_LIMITED")
+                setResendCooldown(60);
+            },
           })
         }
       >
-        {resend.isPending ? "Sending…" : "Send a new code"}
+        {resend.isPending
+          ? "Sending…"
+          : resendCooldown > 0
+            ? `Send a new code in ${resendCooldown}s`
+            : "Send a new code"}
       </Button>
       <FormStatus
         message={resend.error ? apiErrorMessage(resend.error) : undefined}

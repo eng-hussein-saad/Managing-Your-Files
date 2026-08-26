@@ -13,7 +13,7 @@ The files page loads `GET /api/v1/files/policy` before accepting a selection. Th
 
 `UploadDropzone` accepts drag/drop and picker input. `useUploadQueue` rejects an entire new selection if policy is unavailable, the active pending/error queue plus selection exceeds ten, any item is oversized or has an unsupported browser-reported MIME, or selected bytes exceed advertised remaining quota. These checks improve feedback only; the server repeats authoritative checks.
 
-The queue sends files sequentially, one multipart request per file. Axios reports byte progress for the active item. A later failure does not roll back earlier successful requests, and each failed item can be retried independently.
+The queue sends files sequentially, one multipart request per file. Axios reports byte progress for the active item. A later failure does not roll back earlier successful requests, and each failed item can be retried independently. Queue rows and the primary upload action use stable dialog width, completed rows are removed when the dialog closes, and active uploads prevent dismissal until they settle. After a run, the file collection, upload policy, and personal statistics are refreshed so navigation quota usage updates in place.
 
 ## Server upload pipeline
 
@@ -71,7 +71,7 @@ File search, filter, sort, and pagination are server-driven:
 
 Counts and pages use the same owner-scoped filters and deterministic tie-breaking. Detail adds the complete root-first folder path and extracted content.
 
-Folders have a virtual root, fixed parent, maximum depth ten, and owner-scoped breadcrumbs. Sibling names are compared after trim, Unicode normalization, and case folding. Folder deletion is permanent and allowed only when no direct children or files remain. Moving a file accepts either root or another owned folder.
+Folders have a virtual root, fixed parent, maximum depth ten, and owner-scoped breadcrumbs. The virtual root is represented by the `My Files` breadcrumb, not as a folder-tree entry. Sibling names are compared after trim, Unicode normalization, and case folding. Folder deletion is permanent and allowed only when no direct children or files remain. Moving a file accepts either root or another owned folder.
 
 ## Deletion and quota
 

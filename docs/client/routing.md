@@ -28,7 +28,7 @@ Server-side BFF routes are `POST /api/auth/login`, `POST /api/auth/refresh`, and
 
 `(protected)/layout.tsx` is a client layout. It waits while `AuthProvider` restores a session, redirects anonymous users to `/login?next=<current path>`, and renders authenticated navigation/content when successful. The current sign-in form routes success to `/admin` for admins or `/dashboard` for users; it does not consume the supplied `next` parameter.
 
-`admin/layout.tsx` independently waits for auth, shows sign-in UI for anonymous users, shows a forbidden state for non-admin sessions, and renders the restricted shell for admins.
+`admin/layout.tsx` independently waits for auth, returns anonymous sessions to `/`, shows a forbidden state for non-admin sessions, and renders the restricted shell for admins. Administrator logout also returns to `/` instead of briefly rendering an anonymous state inside the restricted route.
 
 ## Protection model
 
@@ -38,7 +38,7 @@ Express remains authoritative. Protected page source can be loaded by a browser,
 
 ## Loading and error behavior
 
-Auth/protected/admin route segments contain `error.tsx` boundaries for uncaught rendering errors. Loading and session-restoration states use `PageState` and feature-level query states rather than App Router `loading.tsx` files. Pages render explicit loading, error, empty, retry, and settled states for their React Query operations.
+Auth/protected/admin route segments contain `error.tsx` boundaries for uncaught rendering errors. Loading and session-restoration states use the shared accessible skeleton through `PageState`, Suspense fallbacks, and feature-level query states rather than App Router `loading.tsx` files. Pages render explicit skeleton, error, empty, retry, and settled states for their React Query operations.
 
 ## URL-backed state
 
@@ -51,6 +51,7 @@ Admin users, files, and audit pages parse supported query parameters from `useSe
 - Successful sign-in redirects by role.
 - Successful verification returns the user to login.
 - The protected layout redirects anonymous users to login.
+- The admin layout and administrator logout return anonymous sessions to `/`.
 - Guest-only landing/auth routes redirect an authenticated session to `/dashboard`.
 - Navigation renders admin destinations only for an admin session.
 

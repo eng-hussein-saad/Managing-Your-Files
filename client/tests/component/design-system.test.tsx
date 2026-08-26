@@ -48,12 +48,8 @@ describe("Fileora design system", () => {
     expect(css).toMatch(
       /\.app-sidebar \.brand-mark svg\s*\{[^}]*inline-size:24px;[^}]*block-size:24px/s,
     );
-    expect(css).toMatch(
-      /\.app-shell-content\.dashboard-shell\s*\{[^}]*overflow:auto/s,
-    );
-    expect(css).toMatch(
-      /\.authenticated-app\.dashboard-route\s*\{[^}]*block-size:100dvh;[^}]*overflow:hidden/s,
-    );
+    expect(css).not.toContain("dashboard-shell");
+    expect(css).not.toContain("dashboard-route");
     expect(css).toMatch(
       /\.ui-button\.primary\s*\{[^}]*color:var\(--color-on-accent\)/s,
     );

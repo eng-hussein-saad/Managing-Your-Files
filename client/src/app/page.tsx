@@ -1,13 +1,25 @@
+"use client";
+
+import { motion, useReducedMotion } from "framer-motion";
 import { FileoraBrand } from "../components/brand/fileora-brand";
 import { GuestRoute } from "../components/auth/guest-route";
 import { ThemeSelector } from "../components/theme/theme-selector";
 
 /** Introduces Fileora and directs visitors into authentication journeys. */
 export default function HomePage() {
+  const reduceMotion = useReducedMotion();
+  const enter = reduceMotion
+    ? { opacity: 1, y: 0 }
+    : { opacity: 1, y: 20 };
   return (
     <GuestRoute>
       <div className="app-shell landing-shell">
-      <header className="landing-nav">
+      <motion.header
+        className="landing-nav"
+        initial={reduceMotion ? false : { opacity: 1, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.35, ease: "easeOut" }}
+      >
         <div className="landing-nav-inner">
           <FileoraBrand />
           <span className="landing-actions">
@@ -17,10 +29,15 @@ export default function HomePage() {
             </a>
           </span>
         </div>
-      </header>
+      </motion.header>
       <main id="main" className="landing">
         <section className="landing-hero">
-          <div className="landing-copy">
+          <motion.div
+            className="landing-copy"
+            initial={enter}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.55, ease: "easeOut" }}
+          >
             <span className="eyebrow">Your files. Organized your way.</span>
             <h1>Order for every file.</h1>
             <p>
@@ -35,11 +52,17 @@ export default function HomePage() {
                 I already have an account
               </a>
             </div>
-          </div>
-          <div
+          </motion.div>
+          <motion.div
             className="landing-visual"
             role="img"
             aria-label="Fileora workspace preview"
+            initial={
+              reduceMotion ? false : { opacity: 1, y: 28 }
+            }
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={reduceMotion ? undefined : { y: -6 }}
+            transition={{ duration: reduceMotion ? 0 : 0.65, ease: "easeOut" }}
           >
             <div className="preview-sidebar">
               <span />
@@ -55,9 +78,19 @@ export default function HomePage() {
                 <span />
               </div>
             </div>
-          </div>
+          </motion.div>
         </section>
-        <section className="landing-features" aria-label="Fileora benefits">
+        <motion.section
+          className="landing-features"
+          aria-label="Fileora benefits"
+          initial={reduceMotion ? false : { opacity: 1, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: reduceMotion ? 0 : 0.5,
+            delay: reduceMotion ? 0 : 0.25,
+            ease: "easeOut",
+          }}
+        >
           <article>
             <span>01</span>
             <h2>Owner-scoped privacy</h2>
@@ -73,7 +106,7 @@ export default function HomePage() {
             <h2>Built to extend</h2>
             <p>A dependable foundation leaves room for your archive to grow.</p>
           </article>
-        </section>
+        </motion.section>
       </main>
       </div>
     </GuestRoute>

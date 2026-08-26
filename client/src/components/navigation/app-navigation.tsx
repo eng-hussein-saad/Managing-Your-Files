@@ -215,7 +215,7 @@ export function AppNavigation({ role, profile, storage }: NavigationProps) {
         </IconButton>
         <div className="topbar-actions">
           <ThemeSelector />
-          <LogoutButton />
+          <LogoutButton redirectTo={role === "ADMIN" ? "/" : "/login"} />
         </div>
       </header>
       <Drawer
@@ -243,7 +243,7 @@ export function AppNavigation({ role, profile, storage }: NavigationProps) {
           {accountSummary()}
           <div className="compact-account-actions">
             <ThemeSelector />
-            <LogoutButton />
+            <LogoutButton redirectTo={role === "ADMIN" ? "/" : "/login"} />
           </div>
         </div>
       </Drawer>

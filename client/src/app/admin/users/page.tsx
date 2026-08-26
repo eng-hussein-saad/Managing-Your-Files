@@ -3,6 +3,7 @@ import type { AdminUserQuery } from "@gold-era/contracts/public";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AdminUserDirectory } from "../../../features/admin/components/admin-user-directory";
 import { AdminPageHeader } from "../../../features/admin/components/admin-page-header";
+import { useAuthState } from "../../../features/auth/auth-store";
 
 /** Parses bounded administrator user state from the current URL. */
 function userQuery(params: URLSearchParams): AdminUserQuery {
@@ -26,6 +27,7 @@ function userQuery(params: URLSearchParams): AdminUserQuery {
 
 /** Provides a URL-backed searchable user administration route. */
 export default function AdminUsersPage() {
+  const auth = useAuthState();
   const params = useSearchParams();
   const router = useRouter();
   const query = userQuery(new URLSearchParams(params.toString()));
@@ -43,7 +45,11 @@ export default function AdminUsersPage() {
         title="User directory"
         description="Search safe account metadata, manage eligible roles, or permanently remove an account and all owned state."
       />
-      <AdminUserDirectory query={query} update={update} />
+      <AdminUserDirectory
+        query={query}
+        update={update}
+        currentUserId={auth.session?.user.id}
+      />
     </main>
   );
 }

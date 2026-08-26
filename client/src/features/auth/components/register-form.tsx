@@ -14,7 +14,7 @@ export function RegisterForm() {
   const { notify } = useToast();
   const [values, setValues] = useState({ name: "", email: "", password: "" });
   const verificationUrl = (deliveryPending = false) =>
-    `/verify-email?email=${encodeURIComponent(values.email)}${deliveryPending ? "&delivery=pending" : ""}`;
+    `/verify-email?email=${encodeURIComponent(values.email)}&cooldown=60${deliveryPending ? "&delivery=pending" : ""}`;
   const submit = (event: FormEvent) => {
     event.preventDefault();
     registration.mutate(values, {
@@ -22,7 +22,9 @@ export function RegisterForm() {
         notify("Account created. Check your email for the verification code.", {
           kind: "success",
         });
-        router.push(`/verify-email?email=${encodeURIComponent(result.email)}`);
+        router.push(
+          `/verify-email?email=${encodeURIComponent(result.email)}&cooldown=60`,
+        );
       },
       onError: (error) => {
         if (apiErrorCode(error) === "AUTH_VERIFICATION_DELIVERY_PENDING")

@@ -6,7 +6,9 @@ describe("protected authentication states", () => {
     const { rerender } = render(
       <PageState title="Restoring your session" busy />,
     );
-    expect(screen.getByRole("heading")).toHaveTextContent("Restoring");
+    expect(
+      screen.getByRole("status", { name: "Restoring your session" }),
+    ).toBeVisible();
     rerender(<PageState title="Sign in to continue" />);
     expect(screen.getByRole("heading")).toHaveTextContent("Sign in");
   });

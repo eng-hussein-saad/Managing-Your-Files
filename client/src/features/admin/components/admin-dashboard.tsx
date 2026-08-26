@@ -6,7 +6,7 @@ import {
   formatDate,
 } from "../../../lib/presentation/format";
 import { useAdminStatistics } from "../hooks/use-admin-monitoring";
-import { Metric } from "../../../components/ui/surfaces";
+import { Metric, Skeleton } from "../../../components/ui/surfaces";
 import { FileIcon, UsersIcon } from "../../../components/ui/icons";
 import { TypeDistributionChart } from "../../../components/charts/type-distribution-chart";
 
@@ -14,11 +14,7 @@ import { TypeDistributionChart } from "../../../components/charts/type-distribut
 export function AdminDashboard() {
   const statistics = useAdminStatistics();
   if (statistics.isLoading)
-    return (
-      <p role="status" aria-busy="true">
-        Loading platform statistics…
-      </p>
-    );
+    return <Skeleton label="Loading platform statistics" lines={6} />;
   if (statistics.error)
     return (
       <ErrorPanel

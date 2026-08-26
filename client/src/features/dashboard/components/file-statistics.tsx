@@ -104,6 +104,7 @@ export function FileStatistics({ data }: { data: FileStatisticsData }) {
             {data.uploadHistory.map((item, index) => (
               <motion.span
                 key={item.date}
+                data-empty={item.count === 0 ? "true" : undefined}
                 title={`${item.date}: ${item.count}`}
                 initial={{ scaleY: reduceMotion ? 1 : 0 }}
                 animate={{ scaleY: 1 }}
@@ -119,23 +120,25 @@ export function FileStatistics({ data }: { data: FileStatisticsData }) {
               />
             ))}
           </div>
-          <table className="sr-only">
-            <caption>Uploads by local date in {data.timeZone}</caption>
-            <thead>
-              <tr>
-                <th scope="col">Date</th>
-                <th scope="col">Uploads</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.uploadHistory.map((item) => (
-                <tr key={item.date}>
-                  <th scope="row">{item.date}</th>
-                  <td>{item.count}</td>
+          <div className="sr-only">
+            <table>
+              <caption>Uploads by local date in {data.timeZone}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Uploads</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.uploadHistory.map((item) => (
+                  <tr key={item.date}>
+                    <th scope="row">{item.date}</th>
+                    <td>{item.count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div className="chart-legend">
             <span>{data.uploadHistory[0]?.date}</span>
             <span>Today</span>

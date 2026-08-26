@@ -8,6 +8,7 @@ import {
 import type { AdminFileFilters } from "../api/admin-files.api";
 import { useAdminFiles } from "../hooks/use-admin-files";
 import { AdminFileActions } from "./admin-file-actions";
+import { Skeleton } from "../../../components/ui/surfaces";
 
 /** Renders searchable metadata-only files across every current owner. */
 export function AdminFileDirectory({
@@ -25,11 +26,7 @@ export function AdminFileDirectory({
 }) {
   const files = useAdminFiles(query);
   if (files.isLoading)
-    return (
-      <p role="status" aria-busy="true">
-        Loading global file metadata…
-      </p>
-    );
+    return <Skeleton label="Loading global file metadata" lines={6} />;
   if (files.error)
     return (
       <ErrorPanel

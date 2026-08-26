@@ -28,7 +28,7 @@ Registration and verification are public browser-to-Express calls; they do not p
 
 Codes are single-use. Expired, invalidated, used, mismatched, or no-longer-current codes converge on `AUTH_VERIFICATION_INVALID`.
 
-Resend returns a generic message when the account is absent or already verified, preventing account enumeration. For an eligible account it rejects requests within one minute of the latest code or after five codes in the rolling hour, invalidates unused codes, creates a ten-minute replacement, then attempts SMTP delivery.
+Resend returns a generic message when the account is absent or already verified, preventing account enumeration. For an eligible account it rejects requests within one minute of the latest code or after five codes in the rolling hour, invalidates unused codes, creates a ten-minute replacement, then attempts SMTP delivery. The verification form shows the remaining one-minute cooldown and enables resend when the countdown reaches zero; a rate-limited response restarts that visible countdown.
 
 ## Why a BFF exists
 
@@ -98,6 +98,6 @@ There is no logout-all-devices API. Role changes revoke every refresh session fo
 
 ## Frontend route behavior
 
-`(protected)/layout.tsx` waits for session restoration and redirects anonymous users to `/login?next=<path>`. The admin layout renders a forbidden state unless the restored safe user has role `ADMIN`. `GuestRoute` wraps the landing and authentication layouts, waits for the same restoration, and redirects an already-authenticated session to `/dashboard`. These are navigation and UX controls, not the security boundary: Express still authenticates every protected endpoint and enforces administrator roles.
+`(protected)/layout.tsx` waits for session restoration and redirects anonymous users to `/login?next=<path>`. The admin layout returns anonymous sessions to `/`, renders a forbidden state unless the restored safe user has role `ADMIN`, and administrator logout targets the same public route. `GuestRoute` wraps the landing and authentication layouts, waits for the same restoration, and redirects an already-authenticated session to `/dashboard`. These are navigation and UX controls, not the security boundary: Express still authenticates every protected endpoint and enforces administrator roles.
 
 See [Authorization](authorization.md), [Client API and Data Fetching](client/api-and-data-fetching.md), and [Server Request Lifecycle](server/request-lifecycle.md).

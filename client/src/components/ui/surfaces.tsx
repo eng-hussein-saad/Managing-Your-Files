@@ -99,6 +99,7 @@ export function Skeleton({
       aria-label={label}
       aria-busy="true"
     >
+      <span className="sr-only">{label}</span>
       {Array.from(
         { length: lines },
         /** Produces one decorative loading line. */ (_value, index) => (

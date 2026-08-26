@@ -70,4 +70,23 @@ describe("administrator user experience", () => {
     expect(screen.getByRole("button", { name: "Confirm" })).toBeDisabled();
     view.unmount();
   });
+  it("does not expose role or deletion actions for the current administrator", () => {
+    const user = adminUserResponseFixture();
+    useAdminUsers.mockReturnValueOnce({
+      isLoading: false,
+      error: null,
+      data: { data: [user], meta: { totalPages: 1 } },
+      refetch: vi.fn(),
+    });
+    render(
+      <AdminUserDirectory
+        query={query}
+        update={vi.fn()}
+        currentUserId={user.id}
+      />,
+    );
+    expect(screen.getByText("Current account")).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Change role" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+  });
 });

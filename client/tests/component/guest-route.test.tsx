@@ -23,7 +23,9 @@ describe("guest-only routes", () => {
     setAuthState({ status: "loading", session: null });
     render(<GuestRoute>Guest content</GuestRoute>);
 
-    expect(screen.getByText("Restoring your session")).toBeVisible();
+    expect(
+      screen.getByRole("status", { name: "Restoring your session" }),
+    ).toBeVisible();
     expect(screen.queryByText("Guest content")).toBeNull();
   });
 

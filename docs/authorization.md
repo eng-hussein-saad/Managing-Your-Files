@@ -51,7 +51,7 @@ Administrator file access is intentionally metadata-only. Admin routes can list/
 
 ### Role changes
 
-Role changes require the target's observed `updatedAt` and run under a serializable lock. An administrator cannot change their own role or demote the last administrator. A successful change updates the timestamp, removes every target refresh session, and records a best-effort audit event. Existing access tokens fail on the next request because their role claim no longer matches the database.
+Role changes require the target's observed `updatedAt` and run under a serializable lock. An administrator cannot change their own role or demote the last administrator; the user directory does not render role or deletion actions for the current administrator. A successful change updates the timestamp, removes every target refresh session, and records a best-effort audit event. Existing access tokens fail on the next request because their role claim no longer matches the database.
 
 ### User deletion
 

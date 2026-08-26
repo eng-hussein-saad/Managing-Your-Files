@@ -110,6 +110,8 @@ describe("file upload queue", () => {
       "success",
       "success",
     ]);
+    act(() => hook.result.current.clearCompleted());
+    expect(hook.result.current.items).toHaveLength(0);
   });
   it("preserves earlier success when a later item fails and supports retry", async () => {
     mockedUpload

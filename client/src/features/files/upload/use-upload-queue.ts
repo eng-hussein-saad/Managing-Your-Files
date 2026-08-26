@@ -139,7 +139,13 @@ export function useUploadQueue(policy?: UploadPolicy) {
     );
     if (item) await uploadOne(item, folderId);
   };
-  return { items, selectionError, add, run, retry };
+  /** Removes settled successes when the dialog is dismissed while retaining retryable work. */
+  const clearCompleted = () => {
+    setItems((current) =>
+      current.filter((item) => item.status !== "success"),
+    );
+  };
+  return { items, selectionError, add, run, retry, clearCompleted };
 }
 
 /** Formats an advertised byte ceiling for selection feedback. */
