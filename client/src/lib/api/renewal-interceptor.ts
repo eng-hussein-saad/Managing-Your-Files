@@ -3,27 +3,12 @@ import type {
   AxiosInstance,
   InternalAxiosRequestConfig,
 } from "axios";
-import type { AccessSession, ErrorEnvelope } from "@gold-era/contracts/public";
-import { clearSession, setSession } from "../../features/auth/auth-store";
-import { gatewayClient } from "./gateway-client";
+import type { ErrorEnvelope } from "@gold-era/contracts/public";
+import { clearSession } from "../../features/auth/auth-store";
+import { renewSession } from "./session-renewal";
 
 interface RetriableConfig extends InternalAxiosRequestConfig {
   _authRetried?: boolean;
-}
-let refreshPromise: Promise<AccessSession> | null = null;
-/** Performs one module-scoped gateway renewal shared by all eligible failures. */
-async function renew(): Promise<AccessSession> {
-  if (!refreshPromise)
-    refreshPromise = gatewayClient
-      .post<{ success: true; data: AccessSession }>("/refresh")
-      .then((response) => {
-        setSession(response.data.data);
-        return response.data.data;
-      })
-      .finally(() => {
-        refreshPromise = null;
-      });
-  return refreshPromise;
 }
 /** Installs single-flight renewal with at most one replay per protected request. */
 export function installRenewalInterceptor(
@@ -47,7 +32,7 @@ export function installRenewalInterceptor(
         throw error;
       config._authRetried = true;
       try {
-        const session = await renew();
+        const session = await renewSession();
         config.headers.Authorization = `Bearer ${session.accessToken}`;
         return await client(config);
       } catch (renewalError) {
