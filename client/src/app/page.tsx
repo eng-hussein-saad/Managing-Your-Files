@@ -1,10 +1,12 @@
 import { FileoraBrand } from "../components/brand/fileora-brand";
+import { GuestRoute } from "../components/auth/guest-route";
 import { ThemeSelector } from "../components/theme/theme-selector";
 
 /** Introduces Fileora and directs visitors into authentication journeys. */
 export default function HomePage() {
   return (
-    <div className="app-shell landing-shell">
+    <GuestRoute>
+      <div className="app-shell landing-shell">
       <header className="landing-nav">
         <div className="landing-nav-inner">
           <FileoraBrand />
@@ -73,6 +75,7 @@ export default function HomePage() {
           </article>
         </section>
       </main>
-    </div>
+      </div>
+    </GuestRoute>
   );
 }
