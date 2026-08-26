@@ -9,13 +9,15 @@ import { UploadDropzone } from "../../../features/files/components/upload-dropzo
 import { UploadQueue } from "../../../features/files/components/upload-queue";
 import { useFile, useFiles } from "../../../features/files/hooks/use-files";
 import { useUploadQueue } from "../../../features/files/upload/use-upload-queue";
+import { useUploadPolicy } from "../../../features/files/hooks/use-upload-policy";
 import { FileMoveDialog } from "../../../features/folders/components/file-move-dialog";
 import { FolderBrowser } from "../../../features/folders/components/folder-browser";
 import { CloseIcon, UploadIcon } from "../../../components/ui/icons";
 
 /** Composes upload, folder navigation, discovery, details, movement, and deletion. */
 export default function FilesPage() {
-  const queue = useUploadQueue();
+  const uploadPolicy = useUploadPolicy();
+  const queue = useUploadQueue(uploadPolicy.data);
   const [location, setLocation] = useState<string | null>(null);
   const [query, setQuery] = useState<FileQuery>({
     sort: "uploadedAt",
@@ -56,7 +58,7 @@ export default function FilesPage() {
   /** Runs the deterministic upload queue and then refreshes the active collection. */ const upload =
     async () => {
       await queue.run(location);
-      await files.refetch();
+      await Promise.all([files.refetch(), uploadPolicy.refetch()]);
     };
   const hasFilters = Boolean(query.search || query.type);
   const isUploading = queue.items.some((item) => item.status === "uploading");
@@ -178,7 +180,18 @@ export default function FilesPage() {
               Select 1–10 files. Uploads run sequentially and earlier successes
               remain if a later file fails.
             </p>
-            <UploadDropzone onFiles={queue.add} error={queue.selectionError} />
+            <UploadDropzone
+              onFiles={queue.add}
+              error={
+                queue.selectionError ??
+                (uploadPolicy.isError
+                  ? "Upload rules could not be loaded. Retry by reopening this dialog."
+                  : null)
+              }
+              allowedMimeTypes={uploadPolicy.data?.allowedMimeTypes}
+              maxFiles={uploadPolicy.data?.maxFilesPerBatch}
+              disabled={!uploadPolicy.data}
+            />
             {queue.items.length > 0 ? (
               <section
                 className="upload-panel"

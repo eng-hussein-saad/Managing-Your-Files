@@ -36,6 +36,7 @@ describe("Fileora design system", () => {
   it("defines approved semantic tokens, contrast evidence, targets, and transitions", () => {
     expect(css).toMatch(/--color-text:\s*oklch\(/);
     expect(css).toMatch(/--color-surface:\s*oklch\(/);
+    expect(css.match(/--color-on-accent:\s*oklch\(/g)).toHaveLength(2);
     expect(css).toMatch(/--contrast-normal:\s*[4-9]\.[5-9]/);
     expect(css).toMatch(/--contrast-large:\s*[3-9]\./);
     expect(css).toMatch(/--target-min:\s*44px/);
@@ -52,6 +53,12 @@ describe("Fileora design system", () => {
     );
     expect(css).toMatch(
       /\.authenticated-app\.dashboard-route\s*\{[^}]*block-size:100dvh;[^}]*overflow:hidden/s,
+    );
+    expect(css).toMatch(
+      /\.ui-button\.primary\s*\{[^}]*color:var\(--color-on-accent\)/s,
+    );
+    expect(css).toMatch(
+      /\.dialog-actions button:last-child:not\(\.ui-button\)/,
     );
     expect(css).toContain("@media (max-width:1100px)");
     expect(css).toContain("@media (max-width:820px)");

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import axios from "axios";
-import { uploadFile } from "../api/file-upload.api";
+import { uploadFile, type UploadPolicy } from "../api/file-upload.api";
 import type { QueueItem } from "./upload.types";
 
 interface UploadErrorBody {
@@ -10,13 +10,48 @@ interface UploadErrorBody {
 }
 
 /** Maintains an ordered one-at-a-time upload queue so earlier successes persist. */
-export function useUploadQueue() {
+export function useUploadQueue(policy?: UploadPolicy) {
   const [items, setItems] = useState<QueueItem[]>([]);
   const [selectionError, setSelectionError] = useState<string | null>(null);
-  /** Adds one valid-sized displayed batch without silently dropping the eleventh item. */
+  /** Adds a batch only after applying the current server-advertised intake policy. */
   const add = /** Implements the local add operation. */ (files: File[]) => {
-    if (files.length > 10) {
-      setSelectionError("Select no more than 10 files at a time.");
+    if (!files.length) return;
+    if (!policy) {
+      setSelectionError("Upload rules are still loading. Try again shortly.");
+      return;
+    }
+    const queuedFiles = items.filter(
+      (item) => item.status === "pending" || item.status === "error",
+    );
+    if (queuedFiles.length + files.length > policy.maxFilesPerBatch) {
+      setSelectionError(
+        `Select no more than ${policy.maxFilesPerBatch} files at a time.`,
+      );
+      return;
+    }
+    const oversized = files.find(
+      (file) => file.size > Number(policy.maxFileSizeBytes),
+    );
+    if (oversized) {
+      setSelectionError(
+        `${oversized.name} exceeds the ${formatBytes(policy.maxFileSizeBytes)} file limit.`,
+      );
+      return;
+    }
+    const unsupported = files.find(
+      (file) => !file.type || !policy.allowedMimeTypes.includes(file.type),
+    );
+    if (unsupported) {
+      setSelectionError(`${unsupported.name} has an unsupported file type.`);
+      return;
+    }
+    const queuedBytes = queuedFiles.reduce(
+      (total, item) => total + item.file.size,
+      0,
+    );
+    const selectedBytes = files.reduce((total, file) => total + file.size, 0);
+    if (BigInt(queuedBytes + selectedBytes) > BigInt(policy.quota.remainingBytes)) {
+      setSelectionError("These files exceed your remaining storage allowance.");
       return;
     }
     setSelectionError(null);
@@ -105,4 +140,11 @@ export function useUploadQueue() {
     if (item) await uploadOne(item, folderId);
   };
   return { items, selectionError, add, run, retry };
+}
+
+/** Formats an advertised byte ceiling for selection feedback. */
+function formatBytes(value: string) {
+  const bytes = Number(value);
+  if (bytes < 1024 ** 2) return `${Math.ceil(bytes / 1024)} KB`;
+  return `${(bytes / 1024 ** 2).toFixed(bytes % 1024 ** 2 === 0 ? 0 : 1)} MB`;
 }

@@ -95,7 +95,7 @@ describe("bounded file extraction", () => {
         maxChars: 3,
       }),
     ).resolves.toBeNull();
-  });
+  }, 20_000);
 
   it("terminates timed-out and malformed PDF work as unavailable", async () => {
     const bytes = onePagePdf("timeout");

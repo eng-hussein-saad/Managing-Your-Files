@@ -1,6 +1,7 @@
 /** Keeps file-related query cache keys stable and scoped. */
 export const fileKeys = {
   all: ["files"] as const,
+  policy: () => ["files", "policy"] as const,
   list: /** Implements the list callback for this configured operation. */ (
     params: object,
   ) => ["files", "list", params] as const,

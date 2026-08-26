@@ -29,6 +29,10 @@ describe("administrator monitoring experience", () => {
     expect(screen.getByText("4 KiB")).toBeInTheDocument();
     expect(screen.getByText("fixture-report.pdf")).toBeInTheDocument();
     expect(screen.getByLabelText(/Total users:/)).toBeVisible();
+    expect(screen.getByText("Most uploaded file types")).toBeVisible();
+    expect(
+      screen.getByRole("table", { name: "Platform files by type" }),
+    ).toBeInTheDocument();
   });
   it("renders live, deleted, and system actor labels without unsafe metadata", () => {
     const base = adminAuditResponseFixture();

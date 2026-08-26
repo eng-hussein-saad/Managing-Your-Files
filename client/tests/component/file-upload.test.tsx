@@ -20,6 +20,12 @@ const resultFile = {
   previewKind: "text",
   extractionState: "available",
 } as const;
+const uploadPolicy = {
+  maxFileSizeBytes: "10",
+  maxFilesPerBatch: 10,
+  allowedMimeTypes: ["text/plain", "application/pdf"],
+  quota: { usedBytes: "0", remainingBytes: "100", limitBytes: "100" },
+};
 
 describe("file upload queue", () => {
   beforeEach(() => {
@@ -31,7 +37,7 @@ describe("file upload queue", () => {
     const onFiles = vi.fn();
     const { container } = render(<UploadDropzone onFiles={onFiles} />);
     const input = screen.getByLabelText<HTMLInputElement>(/select files/i);
-    const file = new File(["a"], "a.txt");
+    const file = new File(["a"], "a.txt", { type: "text/plain" });
     Object.defineProperty(input, "files", { value: [file] });
     input.dispatchEvent(new Event("change", { bubbles: true }));
     expect(onFiles).toHaveBeenCalledWith([file]);
@@ -41,19 +47,48 @@ describe("file upload queue", () => {
       "upload-guidance",
     );
     expect(input).toHaveAttribute("aria-describedby", "upload-guidance");
+    expect(input).not.toHaveAttribute("accept");
   });
   it("rejects an eleven-file selection without truncating it", () => {
-    const hook = renderHook(() => useUploadQueue());
+    const hook = renderHook(() => useUploadQueue(uploadPolicy));
     act(() =>
       hook.result.current.add(
         Array.from(
           { length: 11 },
-          (_value, index) => new File(["x"], `${index}.txt`),
+          (_value, index) =>
+            new File(["x"], `${index}.txt`, { type: "text/plain" }),
         ),
       ),
     );
     expect(hook.result.current.items).toHaveLength(0);
     expect(hook.result.current.selectionError).toMatch(/no more than 10/i);
+  });
+  it("rejects unsupported, oversized, and over-quota selections locally", () => {
+    const hook = renderHook(() => useUploadQueue(uploadPolicy));
+    act(() =>
+      hook.result.current.add([
+        new File(["x"], "script.exe", { type: "application/x-msdownload" }),
+      ]),
+    );
+    expect(hook.result.current.selectionError).toMatch(/unsupported/i);
+    act(() =>
+      hook.result.current.add([
+        new File(["more than ten bytes"], "large.txt", { type: "text/plain" }),
+      ]),
+    );
+    expect(hook.result.current.selectionError).toMatch(/file limit/i);
+    const lowQuota = {
+      ...uploadPolicy,
+      maxFileSizeBytes: "100",
+      quota: { ...uploadPolicy.quota, remainingBytes: "1" },
+    };
+    const quotaHook = renderHook(() => useUploadQueue(lowQuota));
+    act(() =>
+      quotaHook.result.current.add([
+        new File(["xx"], "quota.txt", { type: "text/plain" }),
+      ]),
+    );
+    expect(quotaHook.result.current.selectionError).toMatch(/storage allowance/i);
   });
   it("uploads sequentially in displayed order and reports progress", async () => {
     const order: string[] = [];
@@ -62,11 +97,11 @@ describe("file upload queue", () => {
       progress?.(50);
       return { ...resultFile, originalName: file.name };
     });
-    const hook = renderHook(() => useUploadQueue());
+    const hook = renderHook(() => useUploadQueue(uploadPolicy));
     act(() =>
       hook.result.current.add([
-        new File(["a"], "first.txt"),
-        new File(["b"], "second.txt"),
+        new File(["a"], "first.txt", { type: "text/plain" }),
+        new File(["b"], "second.txt", { type: "text/plain" }),
       ]),
     );
     await act(async () => hook.result.current.run());
@@ -81,11 +116,11 @@ describe("file upload queue", () => {
       .mockResolvedValueOnce(resultFile)
       .mockRejectedValueOnce(new Error("failed"))
       .mockResolvedValueOnce(resultFile);
-    const hook = renderHook(() => useUploadQueue());
+    const hook = renderHook(() => useUploadQueue(uploadPolicy));
     act(() =>
       hook.result.current.add([
-        new File(["a"], "ok.txt"),
-        new File(["b"], "retry.txt"),
+        new File(["a"], "ok.txt", { type: "text/plain" }),
+        new File(["b"], "retry.txt", { type: "text/plain" }),
       ]),
     );
     await act(async () => hook.result.current.run());

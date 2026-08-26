@@ -8,6 +8,7 @@ import {
 import { useAdminStatistics } from "../hooks/use-admin-monitoring";
 import { Metric } from "../../../components/ui/surfaces";
 import { FileIcon, UsersIcon } from "../../../components/ui/icons";
+import { TypeDistributionChart } from "../../../components/charts/type-distribution-chart";
 
 /** Displays exact current totals, type distribution, and recent global uploads. */
 export function AdminDashboard() {
@@ -59,7 +60,19 @@ export function AdminDashboard() {
           />
         </article>
       </div>
-      <article className="admin-recent-card">
+      <div className="admin-dashboard-panels">
+        <article className="admin-type-card">
+          <div className="admin-panel-heading">
+            <h2>Most uploaded file types</h2>
+            <span className="ui-pill neutral">Current files</span>
+          </div>
+          <TypeDistributionChart
+            items={data.typeDistribution}
+            title="Platform files by type"
+            emptyMessage="No file types have been uploaded."
+          />
+        </article>
+        <article className="admin-recent-card">
         <div className="admin-panel-heading">
           <h2>Recent uploads</h2>
           <span className="ui-pill neutral">Metadata only</span>
@@ -77,7 +90,8 @@ export function AdminDashboard() {
         ) : (
           <p className="admin-empty">No files have been uploaded.</p>
         )}
-      </article>
+        </article>
+      </div>
     </section>
   );
 }

@@ -4,9 +4,15 @@ import type { ChangeEvent, DragEvent } from "react";
 export function UploadDropzone({
   onFiles,
   error,
+  allowedMimeTypes,
+  maxFiles = 10,
+  disabled = false,
 }: {
   onFiles: (files: File[]) => void;
   error?: string | null;
+  allowedMimeTypes?: string[];
+  maxFiles?: number;
+  disabled?: boolean;
 }) {
   /** Forwards picker files in browser display order. */ const choose =
     /** Implements the local choose operation. */ (
@@ -17,6 +23,7 @@ export function UploadDropzone({
       event: DragEvent<HTMLDivElement>,
     ) => {
       event.preventDefault();
+      if (disabled) return;
       onFiles(Array.from(event.dataTransfer.files));
     };
   /** Keeps drag-over events eligible for dropping. */ const allowDrop =
@@ -31,7 +38,7 @@ export function UploadDropzone({
       <div>
         <strong>Add to your archive</strong>
         <p id="upload-guidance">
-          Drop up to 10 files here, or choose from your device.
+          Drop up to {maxFiles} files here, or choose from your device.
         </p>
       </div>
       <label className="ui-button secondary" htmlFor="file-picker">
@@ -41,6 +48,8 @@ export function UploadDropzone({
         id="file-picker"
         type="file"
         multiple
+        accept={allowedMimeTypes?.join(",")}
+        disabled={disabled}
         aria-describedby="upload-guidance"
         onChange={choose}
       />

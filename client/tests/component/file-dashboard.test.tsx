@@ -29,8 +29,14 @@ describe("personal file dashboard", () => {
     expect(screen.getByLabelText("Total files: 2")).toBeVisible();
     expect(screen.getByLabelText("Storage used: 50 B")).toBeVisible();
     expect(screen.getByRole("progressbar")).toHaveAttribute("value", "50");
-    expect(screen.getByRole("table")).toHaveAccessibleName(/Africa\/Cairo/i);
-    expect(screen.getAllByRole("row")).toHaveLength(31);
+    const historyTable = screen.getByRole("table", {
+      name: /Uploads by local date in Africa\/Cairo/i,
+    });
+    expect(historyTable).toBeVisible();
+    expect(
+      screen.getByRole("table", { name: "Files by type" }),
+    ).toBeInTheDocument();
+    expect(historyTable.querySelectorAll("tbody tr")).toHaveLength(30);
   });
   it("provides a useful empty distribution without hiding history", () => {
     render(

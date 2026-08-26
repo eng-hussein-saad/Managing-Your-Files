@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
 import { useAuthState } from "../../../features/auth/auth-store";
 import { useFileStatistics } from "../../../features/dashboard/hooks/use-file-statistics";
 import { FileStatistics } from "../../../features/dashboard/components/file-statistics";
@@ -9,9 +10,15 @@ import { FolderIcon } from "../../../components/ui/icons";
 export default function DashboardPage() {
   const auth = useAuthState();
   const statistics = useFileStatistics();
+  const reduceMotion = useReducedMotion();
   return (
     <main id="main" className="dashboard app-page">
-      <header className="page-heading dashboard-heading">
+      <motion.header
+        className="page-heading dashboard-heading"
+        initial={reduceMotion ? false : { opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.35, ease: "easeOut" }}
+      >
         <div>
           <span className="eyebrow">Personal overview</span>
           <h1>Good to see you, {auth.session?.user.name}.</h1>
@@ -21,7 +28,7 @@ export default function DashboardPage() {
           <FolderIcon />
           Open your files
         </Link>
-      </header>
+      </motion.header>
       {statistics.isLoading ? (
         <section className="dashboard-skeleton">
           <Skeleton label="Loading file activity" lines={3} />
