@@ -9,7 +9,7 @@ const workspaceRoot = path.join(
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  output: "standalone",
+  output: process.env.VERCEL ? undefined : "standalone",
   outputFileTracingRoot: workspaceRoot,
 };
 
