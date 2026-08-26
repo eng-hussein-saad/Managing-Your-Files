@@ -14,7 +14,9 @@ For Phase 2 add the eight server-only settings: `UPLOAD_MAX_FILE_SIZE_BYTES=5242
 
 Container deployments use the root `Dockerfile` for the server and `client/Dockerfile` for the client. Both Dockerfiles require the repository root as the build context because they install shared workspace packages. For example, build them with `docker build --target server .` and `docker build -f client/Dockerfile .`. On Back4App Containers, select the repository root so the platform finds the server Dockerfile and retains access to every workspace package.
 
-The server image provides runtime defaults for `PORT`, token lifetimes, upload limits, the MIME allowlist, and the extraction limit. Runtime environment variables can override those defaults. Keep environment-specific non-secrets such as origins, mail routing, and Supabase location in the deployment environment, and inject all credentials and secrets there; never bake them into the image.
+The server image defaults to `PORT=8080`, matching Back4App's Node container convention, and exposes port 8080. Configure the Back4App exposed port as 8080. Runtime environment variables can override the port, token lifetimes, upload limits, MIME allowlist, and extraction limit, but the configured exposed port must always match `PORT`. Keep environment-specific non-secrets such as origins, mail routing, and Supabase location in the deployment environment, and inject all credentials and secrets there; never bake them into the image.
+
+When testing the image locally, publish the host port to the container's actual `PORT`. For example, with `PORT=8080`, use `docker run --env-file .env -p 3001:8080 gold-era-server:local`, then request `http://localhost:3001/health`. Publishing `3001:3001` while the application listens on 8080 produces an empty reply because no process is listening on container port 3001.
 
 `CORS_ALLOWED_ORIGINS` must list the exact unrelated client origin; wildcard origins are rejected. Cross-origin API calls are credentialless and send only the short-lived bearer token.
 

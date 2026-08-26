@@ -32,9 +32,7 @@ CMD ["./node_modules/.bin/prisma", "migrate", "deploy"]
 
 FROM node:24.7.0-bookworm-slim AS server
 ENV NODE_ENV=production
-ENV PORT=3001 \
-    ACCESS_TOKEN_TTL=15m \
-    REFRESH_TOKEN_TTL=30d \
+ENV PORT=8080 \
     UPLOAD_MAX_FILE_SIZE_BYTES=5242880 \
     USER_STORAGE_QUOTA_BYTES=104857600 \
     UPLOAD_ALLOWED_MIME_TYPES=application/pdf,text/plain,image/jpeg,image/png,image/webp,application/vnd.openxmlformats-officedocument.wordprocessingml.document \
@@ -44,5 +42,5 @@ WORKDIR /workspace/server
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY --from=build --chown=node:node /prod/server ./
 USER node
-EXPOSE 3001
+EXPOSE 8080
 CMD ["node", "dist/server.js"]

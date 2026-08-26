@@ -46,7 +46,7 @@ async function start(): Promise<void> {
   const server = createApp(env, prisma, mailer, {
     storage,
     extractor: new PdfExtractor(),
-  }).listen(env.PORT);
+  }).listen(env.PORT, "0.0.0.0");
   /** Closes network and database resources on a termination signal. */
   const shutdown = () =>
     server.close(() => {
