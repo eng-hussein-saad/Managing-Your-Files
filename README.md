@@ -1,37 +1,92 @@
 # Fileora
 
-Fileora is a secure file-organizing application with user-owned private storage,
-folders, search, previews and downloads, exact dashboards, and a metadata-only
-administrator console. Its tagline is **“Your files. Organized your way.”**
+> Your files. Organized your way.
 
-## Architecture
+Fileora is a full-stack private file manager built as a TypeScript monorepo. Users can register and verify an email address, maintain a renewable session, upload and organize files in folders, search and sort their library, preview or download owned content, and inspect storage statistics. Administrators receive a separate metadata-only workspace for user management, file cleanup, platform statistics, and sanitized audit history.
 
-- `client/`: Next.js 16 App Router UI, React 19, TanStack React Query, and the
-  first-party authentication gateway.
-- `server/`: Express 5 authority, Prisma 7, PostgreSQL, JWT access tokens,
-  opaque refresh sessions, SMTP verification, and private Supabase Storage.
-- `packages/contracts/`: strict shared browser-safe Zod contracts.
-- `tests/`: cross-cutting security, integration, and Playwright journeys.
-- `database-schema.mmd`: canonical maintainer-approved database contract.
+The project deliberately separates presentation from authority. Next.js owns the browser experience and a small authentication gateway; Express owns authentication, authorization, business rules, database mutations, and access to the private object store.
 
-Express authenticates and authorizes all sensitive operations. Next.js stores
-the raw refresh value only in an `HttpOnly` same-origin cookie; browser code
-keeps the short-lived access token in memory. Administrators can read file
-metadata across owners and permanently delete files, but they never gain
-preview, download, signed-access, storage-key, or extracted-content authority.
+## Implemented features
+
+### User workspace
+
+- Registration, SMTP-delivered eight-digit email verification, and abuse-limited resend
+- Short-lived JWT access tokens with rotating, independently revocable refresh sessions
+- Drag-and-drop or picker-based upload queues with progress and per-file retry
+- Server-verified PDF, text, JPEG, PNG, WebP, and DOCX uploads up to 5 MiB each
+- A 100 MiB per-user quota and batches of up to ten sequential uploads
+- Nested folders (up to ten levels), breadcrumbs, rename, empty-folder deletion, and file moves
+- Owner-scoped search, type filters, sorting, pagination, metadata details, preview, and download
+- PDF and UTF-8 text extraction where extraction succeeds within configured bounds
+- File counts, storage usage, type distribution, and a 30-day upload history
+- Responsive layouts, light/dark/system themes, accessible dialogs, and explicit loading/error states
+
+### Administrator workspace
+
+- Searchable, paginated user directory and safe user details
+- Role changes with stale-state, self-change, and last-administrator safeguards
+- Permanent user deletion with typed confirmation and owned-object cleanup
+- Global file metadata browsing and confirmed permanent deletion
+- Exact current platform statistics and sanitized audit-event history
+- No administrator preview, download, storage-key, or extracted-content capability
+
+Deletion is permanent. The current schema and UI do not implement Trash, restore, or soft deletion. Logout revokes the presented browser session only; there is no logout-all-devices endpoint.
+
+## Technology stack
+
+| Area | Implementation |
+| --- | --- |
+| Frontend | Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4, Framer Motion |
+| Client data | TanStack React Query 5, Axios, Zod-backed shared contracts |
+| Backend | Express 5, TypeScript, Zod validation, Multer |
+| Security | Argon2id passwords/codes, HS256 JWT access tokens, opaque refresh tokens |
+| Persistence | PostgreSQL, Prisma ORM 7 and committed migrations |
+| Files | Private Supabase Storage through a server-side storage adapter |
+| Email | Nodemailer over SMTP |
+| Testing | Vitest, Supertest, Testing Library, Playwright, axe-core |
+| Delivery | Multi-stage Dockerfiles and Docker Compose |
+
+## Architecture at a glance
+
+```mermaid
+flowchart LR
+  B[Browser] -->|pages and same-origin auth| N[Next.js]
+  B -->|public requests and bearer API calls| E[Express API]
+  N -->|trusted login / refresh / logout| E
+  E --> P[(PostgreSQL via Prisma)]
+  E --> S[Private Supabase Storage]
+  E --> M[SMTP server]
+```
+
+The Next.js Backend for Frontend (BFF) is intentionally limited to `/api/auth/login`, `/api/auth/refresh`, and `/api/auth/logout`. It stores the raw refresh credential in a same-origin `HttpOnly` cookie and never returns it to browser JavaScript. The browser keeps the returned access token in memory and sends it directly to Express as a bearer token for normal API calls. Express revalidates the current database user and role on every protected request.
+
+See [System Architecture](docs/architecture.md) for the boundaries and representative request flows.
+
+## Repository structure
+
+```text
+client/       Next.js application, BFF routes, feature modules, and frontend tests
+server/       Express API, domain services, infrastructure adapters, Prisma, and backend tests
+packages/     Shared contracts plus workspace-wide TypeScript and ESLint configuration
+scripts/      Verification and local UI-test support scripts
+tests/        Cross-application integration, security, and Playwright tests
+docs/         System-wide, frontend, and backend developer documentation
+```
+
+For detailed placement guidance, see the [client folder structure](docs/client/folder-structure.md) and [server folder structure](docs/server/folder-structure.md).
 
 ## Prerequisites
 
-- Node.js 24.x and Corepack
-- pnpm 10.17.1 (pinned by `packageManager`)
-- PostgreSQL 17 for local database-backed tests and execution
-- SMTP credentials or a local mail catcher
-- A private Supabase Storage bucket and server-only `sb_secret_...` key
-- Docker with Compose for the container workflow (optional)
+- Node.js 24.x (`package.json` requires `>=24 <25`)
+- Corepack and pnpm 10.17.1
+- PostgreSQL reachable through `DATABASE_URL`
+- An SMTP server or local SMTP/mail-catcher service
+- A private Supabase Storage bucket and server-only secret key
+- Docker with Compose, if using the container workflow
 
-## Configuration
+## Quick start
 
-Copy the safe examples, then replace every placeholder locally:
+From a fresh clone:
 
 ```powershell
 corepack enable
@@ -40,18 +95,9 @@ Copy-Item -LiteralPath 'client/.env.example' -Destination 'client/.env.local'
 Copy-Item -LiteralPath 'server/.env.example' -Destination 'server/.env'
 ```
 
-Never commit populated environment files. `JWT_ACCESS_SECRET`,
-`BFF_SHARED_SECRET`/`AUTH_BFF_SHARED_SECRET`, `DATABASE_URL`, SMTP credentials,
-administrator credentials, and `SUPABASE_SECRET_KEY` are secrets. Only
-`NEXT_PUBLIC_API_BASE_URL` is browser-visible. All other client keys are
-server-only or non-secret cookie policy. Express and the Next.js gateway reject
-missing or invalid required values during startup/use without printing values.
+Replace all placeholders in the two local environment files. The client trust secret must match the server trust secret, both refresh-token lifetimes must match, PostgreSQL must exist, and the configured Supabase bucket must be private.
 
-The Supabase bucket must be private. Never expose provider keys, storage keys,
-private content, refresh values, access tokens, passwords, or verification codes
-through `NEXT_PUBLIC_*`, logs, API responses, test reports, or image layers.
-
-## Database and administrator initialization
+Prepare the database and administrator:
 
 ```powershell
 pnpm --filter @gold-era/server prisma:generate
@@ -59,54 +105,17 @@ pnpm --filter @gold-era/server prisma:migrate:deploy
 pnpm --filter @gold-era/server admin:bootstrap
 ```
 
-Use `prisma migrate deploy`, never schema push. Bootstrap is repeatable: it
-preserves the configured administrator and refuses to promote an existing normal
-user. The Phase 3 forward migration fails closed if legacy non-null
-`USER.deletedAt` values exist, then removes that approved legacy column.
-
-The current lifecycle is permanent-only: `USER` has no soft-deletion field, file
-and folder deletion is permanent, administrator user deletion permanently
-removes required owned state, and Fileora has no Trash or restore workflow.
-
-## Local development
+Start all workspaces:
 
 ```powershell
 pnpm dev
 ```
 
-Next.js defaults to `http://localhost:3000` and Express to
-`http://localhost:3001`. Verification codes are delivered only through the SMTP
-adapter. Provision the configured storage bucket before exercising file flows.
+Next.js defaults to `http://localhost:3000`; the example server configuration uses `http://localhost:3001`. The root `predev` hook builds `@gold-era/contracts` before the parallel development processes start.
 
-## Container workflow
+Detailed setup, configuration, debugging, and common change recipes are in [Development](docs/development.md).
 
-Export the required values named in `server/.env.example`, plus
-`POSTGRES_PASSWORD`, and ensure `DATABASE_URL` uses the Compose PostgreSQL host
-(`postgres`). Then run:
-
-```powershell
-docker compose config
-docker compose build
-docker compose up
-```
-
-Compose starts healthy PostgreSQL, runs migrations once, then starts Express and
-Next.js after their dependencies are healthy. Database state persists in the
-named `fileora-postgres` volume. Restarting the stack preserves data and the
-repeatable administrator bootstrap can be run independently when required.
-
-Stop without destroying data:
-
-```powershell
-docker compose down
-```
-
-Use `docker compose down --volumes` only for an explicitly disposable database.
-Secrets are runtime environment values, not Docker build arguments or image
-environment declarations; the only build-visible value is the classified public
-`NEXT_PUBLIC_API_BASE_URL`.
-
-## Verification
+## Verification commands
 
 ```powershell
 pnpm lint
@@ -115,40 +124,63 @@ pnpm test
 pnpm test:integration
 pnpm test:security
 pnpm test:e2e
-pnpm audit:comments
 pnpm build
-pnpm verify:phase3
-pnpm verify:critical:triple
 ```
 
-Database integration tests require a migrated disposable database. Playwright
-requires the documented app/server infrastructure. Provider-adapter tests must
-use a disposable private bucket, never production data. Scale evidence uses:
+`pnpm test` runs unit, contract, and component projects. Database integration tests require `DATABASE_URL` and reset their configured database, so use a disposable migrated database. Playwright requires the client, API, PostgreSQL, and mail service described in [Testing](docs/testing.md). There is no repository `format` script; linting and type checking are the maintained static checks.
+
+## Docker
+
+`compose.yaml` starts PostgreSQL, runs Prisma migrations once, then starts Express and Next.js after dependency health checks pass. Compose reads a root `.env`; supply every required server and client value plus `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_PORT`.
 
 ```powershell
-pnpm --filter @gold-era/server exec tsx prisma/seed-admin-performance.ts
+docker compose config
+docker compose build
+docker compose up
 ```
 
-This creates 1,000 deterministic users and 10,000 deterministic files for
-administrator query-plan and interaction measurements. It adds no indexes;
-index changes require a separately documented exact proposal and explicit
-maintainer approval before a new migration.
+Stop without deleting the named PostgreSQL volume:
 
-## Deployment and operational assumptions
+```powershell
+docker compose down
+```
 
-- Terminate TLS in production, set trusted proxy headers correctly, use secure
-  refresh cookies, and configure only explicit CORS origins.
-- Run migrations as a one-shot release step before serving traffic.
-- Keep SMTP and Supabase external credentials in the deployment secret store.
-- Retain audit rows indefinitely until a later approved retention policy exists.
-- Audit writes are centralized, sanitized, and fail-open; operational audit
-  failures are logged without secret or private metadata.
-- External object cleanup is object-first and retryable. Missing objects are
-  accepted during retries; the API never reports permanent deletion success
-  while required storage cleanup is known to have failed.
-- Back up PostgreSQL according to the deployment recovery objective and apply an
-  equivalent provider policy to the private object bucket.
+See [Deployment](docs/deployment.md) before using production URLs, TLS, cookies, CORS, migrations, or hosted secrets.
 
-See [deployment guidance](docs/deployment.md), the Phase 3
-[quickstart](specs/003-administration-final-quality/quickstart.md), and
-[performance evidence](specs/003-administration-final-quality/performance.md).
+## Important design decisions
+
+- **Express is the authority.** Client route guards improve navigation, but only Express decides whether a request is authenticated, authorized, and owner-scoped.
+- **Refresh credentials are browser-unreadable.** Next.js holds them in an `HttpOnly` cookie; access tokens remain in memory and are renewed after reload or a qualifying `401`.
+- **Files and metadata have different homes.** Supabase stores binary objects; PostgreSQL stores ownership, names, sizes, locations, extracted text, sessions, and audit rows.
+- **Storage is behind a port.** Domain services depend on `StoragePort`, keeping provider details out of controllers and enabling deterministic fake-storage tests.
+- **Shared contracts are explicit.** `packages/contracts` contains browser-safe public schemas and a separate internal auth contract used only across the trusted BFF boundary.
+- **Deletion is object-first.** File metadata is removed only after the storage object is absent; upload metadata failures trigger best-effort object compensation.
+
+## Documentation
+
+New to the project? Read in this order:
+
+1. [System Architecture](docs/architecture.md)
+2. [Development Setup](docs/development.md)
+3. [Authentication](docs/authentication.md)
+4. [Authorization](docs/authorization.md)
+5. [File Storage](docs/file-storage.md)
+6. [Database](docs/database.md)
+7. [Testing](docs/testing.md)
+8. [Deployment](docs/deployment.md)
+
+### Frontend
+
+- [Frontend Overview](docs/client/overview.md)
+- [Frontend Folder Structure](docs/client/folder-structure.md)
+- [Routing](docs/client/routing.md)
+- [API and Data Fetching](docs/client/api-and-data-fetching.md)
+- [Components and State](docs/client/components-and-state.md)
+
+### Backend
+
+- [Backend Overview](docs/server/overview.md)
+- [Backend Folder Structure](docs/server/folder-structure.md)
+- [Request Lifecycle](docs/server/request-lifecycle.md)
+- [API Reference and Conventions](docs/server/api.md)
+- [Services and Data Access](docs/server/services-and-data-access.md)

@@ -6,6 +6,10 @@ build/
 coverage/
 playwright-report/
 test-results/
+
+# Legacy generated contract runtime (the package build emits packages/contracts/dist/)
+packages/contracts/runtime/
+
 *.log
 .env
 .env.*
@@ -16,4 +20,10 @@ test-results/
 Thumbs.db
 .vscode/
 .idea/
+
+# Internal specification and planning workflow (kept locally, not submitted)
+.agents/
+.specify/
+specs/
+IMPLEMENTATION_PLAN.md
 

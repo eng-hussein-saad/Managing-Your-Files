@@ -2,10 +2,13 @@
 .github/
 .agents/
 .specify/
+specs/
+IMPLEMENTATION_PLAN.md
 node_modules/
 .pnpm-store/
 **/.next/
 **/dist/
+packages/contracts/runtime/
 coverage/
 playwright-report/
 test-results/
