@@ -204,12 +204,14 @@ POSTGRES_PORT=5432
 DATABASE_URL=postgresql://fileora:replace-with-a-strong-password@postgres:5432/fileora
 ```
 
-Ensure `NEXT_PUBLIC_API_BASE_URL` is reachable by the host browser (normally `http://localhost:3001`), then launch the stack:
+Ensure `NEXT_PUBLIC_API_BASE_URL` is reachable by the host browser (normally `http://localhost:3001`). You can optionally validate the resolved Compose configuration before building and launching the stack:
 
 ```powershell
+# Optional preflight validation
 docker compose config
-docker compose build
-docker compose up
+
+# Build and launch
+docker compose up --build
 ```
 
 Open `http://localhost:3000` after the services become healthy. Press `Ctrl+C` to stop an attached run, then remove the stopped containers and network while retaining PostgreSQL data:
@@ -242,14 +244,16 @@ The supported deployment artifacts are the multi-stage root `Dockerfile` for Exp
 
 The current production topology is Vercel for the frontend and Render for the Express API. See the [hosted application](#hosted-application) links above and [Deployment](docs/deployment.md) for configuration, release order, verification, and operational responsibilities.
 
-For the supplied container topology, create a root `.env` with production-appropriate values, then validate, build, and start it:
+For the supplied container topology, create a root `.env` with production-appropriate values, then build and start it. You can run `docker compose config` first as an optional preflight validation:
 
 `compose.yaml` starts PostgreSQL, runs Prisma migrations once, then starts Express and Next.js after dependency health checks pass. Compose reads a root `.env`; supply every required server and client value plus `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_PORT`.
 
 ```powershell
+# Optional preflight validation
 docker compose config
-docker compose build
-docker compose up
+
+# Build and launch
+docker compose up --build
 ```
 
 Stop without deleting the named PostgreSQL volume:

@@ -11,6 +11,19 @@ The browser never receives Supabase credentials, storage keys, or signed provide
 
 The files page loads `GET /api/v1/files/policy` before accepting a selection. The response includes the server's allowed MIME list, 5 MiB size limit, ten-file batch limit, and current 100 MiB owner quota.
 
+The normal browser picker supports these common extensions through their MIME types:
+
+| Common extensions | Advertised MIME type |
+| --- | --- |
+| `.pdf` | `application/pdf` |
+| `.txt` | `text/plain` |
+| `.jpg`, `.jpeg` | `image/jpeg` |
+| `.png` | `image/png` |
+| `.webp` | `image/webp` |
+| `.docx` | `application/vnd.openxmlformats-officedocument.wordprocessingml.document` |
+
+The DOCX value is the official MIME type for an Office Open XML Word document; it is deliberately more specific than a shorthand such as `application/docx`. Extensions are user-facing hints, not an authoritative allowlist. Browser selection uses the MIME reported by the operating system or browser, while the server determines the final type from the uploaded bytes. Consequently, renaming unsupported content to an allowed extension does not make it valid. Other UTF-8 text-based extensions such as `.csv`, `.md`, `.json`, or `.xml` may also be rejected during browser selection when the browser reports a MIME other than `text/plain`.
+
 `UploadDropzone` accepts drag/drop and picker input and tells users that documents, text, images, and PDFs are supported. `useUploadQueue` rejects an entire new selection if policy is unavailable, the active pending/error queue plus selection exceeds ten, any item is oversized or has an unsupported browser-reported MIME, or selected bytes exceed advertised remaining quota. These checks improve feedback only; the server repeats authoritative checks.
 
 The queue sends files sequentially, one multipart request per file. Axios reports byte progress for the active item. A later failure does not roll back earlier successful requests, and each failed item can be retried independently while the dialog remains open. Queue rows and the primary upload action use stable dialog width; completed and failed rows plus transient errors are cleared when the dialog closes, and active uploads prevent dismissal until they settle. After a run, the file collection, upload policy, and personal statistics are refreshed so navigation quota usage updates in place.
@@ -23,7 +36,7 @@ The queue sends files sequentially, one multipart request per file. Axios report
 4. `UploadFileService` reads the temporary bytes and enforces the 5 MiB ceiling.
 5. `detectAllowedMime` inspects the content rather than trusting the browser or extension:
    - PDF, JPEG, PNG, and WebP use detected signatures.
-   - DOCX must be a ZIP containing `[Content_Types].xml` and `word/document.xml`.
+   - DOCX is an Office Open XML ZIP container. The initial detector may report either generic `application/zip` or the official DOCX MIME. Both results proceed through the same structural verification and must contain `[Content_Types].xml` and `word/document.xml`.
    - Text must decode as strict UTF-8 and contain no prohibited control characters.
 6. The service generates `users/{ownerId}/files/{fileId}`; the original filename cannot become a provider path.
 7. Inside a transaction it validates folder ownership, locks the owner's lifecycle, recalculates quota, and rejects totals above 100 MiB.

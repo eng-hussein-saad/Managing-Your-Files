@@ -8,6 +8,7 @@ import {
   docxFile,
   jpegFile,
   malformedFile,
+  officeDetectedDocxFile,
   pdfFile,
   pngFile,
   textFile,
@@ -22,8 +23,13 @@ describe("authoritative file content validation", () => {
     ["PNG", pngFile(), "image/png"],
     ["WebP", webpFile(), "image/webp"],
     [
-      "DOCX",
+      "generic-ZIP-detected DOCX",
       docxFile(),
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ],
+    [
+      "Office-MIME-detected DOCX",
+      officeDetectedDocxFile(),
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ],
   ])(

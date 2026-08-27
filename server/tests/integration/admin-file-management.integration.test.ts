@@ -22,4 +22,19 @@ describeDatabase("administrator global file management", () => {
     await supertest(app).delete(`/api/v1/admin/files/${file.id}`).send({ expectedUpdatedAt: file.updatedAt.toISOString(), confirmationOriginalName: file.originalName }).expect(503);
     expect(await prisma.file.findUnique({ where: { id: file.id } })).not.toBeNull();
   });
+  it("sorts file names case-insensitively", async () => {
+    for (const name of ["Hussein_Saad_CV.docx", "dog.png", "text.txt"])
+      await seedFile(prisma, { ownerId: primaryUserId, name });
+
+    const page = await supertest(app)
+      .get("/api/v1/admin/files?sort=name&direction=asc&pageSize=5")
+      .expect(200);
+    const files = page.body.data as Array<{ originalName: string }>;
+
+    expect(files.map((item) => item.originalName)).toEqual([
+      "dog.png",
+      "Hussein_Saad_CV.docx",
+      "text.txt",
+    ]);
+  });
 });

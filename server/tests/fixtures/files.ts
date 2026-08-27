@@ -29,6 +29,14 @@ export const docxFile = () =>
       "base64",
     ),
   );
+/** Produces a DOCX whose manifest lets file-type identify the Office MIME directly. */
+export const officeDetectedDocxFile = () =>
+  new Uint8Array(
+    Buffer.from(
+      "UEsDBBQAAAAIAN20G12Rp0i1wgAAAAIBAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbFyPwUrFMBBFfyVkK81UFyLS9C0El+ri+QFDMu0LZmZCEmv9e6nCW7i+nHO402nnbDaqLal4e+tGa0iCxiSrt+/n5+HBnubp/F2omZ2zNG8vvZdHgBYuxNicFpKd86KVsTendYWC4QNXgrtxvIeg0kn60A+HnafXjWpNkcwb1v6CTN7Cl9YIUcMnk3S3c7bm6Q87yt5iKTkF7EkFNon/moMuSwp05Q9bqRqotSQrZ3ddGJPcHHqYJ/g9Nf8AAAD//wMAUEsDBBQAAAAIAN20G11SfNZdVQAAAFQAAAARAAAAd29yZC9kb2N1bWVudC54bWwEwcENgCAMAMBVDANY4sMHUXchUIGEtoRiYHzvrumihI+Qx7aosrp5mzxGcwAaMpLXXRryovpKJz90l55gSo+tS0DVwokqHNaeQL6wgecHAAD//wMAUEsBAhQAFAAAAAgA3bQbXZGnSLXCAAAAAgEAABMAAAAAAAAAAAAAAAAAAAAAAFtDb250ZW50X1R5cGVzXS54bWxQSwECFAAUAAAACADdtBtdUnzWXVUAAABUAAAAEQAAAAAAAAAAAAAAAADzAAAAd29yZC9kb2N1bWVudC54bWxQSwUGAAAAAAIAAgCAAAAAdwEAAAAA",
+      "base64",
+    ),
+  );
 /** Produces a valid generic ZIP which must not pass DOCX verification. */
 export const zipFile = () =>
   new Uint8Array(

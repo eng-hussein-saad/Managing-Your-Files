@@ -72,6 +72,30 @@ describeDatabase("file discovery persistence", () => {
       expect(asc.body.meta.totalItems).toBe(2);
     }
   });
+  it("sorts names case-insensitively", async () => {
+    for (const name of ["Hussein_Saad_CV.docx", "dog.png", "text.txt"])
+      await seedFile(prisma, { ownerId: primaryUserId, name });
+
+    const asc = await supertest(app)
+      .get("/api/v1/files?sort=name&direction=asc&pageSize=5")
+      .expect(200);
+    const desc = await supertest(app)
+      .get("/api/v1/files?sort=name&direction=desc&pageSize=5")
+      .expect(200);
+    const ascFiles = asc.body.data as Array<{ originalName: string }>;
+    const descFiles = desc.body.data as Array<{ originalName: string }>;
+
+    expect(ascFiles.map((item) => item.originalName)).toEqual([
+      "dog.png",
+      "Hussein_Saad_CV.docx",
+      "text.txt",
+    ]);
+    expect(descFiles.map((item) => item.originalName)).toEqual([
+      "text.txt",
+      "Hussein_Saad_CV.docx",
+      "dog.png",
+    ]);
+  });
   it("returns a 10,000-row owner page within the local two-second acceptance budget", async () => {
     const createdAt = new Date("2026-08-01T00:00:00Z");
     await prisma.file.createMany({

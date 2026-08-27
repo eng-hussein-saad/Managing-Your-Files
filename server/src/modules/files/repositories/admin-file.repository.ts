@@ -47,7 +47,7 @@ export class AdminFileRepository {
       query.sort === "owner"
         ? { owner: { name: query.direction } }
         : {
-            [{ name: "originalName", size: "size", uploadedAt: "createdAt" }[query.sort]]:
+            [{ name: "originalNameSortKey", size: "size", uploadedAt: "createdAt" }[query.sort]]:
               query.direction,
           };
     const [rows, totalItems] = await Promise.all([

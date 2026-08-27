@@ -28,7 +28,7 @@ Stores UUID, required owner, optional self-referencing parent, name, and timesta
 
 ### `File` → `FILE`
 
-Stores UUID, required owner, optional folder, normalized display name, private storage key, byte-detected MIME, `BIGINT` size, optional extracted text, and timestamps. The binary is not stored in PostgreSQL. Quota, discovery, ownership, and statistics operate on these rows.
+Stores UUID, required owner, optional folder, normalized display name, a database-generated lowercase name sort key, private storage key, byte-detected MIME, `BIGINT` size, optional extracted text, and timestamps. The binary is not stored in PostgreSQL. Quota, discovery, ownership, and statistics operate on these rows. File-name ordering uses the generated key so ascending and descending results are case-insensitive while the original display name remains unchanged.
 
 ### `AuditLog` → `AUDIT_LOG`
 
@@ -54,7 +54,7 @@ The committed SQL creates primary-key indexes, unique indexes for `USER.email` a
 - `VERIFICATION_CODE`: newest/rolling-window and expiry lookups scoped by user.
 - `REFRESH_TOKEN`: token-hash authority lookup, user-session cleanup, and expiry maintenance.
 - `FOLDER`: owner/parent/name hierarchy operations and parent-reference cleanup.
-- `FILE`: owner upload history, folder/name discovery, owner MIME aggregation, global recent uploads, and folder-reference cleanup.
+- `FILE`: owner upload history, folder/case-insensitive-name discovery, owner MIME aggregation, global recent uploads, and folder-reference cleanup.
 - `AUDIT_LOG`: retained chronology plus actor/action filtering.
 
 The multi-column indexes follow the equality predicates before stable ordering columns used by repositories. PostgreSQL can scan the timestamp/ID B-tree indexes in either direction, so the same index supports ascending and descending pages. Case-insensitive substring search remains an application feature without a trigram index; add `pg_trgm` through a separate reviewed migration if search volume justifies that operational dependency.

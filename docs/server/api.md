@@ -103,10 +103,12 @@ List query:
 - `folderId`: owned UUID or `root`.
 - `sort`: `name|size|uploadedAt`, default `uploadedAt`.
 - `direction`: `asc|desc`, default `desc`.
+- Name ordering is case-insensitive, so capitalization does not move otherwise
+  alphabetically later names ahead of earlier names.
 - `page`: positive integer, default 1.
 - `pageSize`: 5, 10, or 20; default 20.
 
-The accepted upload types are PDF, strict UTF-8 text, JPEG, PNG, WebP, and DOCX. Size is 5 MiB and owner quota is 100 MiB.
+The accepted upload types are PDF (`.pdf`), strict UTF-8 text (`.txt`), JPEG (`.jpg`/`.jpeg`), PNG (`.png`), WebP (`.webp`), and DOCX (`.docx`). These extensions describe the usual browser-facing names; the API does not trust an extension or submitted MIME as proof of type. It inspects file bytes, and DOCX uploads must pass ZIP-structure verification whether initial detection returns generic `application/zip` or the official `application/vnd.openxmlformats-officedocument.wordprocessingml.document` MIME. Size is 5 MiB and owner quota is 100 MiB.
 
 ## Folders
 
@@ -143,7 +145,7 @@ Every endpoint below requires bearer authentication and current database role `A
 | `GET /api/v1/admin/statistics` | Exact current users/files/bytes/type distribution/recent uploads |
 | `GET /api/v1/admin/audit-events` | Sanitized retained audit page |
 
-Admin user list supports `search`, role, verified flag, sort by name/email/role/createdAt, direction, page, and page size. Admin file list supports name search, owner, type, upload date/time bounds, size bounds, root/foldered scope, name/owner/size/upload-time sort, direction, and paging. Audit list supports search, action, entity type, actor ID/state, outcome, time bounds, direction, and paging.
+Admin user list supports `search`, role, verified flag, sort by name/email/role/createdAt, direction, page, and page size. Admin file list supports name search, owner, type, upload date/time bounds, size bounds, root/foldered scope, name/owner/size/upload-time sort, direction, and paging; file-name sorting is case-insensitive. Audit list supports search, action, entity type, actor ID/state, outcome, time bounds, direction, and paging.
 
 Admin file responses never include storage key, preview/download link, or extracted content.
 

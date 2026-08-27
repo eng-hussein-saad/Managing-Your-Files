@@ -69,7 +69,7 @@ Duration suffixes are `s`, `m`, `h`, and `d`.
 | `SUPABASE_STORAGE_BUCKET` | Yes | Existing private bucket; startup proves it is not public. |
 | `UPLOAD_MAX_FILE_SIZE_BYTES` | Yes | Must currently be `5242880` (5 MiB). |
 | `USER_STORAGE_QUOTA_BYTES` | Yes | Must currently be `104857600` (100 MiB). |
-| `UPLOAD_ALLOWED_MIME_TYPES` | Yes | Must match the six comma-separated values in the example. |
+| `UPLOAD_ALLOWED_MIME_TYPES` | Yes | Must match the six comma-separated values in the example: PDF, plain text, JPEG, PNG, WebP, and the official DOCX MIME (`application/vnd.openxmlformats-officedocument.wordprocessingml.document`). |
 | `UPLOAD_MAX_FILES_PER_BATCH` | Yes | Must currently be `10`. |
 | `FILE_EXTRACTION_MAX_BYTES` | Yes | Maximum input passed to PDF/text extraction; example is 5 MiB. |
 

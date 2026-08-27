@@ -19,7 +19,10 @@ export async function detectAllowedMime(
     detected?.mime === "image/webp"
   )
     return detected.mime;
-  if (detected?.mime === "application/zip" && (await hasDocxMarkers(bytes)))
+  if (
+    (detected?.mime === "application/zip" || detected?.mime === docxMime) &&
+    (await hasDocxMarkers(bytes))
+  )
     return docxMime;
   try {
     const decoded = new TextDecoder("utf-8", { fatal: true }).decode(bytes);

@@ -107,10 +107,10 @@ export class FileRepository {
           : {}),
     };
     const sortField = {
-      name: "originalName",
+      name: "originalNameSortKey",
       size: "size",
       uploadedAt: "createdAt",
-    }[query.sort] as "originalName" | "size" | "createdAt";
+    }[query.sort] as "originalNameSortKey" | "size" | "createdAt";
     const orderBy: Prisma.FileOrderByWithRelationInput[] = [
       { [sortField]: query.direction },
       { id: query.direction },
