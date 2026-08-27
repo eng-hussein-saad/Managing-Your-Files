@@ -85,16 +85,16 @@ These require BFF trust and return an internal contract containing raw refresh m
 
 ## Files
 
-| Method/path | Auth | Behavior |
-| --- | --- | --- |
-| `GET /api/v1/files/policy` | Bearer | Fixed size/MIME/batch policy plus current owner quota |
-| `POST /api/v1/files` | Bearer | Upload exactly one multipart file; `201` summary |
-| `GET /api/v1/files` | Bearer | Owner-scoped filtered/paged metadata |
-| `GET /api/v1/files/:fileId` | Bearer | Owner-scoped detail, folder path, extracted text |
-| `PATCH /api/v1/files/:fileId` | Bearer | Body `{ folderId: uuid | null }`; move within owned hierarchy |
-| `GET /api/v1/files/:fileId/preview` | Bearer | Inline owner-authorized object stream when previewable |
-| `GET /api/v1/files/:fileId/download` | Bearer | Attachment owner-authorized object stream |
-| `DELETE /api/v1/files/:fileId` | Bearer | Permanent object-first deletion; `204` |
+| Method/path | Auth | Body | Behavior |
+| --- | --- | --- | --- |
+| `GET /api/v1/files/policy` | Bearer | — | Returns the fixed size/MIME/batch policy plus the current owner's quota |
+| `POST /api/v1/files` | Bearer | `multipart/form-data`: required `file`; optional `folderId` UUID | Uploads exactly one file; omit `folderId` to upload it at the root, or provide an owned folder UUID to upload it inside that folder; `201` summary |
+| `GET /api/v1/files` | Bearer | — | Returns owner-scoped filtered and paginated file metadata |
+| `GET /api/v1/files/:fileId` | Bearer | — | Returns owner-scoped details, folder path, and extracted text |
+| `PATCH /api/v1/files/:fileId` | Bearer | `{ "folderId": uuid \| null }` | Moves the file; `folderId` is required—use `null` to move it to the root or an owned folder UUID to move it inside that folder |
+| `GET /api/v1/files/:fileId/preview` | Bearer | — | Returns an inline owner-authorized object stream when previewable |
+| `GET /api/v1/files/:fileId/download` | Bearer | — | Returns an attachment owner-authorized object stream |
+| `DELETE /api/v1/files/:fileId` | Bearer | — | Permanently deletes the object first; `204` |
 
 List query:
 
@@ -112,13 +112,19 @@ The accepted upload types are PDF (`.pdf`), strict UTF-8 text (`.txt`), JPEG (`.
 
 ## Folders
 
-| Method/path | Auth | Behavior |
-| --- | --- | --- |
-| `GET /api/v1/folders?parentId=<uuid>` | Bearer | Root or owned folder contents and breadcrumbs |
-| `POST /api/v1/folders` | Bearer | `{ name, parentId: uuid|null }`; `201` |
-| `GET /api/v1/folders/:folderId` | Bearer | Owned detail and breadcrumbs |
-| `PATCH /api/v1/folders/:folderId` | Bearer | `{ name }`; rename |
-| `DELETE /api/v1/folders/:folderId` | Bearer | Permanently delete an empty owned folder; `204` |
+| Method/path | Auth | Body | Behavior |
+| --- | --- | --- | --- |
+| `GET /api/v1/folders` | Bearer | — | Lists the authenticated user's root-level folders and files (items with no parent folder) |
+| `GET /api/v1/folders?parentId=<uuid>` | Bearer | — | Lists the direct child folders and files inside the specified owned folder, plus that folder and its breadcrumbs |
+| `POST /api/v1/folders` | Bearer | `{ "name": string, "parentId": uuid \| null }` | Creates a folder; `parentId` is required—use `null` to create it at the root or an owned folder UUID to create it inside that folder; `201` |
+| `GET /api/v1/folders/:folderId` | Bearer | — | Returns owned folder details and breadcrumbs |
+| `PATCH /api/v1/folders/:folderId` | Bearer | `{ "name": string }` | Renames the folder |
+| `DELETE /api/v1/folders/:folderId` | Bearer | — | Permanently deletes an empty owned folder; `204` |
+
+Folder listings are not recursive. Both forms return only the immediate contents of
+the requested location; items nested inside a returned child folder require another
+request using that child's ID as `parentId`. The response contains `folder` (`null`
+at the root), `breadcrumbs`, `folders`, and `files`.
 
 Names are 1–120 characters and reject path separators/control characters. Hierarchy depth is at most ten.
 
