@@ -13,6 +13,10 @@ describe("shared asynchronous workflow states", () => {
   ] as const)("renders %s with its state semantics", (title, busy, tone) => {
     const view = render(<PageState title={title} busy={busy} tone={tone} />);
     expect(screen.getByRole(tone === "error" ? "alert" : "status")).toHaveTextContent(title);
+    if (busy)
+      expect(
+        screen.getByRole("status", { name: title }).querySelector(".page-state-spinner"),
+      ).toBeInTheDocument();
     view.unmount();
   });
   it("offers retry for recoverable failures", () => {

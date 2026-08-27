@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Card, Skeleton } from "../ui/surfaces";
+import { Card } from "../ui/surfaces";
 /** Presents a focusable full-page loading, empty, unauthorized, forbidden, or failure state. */
 export function PageState({
   title,
@@ -15,12 +15,16 @@ export function PageState({
   return (
     <main className="page-state" aria-busy={busy}>
       <Card
-        className={`status-card ${tone}`}
+        className={`status-card ${tone}${busy ? " busy" : ""}`}
         tabIndex={-1}
         role={busy ? undefined : tone === "error" ? "alert" : "status"}
       >
         {busy ? (
-          <Skeleton label={title} lines={4} />
+          <div className="page-state-loading" role="status" aria-label={title}>
+            <span className="page-state-spinner" aria-hidden="true" />
+            <h1>{title}</h1>
+            {children}
+          </div>
         ) : (
           <>
             <span className="eyebrow">Fileora</span>

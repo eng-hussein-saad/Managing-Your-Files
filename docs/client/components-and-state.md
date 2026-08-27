@@ -6,7 +6,9 @@ The frontend uses several small state mechanisms instead of a single global stor
 
 ### Shared components
 
-`src/components` contains cross-domain building blocks. UI primitives in `components/ui` expose consistent buttons, fields, tables/data display, icons, cards, avatars, and pills. Navigation/layout compose the application shell. Query, Suspense, and session-restoration loading states use the shared accessible skeleton; status components handle empty, error, and settled outcomes.
+`src/components` contains cross-domain building blocks. UI primitives in `components/ui` expose consistent buttons, fields, tables/data display, icons, cards, avatars, and pills. Navigation/layout compose the application shell. Status components handle full-page busy, empty, error, and settled outcomes; feature and route components own skeletons that mirror known destination layouts.
+
+Use the `PageState` busy spinner only when there is no meaningful page skeleton to preserve, such as session restoration before the authenticated destination is known or a redirect transition. If the route shell is already available, keep it stable and skeletonize only the unresolved data. The profile page follows this rule by retaining its heading and card layout while its React Query request is pending.
 
 The overlay foundation is architecturally significant: it renders through a portal, traps focus, supports Escape/backdrop dismissal, marks background content inert, locks page scroll, and restores opener focus. Confirmation dialogs build on shared presentation so destructive actions remain explicit and accessible.
 

@@ -37,7 +37,7 @@ Add a contract test when changing route availability, validation, status codes, 
 
 Location: `client/tests/component/**/*.test.tsx`, with `client/tests/setup.ts` and jsdom.
 
-Testing Library covers authentication forms/restoration, navigation, file discovery/upload/preview/folders/deletion, administrator screens, async states, design-system behavior, themes, toast feedback, responsive shell semantics, and accessibility interactions. These tests should focus on behavior visible to a component user, not internal implementation details.
+Testing Library covers authentication forms/restoration, navigation, profile loading, file discovery/upload/preview/folders/deletion, administrator screens, async states, design-system behavior, themes, toast feedback, responsive shell semantics, and accessibility interactions. Loading-state coverage distinguishes the full-page session spinner from route-shaped skeletons and checks their accessible status semantics. These tests should focus on behavior visible to a component user, not internal implementation details.
 
 ## Integration tests
 

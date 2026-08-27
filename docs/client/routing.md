@@ -38,7 +38,9 @@ Express remains authoritative. Protected page source can be loaded by a browser,
 
 ## Loading and error behavior
 
-Auth/protected/admin route segments contain `error.tsx` boundaries for uncaught rendering errors. Loading and session-restoration states use the shared accessible skeleton through `PageState`, Suspense fallbacks, and feature-level query states rather than App Router `loading.tsx` files. Pages render explicit skeleton, error, empty, retry, and settled states for their React Query operations.
+Auth/protected/admin route segments contain `error.tsx` boundaries for uncaught rendering errors. There are no App Router `loading.tsx` files; layouts and components choose a loading treatment based on how much UI structure is known.
+
+`PageState` uses an accessible animated spinner for full-page session restoration and redirect transitions, when the application cannot yet safely render a destination page. Once a route and its layout are known, query and Suspense loading states use layout-shaped skeletons instead. For example, `/profile` keeps its heading and profile-card geometry visible while avatar, identity, verification, and detail fields shimmer. Pages also render explicit error, empty, retry, and settled states for their React Query operations. Reduced-motion preferences stop nonessential animation through the global motion rule.
 
 ## URL-backed state
 
