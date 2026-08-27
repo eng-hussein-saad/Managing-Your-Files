@@ -40,6 +40,7 @@ export function UploadDropzone({
         <p id="upload-guidance">
           Drop up to {maxFiles} files here, or choose from your device.
         </p>
+        <p>Supported files: documents, text, images, and PDFs.</p>
       </div>
       <label className="ui-button secondary" htmlFor="file-picker">
         Select files<span className="sr-only"> or drop them here</span>

@@ -98,6 +98,6 @@ There is no logout-all-devices API. Role changes revoke every refresh session fo
 
 ## Frontend route behavior
 
-`(protected)/layout.tsx` waits for session restoration and redirects anonymous users to `/login?next=<path>`. The admin layout returns anonymous sessions to `/`, renders a forbidden state unless the restored safe user has role `ADMIN`, and administrator logout targets the same public route. `GuestRoute` wraps the landing and authentication layouts, waits for the same restoration, and redirects an already-authenticated session to `/dashboard`. These are navigation and UX controls, not the security boundary: Express still authenticates every protected endpoint and enforces administrator roles.
+`(protected)/layout.tsx` waits for session restoration and redirects anonymous users to `/login` without a stale return URL. The admin layout returns anonymous sessions to `/`, renders a forbidden state unless the restored safe user has role `ADMIN`, and administrator logout targets the same public route. `GuestRoute` wraps the landing and authentication layouts, waits for the same restoration, and redirects an already-authenticated session to `/dashboard`. These are navigation and UX controls, not the security boundary: Express still authenticates every protected endpoint and enforces administrator roles.
 
 See [Authorization](authorization.md), [Client API and Data Fetching](client/api-and-data-fetching.md), and [Server Request Lifecycle](server/request-lifecycle.md).

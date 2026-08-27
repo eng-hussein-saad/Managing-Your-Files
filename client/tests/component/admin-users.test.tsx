@@ -88,5 +88,8 @@ describe("administrator user experience", () => {
     expect(screen.getByText("Current account")).toBeVisible();
     expect(screen.queryByRole("button", { name: "Change role" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+    expect(
+      screen.getByRole("combobox", { name: "Sort users" }),
+    ).not.toHaveTextContent("Email");
   });
 });

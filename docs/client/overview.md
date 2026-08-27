@@ -41,7 +41,7 @@ The root also sets metadata, a pre-hydration theme script, and an accessible ski
 
 Remote application data belongs in React Query: profile, file pages/details/previews/policy, folders, statistics, and administrator resources. Query keys include resource scope plus parameters so cached pages do not collide. Mutations update a selected detail directly or invalidate only affected prefixes.
 
-Transient interaction state stays local to the component: selected files/folders, dialogs, filters before URL synchronization, upload queue items, and form values. Administrator filters and pagination live in URL search parameters so views are navigable and refreshable. Theme and toast behavior use Context because they are UI-wide concerns.
+Transient interaction state stays local to the component: selected files/folders, dialogs, filters before URL synchronization, upload queue items, and form values. Exposed administrator filters and pagination live in URL search parameters so views are navigable and refreshable. The user directory omits email sorting, global files omit folder-location filtering, and audit history omits the system-actor filter; stale URL values for those removed choices normalize to the default view. Theme and toast behavior use Context because they are UI-wide concerns.
 
 Authentication uses a small external store exposed through `useSyncExternalStore`. It holds status plus the safe access session in module memory. It intentionally does not persist access tokens to web storage.
 

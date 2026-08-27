@@ -12,7 +12,7 @@ test("logout is idempotent and isolated to the presented browser context", async
   await signIn(firstPage, user);
   await signIn(secondPage, user);
   await firstPage.getByRole("button", { name: "Sign out" }).click();
-  await expect(firstPage).toHaveURL(/login/);
+  await expect(firstPage).toHaveURL(/\/login$/);
   await secondPage.reload();
   await expect(secondPage).toHaveURL(/dashboard/);
   await first.close();

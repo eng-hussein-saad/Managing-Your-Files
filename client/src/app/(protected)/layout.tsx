@@ -1,6 +1,6 @@
 "use client";
 import type { PropsWithChildren } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuthState } from "../../features/auth/auth-store";
 import { ConnectedAppNavigation } from "../../components/navigation/connected-app-navigation";
@@ -9,11 +9,10 @@ import { PageState } from "../../components/status/page-state";
 export default function ProtectedLayout({ children }: PropsWithChildren) {
   const auth = useAuthState();
   const router = useRouter();
-  const pathname = usePathname();
   useEffect(() => {
     if (auth.status === "anonymous")
-      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
-  }, [auth.status, pathname, router]);
+      router.replace("/login");
+  }, [auth.status, router]);
   if (auth.status === "loading")
     return (
       <PageState title="Restoring your session" busy>

@@ -63,12 +63,15 @@ describe("administrator monitoring experience", () => {
       />,
     );
     expect(screen.getAllByText("Deleted user").length).toBeGreaterThan(1);
-    expect(screen.getAllByText("System").length).toBeGreaterThan(1);
+    expect(screen.getByText("System")).toBeVisible();
     expect(screen.queryByText(/storage/i)).not.toBeInTheDocument();
     expect(screen.getAllByText("User Role Changed")).toHaveLength(3);
     expect(screen.queryByText("admin.user.role_changed")).not.toBeInTheDocument();
     expect(screen.queryByRole("columnheader", { name: "Outcome" })).not.toBeInTheDocument();
     expect(screen.queryByRole("combobox", { name: "Outcome" })).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Actor" })).not.toHaveTextContent(
+      "System",
+    );
     expect(screen.getByRole("table")).toHaveAccessibleName(
       "Sanitized audit history",
     );

@@ -74,7 +74,6 @@ export function AdminUserDirectory({
           >
             <option value="createdAt">Newest first</option>
             <option value="name">Name</option>
-            <option value="email">Email</option>
             <option value="role">Role</option>
           </select>
         </label>

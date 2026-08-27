@@ -9,7 +9,6 @@ type CompleteFileQuery = AdminFileFilters & {
   pageSize: 5 | 10 | 20;
   sort: "name" | "owner" | "size" | "uploadedAt";
   direction: "asc" | "desc";
-  folder: "any" | "root" | "foldered";
 };
 
 /** Parses bounded global file filters from the current URL. */
@@ -17,7 +16,6 @@ function fileQuery(params: URLSearchParams): CompleteFileQuery {
   const pageSize = Number(params.get("pageSize"));
   const type = params.get("type");
   const sort = params.get("sort");
-  const folder = params.get("folder");
   return {
     search: params.get("search") || undefined,
     type:
@@ -27,7 +25,6 @@ function fileQuery(params: URLSearchParams): CompleteFileQuery {
       type === "document"
         ? type
         : undefined,
-    folder: folder === "root" || folder === "foldered" ? folder : "any",
     sort:
       sort === "name" || sort === "owner" || sort === "size"
         ? sort
@@ -48,7 +45,7 @@ export default function AdminFilesPage() {
     const values = { ...query, ...next };
     const updated = new URLSearchParams();
     for (const [key, value] of Object.entries(values))
-      if (value !== undefined && value !== "" && value !== "any")
+      if (value !== undefined && value !== "")
         updated.set(key, String(value));
     router.replace(`/admin/files?${updated.toString()}`);
   };

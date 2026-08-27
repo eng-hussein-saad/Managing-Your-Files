@@ -55,6 +55,9 @@ describe("administrator global file experience", () => {
     expect(
       screen.queryByRole("button", { name: /preview|download/i }),
     ).toBeNull();
+    expect(
+      screen.queryByRole("combobox", { name: "Folder location" }),
+    ).toBeNull();
   });
   it("requires the exact filename and identifies the owner", () => {
     const file = adminFileResponseFixture();

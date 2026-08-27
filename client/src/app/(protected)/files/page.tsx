@@ -70,7 +70,7 @@ export default function FilesPage() {
   /** Closes the uploader and removes completed rows while retaining retryable work. */
   const closeUpload = () => {
     if (queue.items.some((item) => item.status === "uploading")) return;
-    queue.clearCompleted();
+    queue.clearSettled();
     setUploadOpen(false);
   };
   const hasFilters = Boolean(query.search || query.type);

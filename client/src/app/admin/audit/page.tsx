@@ -15,8 +15,7 @@ function auditQuery(params: URLSearchParams): AdminAuditQuery {
     actorId: undefined,
     actorState:
       actorState === "user" ||
-      actorState === "deleted" ||
-      actorState === "system"
+      actorState === "deleted"
         ? actorState
         : undefined,
     outcome: undefined,

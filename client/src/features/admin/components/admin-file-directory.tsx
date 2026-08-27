@@ -20,7 +20,6 @@ export function AdminFileDirectory({
     pageSize: 5 | 10 | 20;
     sort: NonNullable<AdminFileFilters["sort"]>;
     direction: NonNullable<AdminFileFilters["direction"]>;
-    folder: NonNullable<AdminFileFilters["folder"]>;
   };
   update: (next: Partial<AdminFileFilters>) => void;
 }) {
@@ -71,23 +70,6 @@ export function AdminFileDirectory({
             <option value="text">Text</option>
             <option value="image">Image</option>
             <option value="document">Document</option>
-          </select>
-        </label>
-        <label>
-          <span className="sr-only">Folder location</span>
-          <select
-            aria-label="Folder location"
-            value={query.folder}
-            onChange={(event) =>
-              update({
-                folder: event.target.value as AdminFileFilters["folder"],
-                page: 1,
-              })
-            }
-          >
-            <option value="any">Any folder</option>
-            <option value="root">Root</option>
-            <option value="foldered">In folder</option>
           </select>
         </label>
       </div>

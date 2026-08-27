@@ -26,7 +26,7 @@ Server-side BFF routes are `POST /api/auth/login`, `POST /api/auth/refresh`, and
 
 `(auth)/layout.tsx` adds the branded split layout and theme selector around login, registration, and verification. Parentheses make these pages appear at top-level URLs. It wraps the segment in `GuestRoute`, which waits for restoration and redirects an already-authenticated session to `/dashboard`. The landing page uses the same guard.
 
-`(protected)/layout.tsx` is a client layout. It waits while `AuthProvider` restores a session, redirects anonymous users to `/login?next=<current path>`, and renders authenticated navigation/content when successful. The current sign-in form routes success to `/admin` for admins or `/dashboard` for users; it does not consume the supplied `next` parameter.
+`(protected)/layout.tsx` is a client layout. It waits while `AuthProvider` restores a session, redirects anonymous users to `/login` without retaining the previous protected URL, and renders authenticated navigation/content when successful. The sign-in form routes success to `/admin` for admins or `/dashboard` for users.
 
 `admin/layout.tsx` independently waits for auth, returns anonymous sessions to `/`, shows a forbidden state for non-admin sessions, and renders the restricted shell for admins. Administrator logout also returns to `/` instead of briefly rendering an anonymous state inside the restricted route.
 

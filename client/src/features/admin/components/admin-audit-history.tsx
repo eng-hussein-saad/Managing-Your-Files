@@ -59,7 +59,6 @@ export function AdminAuditHistory({
             <option value="">All actors</option>
             <option value="user">Current user</option>
             <option value="deleted">Deleted user</option>
-            <option value="system">System</option>
           </select>
         </label>
       </div>

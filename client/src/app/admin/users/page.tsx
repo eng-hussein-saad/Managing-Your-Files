@@ -16,7 +16,7 @@ function userQuery(params: URLSearchParams): AdminUserQuery {
     role: role === "USER" || role === "ADMIN" ? role : undefined,
     verified: undefined,
     sort:
-      sort === "name" || sort === "email" || sort === "role"
+      sort === "name" || sort === "role"
         ? sort
         : "createdAt",
     direction: direction === "asc" ? "asc" : "desc",

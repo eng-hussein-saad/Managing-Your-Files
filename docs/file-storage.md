@@ -11,9 +11,9 @@ The browser never receives Supabase credentials, storage keys, or signed provide
 
 The files page loads `GET /api/v1/files/policy` before accepting a selection. The response includes the server's allowed MIME list, 5 MiB size limit, ten-file batch limit, and current 100 MiB owner quota.
 
-`UploadDropzone` accepts drag/drop and picker input. `useUploadQueue` rejects an entire new selection if policy is unavailable, the active pending/error queue plus selection exceeds ten, any item is oversized or has an unsupported browser-reported MIME, or selected bytes exceed advertised remaining quota. These checks improve feedback only; the server repeats authoritative checks.
+`UploadDropzone` accepts drag/drop and picker input and tells users that documents, text, images, and PDFs are supported. `useUploadQueue` rejects an entire new selection if policy is unavailable, the active pending/error queue plus selection exceeds ten, any item is oversized or has an unsupported browser-reported MIME, or selected bytes exceed advertised remaining quota. These checks improve feedback only; the server repeats authoritative checks.
 
-The queue sends files sequentially, one multipart request per file. Axios reports byte progress for the active item. A later failure does not roll back earlier successful requests, and each failed item can be retried independently. Queue rows and the primary upload action use stable dialog width, completed rows are removed when the dialog closes, and active uploads prevent dismissal until they settle. After a run, the file collection, upload policy, and personal statistics are refreshed so navigation quota usage updates in place.
+The queue sends files sequentially, one multipart request per file. Axios reports byte progress for the active item. A later failure does not roll back earlier successful requests, and each failed item can be retried independently while the dialog remains open. Queue rows and the primary upload action use stable dialog width; completed and failed rows plus transient errors are cleared when the dialog closes, and active uploads prevent dismissal until they settle. After a run, the file collection, upload policy, and personal statistics are refreshed so navigation quota usage updates in place.
 
 ## Server upload pipeline
 

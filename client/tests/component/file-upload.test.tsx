@@ -46,6 +46,9 @@ describe("file upload queue", () => {
       "id",
       "upload-guidance",
     );
+    expect(
+      screen.getByText("Supported files: documents, text, images, and PDFs."),
+    ).toBeVisible();
     expect(input).toHaveAttribute("aria-describedby", "upload-guidance");
     expect(input).not.toHaveAttribute("accept");
   });
@@ -110,7 +113,7 @@ describe("file upload queue", () => {
       "success",
       "success",
     ]);
-    act(() => hook.result.current.clearCompleted());
+    act(() => hook.result.current.clearSettled());
     expect(hook.result.current.items).toHaveLength(0);
   });
   it("preserves earlier success when a later item fails and supports retry", async () => {
@@ -137,6 +140,28 @@ describe("file upload queue", () => {
       "success",
       "success",
     ]);
+  });
+  it("clears upload errors and their rows when the dialog is closed", async () => {
+    mockedUpload.mockRejectedValueOnce(new Error("failed"));
+    const hook = renderHook(() => useUploadQueue(uploadPolicy));
+    act(() =>
+      hook.result.current.add([
+        new File(["a"], "failed.txt", { type: "text/plain" }),
+      ]),
+    );
+    await act(async () => hook.result.current.run());
+    act(() =>
+      hook.result.current.add([
+        new File(["x"], "script.exe", { type: "application/x-msdownload" }),
+      ]),
+    );
+    expect(hook.result.current.items[0]?.status).toBe("error");
+    expect(hook.result.current.selectionError).toMatch(/unsupported/i);
+
+    act(() => hook.result.current.clearSettled());
+
+    expect(hook.result.current.items).toHaveLength(0);
+    expect(hook.result.current.selectionError).toBeNull();
   });
   it("announces quota-aware partial outcomes and retry controls", () => {
     render(

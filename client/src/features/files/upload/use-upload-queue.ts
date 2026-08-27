@@ -139,13 +139,16 @@ export function useUploadQueue(policy?: UploadPolicy) {
     );
     if (item) await uploadOne(item, folderId);
   };
-  /** Removes settled successes when the dialog is dismissed while retaining retryable work. */
-  const clearCompleted = () => {
+  /** Clears settled rows and transient feedback when the upload dialog closes. */
+  const clearSettled = () => {
+    setSelectionError(null);
     setItems((current) =>
-      current.filter((item) => item.status !== "success"),
+      current.filter(
+        (item) => item.status !== "success" && item.status !== "error",
+      ),
     );
   };
-  return { items, selectionError, add, run, retry, clearCompleted };
+  return { items, selectionError, add, run, retry, clearSettled };
 }
 
 /** Formats an advertised byte ceiling for selection feedback. */
