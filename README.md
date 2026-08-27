@@ -8,6 +8,16 @@ Fileora is a full-stack private file manager built as a TypeScript monorepo. Use
 
 The project deliberately separates presentation from authority. Next.js owns the browser experience and a small authentication gateway; Express owns authentication, authorization, business rules, database mutations, and access to the private object store.
 
+## Hosted application
+
+| Service | Provider | Production URL |
+| --- | --- | --- |
+| Frontend | Vercel | [https://fileora-wheat.vercel.app](https://fileora-wheat.vercel.app) |
+| Backend API | Render | [https://managing-your-files.onrender.com](https://managing-your-files.onrender.com) |
+| Backend health | Render | [https://managing-your-files.onrender.com/health](https://managing-your-files.onrender.com/health) |
+
+The frontend, API liveness response, and exact-origin CORS preflight from the Vercel origin were verified on 27 August 2026. A production release must still run the committed Prisma migrations before serving the corresponding application version.
+
 ## Implemented features
 
 ### User workspace
@@ -229,6 +239,8 @@ pnpm build
 ## Deployment instructions
 
 The supported deployment artifacts are the multi-stage root `Dockerfile` for Express and migrations, and `client/Dockerfile` for the Next.js application.
+
+The current production topology is Vercel for the frontend and Render for the Express API. See the [hosted application](#hosted-application) links above and [Deployment](docs/deployment.md) for configuration, release order, verification, and operational responsibilities.
 
 For the supplied container topology, create a root `.env` with production-appropriate values, then validate, build, and start it:
 

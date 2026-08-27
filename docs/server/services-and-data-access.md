@@ -32,6 +32,8 @@ Services may call Prisma directly for a focused query or use a repository when q
 
 Repositories encapsulate persistence concerns such as owner-scoped file discovery, hierarchy ancestry, deterministic admin filters, token lookup, and audit pages. They accept `PrismaClient` or a transaction client so services control transaction scope.
 
+Statistics repositories aggregate in PostgreSQL rather than loading the full `FILE` table into Node.js. Prisma `groupBy` produces MIME counts and byte totals, while a parameterized timezone-aware query produces the personal 30-day local-date buckets. The administrator repository separately materializes only the ten recent uploads required by the response.
+
 Prisma is configured in `prisma.config.ts` and instantiated through infrastructure with `@prisma/adapter-pg`. It is the only normal application path to PostgreSQL. Browser/client code never calls Prisma.
 
 Database rows are mapped into safe response objects before leaving services/controllers. User mapping excludes password hashes; file mapping excludes storage keys from user summaries and excludes content/storage fields entirely from administrator projections. BigInt byte values become decimal strings for JSON safety.

@@ -76,7 +76,7 @@ Folder errors, hierarchy repository, and management/deletion services. The repos
 
 ### `statistics`
 
-Owner and administrator aggregate repositories/services plus local-date helpers. Statistics are computed from current canonical file rows at read time.
+Owner and administrator aggregate repositories/services plus local-date helpers. Statistics are computed from current canonical file rows at read time, with MIME/byte totals and local-date history grouped inside PostgreSQL rather than materialized as complete file-row collections.
 
 ### `audit`
 

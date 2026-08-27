@@ -24,7 +24,7 @@ erDiagram
     REFRESH_TOKEN {
         uuid id PK
         uuid userId FK
-        string tokenHash
+        string tokenHash UK
         datetime expiresAt
         datetime revokedAt "nullable"
         datetime createdAt

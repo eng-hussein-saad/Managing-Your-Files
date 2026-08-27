@@ -21,6 +21,8 @@ model User {
   files             File[]
   auditLogs         AuditLog[]
 
+  @@index([createdAt, id])
+  @@index([role, isEmailVerified])
   @@map("USER")
 }
 
@@ -34,50 +36,61 @@ model VerificationCode {
   createdAt     DateTime  @db.Timestamptz(3)
   user          User      @relation(fields: [userId], references: [id], onDelete: NoAction)
 
+  @@index([userId, createdAt])
+  @@index([userId, expiresAt])
   @@map("VERIFICATION_CODE")
 }
 
 model RefreshToken {
   id        String    @id @default(uuid()) @db.Uuid
   userId    String    @db.Uuid
-  tokenHash String
+  tokenHash String    @unique
   expiresAt DateTime  @db.Timestamptz(3)
   revokedAt DateTime? @db.Timestamptz(3)
   createdAt DateTime  @db.Timestamptz(3)
   user      User      @relation(fields: [userId], references: [id], onDelete: NoAction)
 
+  @@index([userId])
+  @@index([expiresAt])
   @@map("REFRESH_TOKEN")
 }
 
 model Folder {
-  id        String    @id @default(uuid()) @db.Uuid
-  ownerId   String    @db.Uuid
-  parentId  String?   @db.Uuid
+  id        String   @id @default(uuid()) @db.Uuid
+  ownerId   String   @db.Uuid
+  parentId  String?  @db.Uuid
   name      String
-  createdAt DateTime  @db.Timestamptz(3)
-  updatedAt DateTime  @db.Timestamptz(3)
-  owner     User      @relation(fields: [ownerId], references: [id], onDelete: NoAction)
-  parent    Folder?   @relation("FolderTree", fields: [parentId], references: [id], onDelete: NoAction)
-  children  Folder[]  @relation("FolderTree")
+  createdAt DateTime @db.Timestamptz(3)
+  updatedAt DateTime @db.Timestamptz(3)
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: NoAction)
+  parent    Folder?  @relation("FolderTree", fields: [parentId], references: [id], onDelete: NoAction)
+  children  Folder[] @relation("FolderTree")
   files     File[]
 
+  @@index([ownerId, parentId, name])
+  @@index([parentId])
   @@map("FOLDER")
 }
 
 model File {
-  id               String    @id @default(uuid()) @db.Uuid
-  ownerId          String    @db.Uuid
-  folderId         String?   @db.Uuid
+  id               String   @id @default(uuid()) @db.Uuid
+  ownerId          String   @db.Uuid
+  folderId         String?  @db.Uuid
   originalName     String
   storageKey       String
   mimeType         String
-  size             BigInt    @db.BigInt
+  size             BigInt   @db.BigInt
   extractedContent String?
-  createdAt        DateTime  @db.Timestamptz(3)
-  updatedAt        DateTime  @db.Timestamptz(3)
-  owner            User      @relation(fields: [ownerId], references: [id], onDelete: NoAction)
-  folder           Folder?   @relation(fields: [folderId], references: [id], onDelete: NoAction)
+  createdAt        DateTime @db.Timestamptz(3)
+  updatedAt        DateTime @db.Timestamptz(3)
+  owner            User     @relation(fields: [ownerId], references: [id], onDelete: NoAction)
+  folder           Folder?  @relation(fields: [folderId], references: [id], onDelete: NoAction)
 
+  @@index([ownerId, createdAt, id])
+  @@index([ownerId, folderId, originalName, id])
+  @@index([ownerId, mimeType])
+  @@index([createdAt, id])
+  @@index([folderId])
   @@map("FILE")
 }
 
@@ -91,6 +104,8 @@ model AuditLog {
   createdAt  DateTime @db.Timestamptz(3)
   actor      User?    @relation(fields: [actorId], references: [id], onDelete: NoAction)
 
+  @@index([createdAt, id])
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
   @@map("AUDIT_LOG")
 }
-

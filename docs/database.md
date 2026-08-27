@@ -12,7 +12,7 @@ The repository also includes [`database-schema.mmd`](../database-schema.mmd), a 
 
 Stores UUID identity, name, unique normalized email, Argon2id password hash, string role, verification state, and explicit creation/update timestamps. It owns verification codes, refresh sessions, folders, files, and optional audit-actor relationships.
 
-Only email has an explicit non-primary unique index. Role values are constrained by application validation and projections rather than a PostgreSQL enum.
+Email remains uniquely indexed. Additional user indexes support deterministic creation-time paging and role/verification administration filters. Role values are constrained by application validation and projections rather than a PostgreSQL enum.
 
 ### `VerificationCode` → `VERIFICATION_CODE`
 
@@ -48,7 +48,18 @@ There are no current soft-delete columns. The second and third migrations delibe
 
 ## Constraints and indexes
 
-The committed SQL creates primary-key indexes and the unique `USER.email` index. No additional explicit application indexes appear in the current migrations. Query ordering commonly adds ID as a stable tie-breaker; performance changes that require indexes should be introduced as reviewed migrations rather than assumed in documentation.
+The committed SQL creates primary-key indexes, unique indexes for `USER.email` and `REFRESH_TOKEN.tokenHash`, and query-aligned secondary indexes introduced by migration `004_query_indexes_and_statistics_aggregation`:
+
+- `USER`: creation-time paging and role/verification filtering.
+- `VERIFICATION_CODE`: newest/rolling-window and expiry lookups scoped by user.
+- `REFRESH_TOKEN`: token-hash authority lookup, user-session cleanup, and expiry maintenance.
+- `FOLDER`: owner/parent/name hierarchy operations and parent-reference cleanup.
+- `FILE`: owner upload history, folder/name discovery, owner MIME aggregation, global recent uploads, and folder-reference cleanup.
+- `AUDIT_LOG`: retained chronology plus actor/action filtering.
+
+The multi-column indexes follow the equality predicates before stable ordering columns used by repositories. PostgreSQL can scan the timestamp/ID B-tree indexes in either direction, so the same index supports ascending and descending pages. Case-insensitive substring search remains an application feature without a trigram index; add `pg_trgm` through a separate reviewed migration if search volume justifies that operational dependency.
+
+Personal and administrator MIME/count/byte statistics use Prisma `groupBy`, so PostgreSQL returns one row per MIME type rather than every retained file. The 30-day personal history uses a parameterized timezone-aware SQL aggregate and returns one row per occupied local date. Only the bounded ten-row recent-upload list materializes individual file records for the admin dashboard.
 
 Important invariants such as role values, fixed upload limits, sibling folder-name conflicts, last-administrator protection, and confirmation timestamps are enforced in validation/services, not solely by database constraints.
 
@@ -65,6 +76,7 @@ Storage is external to PostgreSQL and cannot participate in a database transacti
 1. `001_platform_auth_foundation` creates all six tables, primary keys, unique email, and foreign keys. Its original file/folder schema included legacy nullable deletion columns.
 2. `002_user_file_management` refuses to discard any non-null legacy file/folder deletion state, removes those columns, and temporarily adds a legacy user deletion column.
 3. `003_administration_final_quality` similarly refuses non-null legacy user lifecycle state and removes that final column.
+4. `004_query_indexes_and_statistics_aggregation` adds unique refresh-token authority and secondary indexes for authentication, hierarchy, discovery, statistics, and audit query paths. It contains no destructive data transformation.
 
 Keep these migrations tracked and immutable after release; create a new migration for future changes.
 

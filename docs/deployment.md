@@ -2,6 +2,16 @@
 
 The repository automates production builds through multi-stage Dockerfiles and provides a local/hosted-container topology through Docker Compose. It does not contain a CI/CD workflow or provider-specific infrastructure definition, so hosted database, Supabase, SMTP, TLS, DNS, secrets, backups, and release orchestration must be configured in the deployment platform.
 
+## Live deployment
+
+| Service | Provider | URL |
+| --- | --- | --- |
+| Next.js frontend | Vercel | [https://fileora-wheat.vercel.app](https://fileora-wheat.vercel.app) |
+| Express API | Render | [https://managing-your-files.onrender.com](https://managing-your-files.onrender.com) |
+| API liveness | Render | [https://managing-your-files.onrender.com/health](https://managing-your-files.onrender.com/health) |
+
+On 27 August 2026, the frontend rendered successfully, `GET /health` returned HTTP 200 with `{ "success": true, "data": { "status": "ok" } }`, and a browser-equivalent preflight confirmed that the API allows the exact Vercel origin. These are reachability and configuration checks, not substitutes for authenticated smoke tests of SMTP, PostgreSQL, Supabase, refresh rotation, uploads, owner isolation, or administrator authorization after each release.
+
 ## Build artifacts
 
 ### Express
@@ -24,7 +34,7 @@ The server image defaults to `PORT=8080` and exposes 8080. Runtime configuration
 
 `NEXT_PUBLIC_API_BASE_URL` is a build argument because Next.js embeds browser-public variables into the bundle. All trust, cookie, database, SMTP, administrator, and storage secrets remain runtime values and must not be build arguments.
 
-The Next.js config disables standalone output when `VERCEL` is present, making the source compatible with that runtime, but the repository does not automate a Vercel deployment.
+The Next.js config disables standalone output when `VERCEL` is present, making the source compatible with the live Vercel runtime. Deployment is performed by Vercel rather than by a repository-owned CI workflow.
 
 ## Compose topology
 
@@ -58,6 +68,8 @@ For separate hosted services:
 7. Deploy Express. Startup validates configuration, proves the bucket private, and runs repeatable administrator bootstrap before listening.
 8. Build/deploy Next.js with the final public API origin.
 9. Verify health, registration mail, login, refresh rotation, logout, exact-origin CORS, owner isolation, and admin denial.
+
+For the current hosted topology, Render must apply `prisma migrate deploy` before starting the new Express release. This includes the query-index migration used by the statistics and discovery paths; deploying application code without its migration leaves production performance behavior incomplete.
 
 Rolling a schema change backwards may not be safe; review each committed migration and coordinate application/database compatibility.
 

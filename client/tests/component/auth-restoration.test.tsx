@@ -11,6 +11,7 @@ import {
 import { useRestoreSession } from "../../src/features/auth/hooks/use-restore-session";
 import { gatewayClient } from "../../src/lib/api/gateway-client";
 
+/** Exercises session restoration inside the same providers used by the application. */
 function RestorationHarness() {
   useRestoreSession();
   return null;

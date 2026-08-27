@@ -15,15 +15,18 @@ export class AdminStatisticsService {
   async get(now = new Date()) {
     const current = await this.repository.current(this.prisma);
     const counts = new Map(categories.map((type) => [type, 0]));
+    let totalFiles = 0;
     let storedBytes = 0n;
-    for (const file of current.files) {
-      storedBytes += file.size;
-      const type = categoryForMime(file.mimeType as never);
-      counts.set(type, (counts.get(type) ?? 0) + 1);
+    for (const group of current.groups) {
+      const count = group._count._all;
+      totalFiles += count;
+      storedBytes += group._sum.size ?? 0n;
+      const type = categoryForMime(group.mimeType as never);
+      counts.set(type, (counts.get(type) ?? 0) + count);
     }
     return {
       totalUsers: current.totalUsers,
-      totalFiles: current.files.length,
+      totalFiles,
       storedBytes: storedBytes.toString(),
       typeDistribution: categories.map((type) => ({ type, count: counts.get(type) ?? 0 })),
       recentUploads: current.recentUploads.map((file) => ({
