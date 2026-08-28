@@ -16,6 +16,8 @@ The project deliberately separates presentation from authority. Next.js owns the
 | Backend API | Render | [https://managing-your-files.onrender.com](https://managing-your-files.onrender.com) |
 | Backend health | Render | [https://managing-your-files.onrender.com/health](https://managing-your-files.onrender.com/health) |
 
+> **Testing note:** The backend uses a free Render instance. After inactivity, the free instance spins down, which can delay requests by 50 seconds or more while it starts back up. This delay happens only for the first request; subsequent requests should respond normally.
+
 The frontend, API liveness response, and exact-origin CORS preflight from the Vercel origin were verified on 27 August 2026. A production release must still run the committed Prisma migrations before serving the corresponding application version.
 
 ## Implemented features
