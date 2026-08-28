@@ -48,6 +48,8 @@ The Next.js config disables standalone output when `VERCEL` is present, making t
 Validate and start:
 
 ```powershell
+Copy-Item -LiteralPath '.env.example' -Destination '.env'
+# Replace every placeholder in .env with deployment-appropriate values.
 docker compose config
 docker compose build
 docker compose up

@@ -147,9 +147,10 @@ pnpm verify:critical:triple
 
 ## Docker Compose
 
-Compose reads an ignored root `.env`. Supply all server/client variables above plus `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_PORT`. Inside Compose, `DATABASE_URL` must use host `postgres`; `NEXT_PUBLIC_API_BASE_URL` must remain browser-reachable.
+Compose reads an ignored root `.env`. Copy the Compose-ready root template, replace every placeholder, and keep the PostgreSQL credentials synchronized with `DATABASE_URL`. Inside Compose, `DATABASE_URL` must use host `postgres`; `NEXT_PUBLIC_API_BASE_URL` must remain browser-reachable.
 
 ```powershell
+Copy-Item -LiteralPath '.env.example' -Destination '.env'
 docker compose config
 docker compose build
 docker compose up

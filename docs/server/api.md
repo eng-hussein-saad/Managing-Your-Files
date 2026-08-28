@@ -132,7 +132,7 @@ Names are 1–120 characters and reject path separators/control characters. Hier
 
 | Method/path | Auth | Query/result |
 | --- | --- | --- |
-| `GET /api/v1/file-statistics` | Bearer | Required valid IANA `timeZone`; current counts/bytes/quota/types and exactly 30 local-date upload buckets |
+| `GET /api/v1/file-statistics` | Bearer | Required query parameter: `timeZone=<valid IANA time zone>` (for example, `?timeZone=Africa%2FCairo`); returns current counts/bytes/quota/types and exactly 30 local-date upload buckets |
 
 ## Administrator
 

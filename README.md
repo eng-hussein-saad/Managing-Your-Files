@@ -139,7 +139,7 @@ The client reads `client/.env.local` (copy it from `client/.env.example`), while
 
 Secrets must be at least as strong as the validation described in the examples. `CORS_ALLOWED_ORIGINS` accepts explicit origins, not wildcards. The upload-policy values are currently fixed by application validation, so changing only their environment values will make startup fail. See [Development Setup](docs/development.md#environment-variables) for the complete variable-by-variable reference.
 
-Docker Compose instead reads an ignored root `.env`. It needs the application variables above plus `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_PORT`; its `DATABASE_URL` must address the Compose service as `postgres`, while `NEXT_PUBLIC_API_BASE_URL` must remain reachable from the browser.
+Docker Compose instead reads an ignored root `.env`; create it from the committed root `.env.example`. The Compose template includes the required application and PostgreSQL variables, uses the `postgres` service hostname in `DATABASE_URL`, and keeps `NEXT_PUBLIC_API_BASE_URL` reachable from the browser.
 
 ## Database migration steps
 
@@ -194,17 +194,13 @@ Open `http://localhost:3000` in your browser. Keep both development processes ru
 
 ### Using Docker Compose
 
-Docker Compose launches PostgreSQL, applies all committed Prisma migrations, starts Express, and then starts Next.js. Create an ignored root `.env` containing the server and client values described in [Environment variables](#environment-variables), plus these PostgreSQL container settings:
+Docker Compose launches PostgreSQL, applies all committed Prisma migrations, starts Express, and then starts Next.js. Create its ignored root environment file from the Compose-ready template:
 
-```dotenv
-POSTGRES_DB=fileora
-POSTGRES_USER=fileora
-POSTGRES_PASSWORD=replace-with-a-strong-password
-POSTGRES_PORT=5432
-DATABASE_URL=postgresql://fileora:replace-with-a-strong-password@postgres:5432/fileora
+```powershell
+Copy-Item -LiteralPath '.env.example' -Destination '.env'
 ```
 
-Ensure `NEXT_PUBLIC_API_BASE_URL` is reachable by the host browser (normally `http://localhost:3001`). You can optionally validate the resolved Compose configuration before building and launching the stack:
+Replace every placeholder in `.env`. Keep `POSTGRES_DB`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` synchronized with `DATABASE_URL`; its hostname must remain `postgres`. Ensure `NEXT_PUBLIC_API_BASE_URL` is reachable by the host browser (normally `http://localhost:3001`). You can optionally validate the resolved Compose configuration before building and launching the stack:
 
 ```powershell
 # Optional preflight validation
@@ -244,9 +240,9 @@ The supported deployment artifacts are the multi-stage root `Dockerfile` for Exp
 
 The current production topology is Vercel for the frontend and Render for the Express API. See the [hosted application](#hosted-application) links above and [Deployment](docs/deployment.md) for configuration, release order, verification, and operational responsibilities.
 
-For the supplied container topology, create a root `.env` with production-appropriate values, then build and start it. You can run `docker compose config` first as an optional preflight validation:
+For the supplied container topology, copy the root `.env.example` to `.env`, replace every placeholder with production-appropriate values, then build and start it. You can run `docker compose config` first as an optional preflight validation.
 
-`compose.yaml` starts PostgreSQL, runs Prisma migrations once, then starts Express and Next.js after dependency health checks pass. Compose reads a root `.env`; supply every required server and client value plus `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_PORT`.
+`compose.yaml` starts PostgreSQL, runs Prisma migrations once, then starts Express and Next.js after dependency health checks pass. The root template contains every variable consumed by Compose.
 
 ```powershell
 # Optional preflight validation
