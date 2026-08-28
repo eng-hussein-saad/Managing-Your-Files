@@ -9,6 +9,7 @@ test("search, filter, sort, pagination, details, and cross-owner isolation", asy
   const owner = await createVerifiedUser(page);
   await signIn(page, owner);
   await page.goto("/files");
+  await page.getByRole("button", { name: "Upload files" }).click();
   await page
     .getByLabel(/select files/i)
     .setInputFiles([
@@ -17,13 +18,17 @@ test("search, filter, sort, pagination, details, and cross-owner isolation", asy
     ]);
   await page.getByRole("button", { name: /upload queued files/i }).click();
   await expect(page.getByText(/quarterly-report.txt: success/i)).toBeVisible();
+  await page.getByRole("button", { name: "Close upload" }).click();
   await page.getByLabel(/search files/i).fill("quarterly");
   await expect(
     page.getByRole("button", { name: /quarterly-report.txt/i }),
   ).toBeVisible();
-  await page.getByLabel("Type").selectOption("text");
-  await page.getByLabel("Sort by").selectOption("name");
-  await page.getByLabel("Order").selectOption("asc");
+  await page.getByRole("button", { name: "More filters" }).click();
+  const filters = page.getByRole("dialog", { name: "Filter files" });
+  await filters.getByLabel("Type").selectOption("text");
+  await filters.getByLabel("Sort by").selectOption("name");
+  await filters.getByLabel("Order").selectOption("asc");
+  await filters.getByRole("button", { name: "Apply filters" }).click();
   await page.getByRole("button", { name: /quarterly-report.txt/i }).click();
   await expect(
     page.getByRole("complementary", { name: /file details/i }),

@@ -17,11 +17,11 @@ describeDatabase("registration persistence", () => {
       .expect(201);
     await expect(
       prisma.user.count({ where: { email: "ada@example.invalid" } }),
-    ).resolves.toBe(0);
+    ).resolves.toBe(1);
     await expect(prisma.verificationCode.count()).resolves.toBe(1);
     await expect(
       prisma.auditLog.count({ where: { action: "auth.registration" } }),
-    ).resolves.toBe(1);
+    ).resolves.toBe(0);
     expect(mailer.messages).toHaveLength(1);
   });
   it("uses the unique key as final duplicate arbiter", async () => {

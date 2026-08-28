@@ -15,7 +15,7 @@ test("administrator searches, confirms role changes, and permanently deletes a t
   await targetRow.getByRole("button", { name: "Change role" }).press("Enter");
   await page.getByRole("button", { name: "Confirm" }).press("Enter");
   await expect(page.getByText("User role updated.")).toBeVisible();
-  await targetRow.getByRole("button", { name: "Delete permanently" }).press("Enter");
+  await targetRow.getByRole("button", { name: "Delete" }).press("Enter");
   await page.getByRole("textbox", { name: new RegExp(target.email) }).fill(target.email);
   await page.getByRole("button", { name: "Confirm" }).press("Enter");
   await expect(page.getByText("User permanently deleted.")).toBeVisible();

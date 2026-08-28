@@ -12,10 +12,12 @@ test("upload, organize, inspect, download, delete, and dashboard stay owner-isol
   await page.getByRole("button", { name: "New folder" }).click();
   await page.getByLabel("Folder name").fill("Archive");
   await page.getByRole("button", { name: "Save" }).click();
+  await page.getByRole("button", { name: "Upload files" }).click();
   await page
     .getByLabel(/select files/i)
     .setInputFiles(browserTextFile("complete.txt", 64));
   await page.getByRole("button", { name: /upload queued files/i }).click();
+  await page.getByRole("button", { name: "Close upload" }).click();
   await page.getByRole("button", { name: /complete.txt/i }).click();
   await expect(page.getByLabel("Extracted content")).toBeVisible();
 

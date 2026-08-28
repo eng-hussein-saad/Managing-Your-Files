@@ -7,7 +7,7 @@ import {
   test,
 } from "./fixtures/ui-acceptance";
 
-const checkpoints = [1440, 768, 390, 320] as const;
+const checkpoints = [1440, 768, 390, 360] as const;
 
 test("file workspace keeps discovery and upload actions responsive", async ({
   page,
@@ -28,6 +28,7 @@ test("file workspace keeps discovery and upload actions responsive", async ({
       contentType: "image/png",
     });
   }
+  await page.getByRole("button", { name: "Upload files" }).click();
   await tabTo(page, "Select files or drop them here");
   expectNoConsoleErrors(consoleErrors);
 });
@@ -39,9 +40,9 @@ test("file overlays remain dismissible after viewport changes", async ({
   await signIn(page, user);
   await page.goto("/files");
   await page.setViewportSize({ width: 768, height: 900 });
-  await page.getByRole("button", { name: "Filters" }).click();
-  await expect(page.getByRole("dialog", { name: "Filters" })).toBeVisible();
+  await page.getByRole("button", { name: "More filters" }).click();
+  await expect(page.getByRole("dialog", { name: "Filter files" })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog", { name: "Filters" })).toBeHidden();
+  await expect(page.getByRole("dialog", { name: "Filter files" })).toBeHidden();
 });

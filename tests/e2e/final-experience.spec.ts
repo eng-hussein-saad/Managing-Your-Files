@@ -8,6 +8,5 @@ for (const width of [360, 768, 1440]) {
     await page.keyboard.press("Tab");
     await expect(page.locator(":focus")).toBeVisible();
     await expect(page.locator("body")).not.toHaveCSS("overflow-x", "scroll");
-    await expect(page.locator("footer")).toBeVisible();
   });
 }

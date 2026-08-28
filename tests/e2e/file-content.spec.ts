@@ -8,10 +8,12 @@ test("owned preview/download uses private headers and no provider reference", as
   const user = await createVerifiedUser(page);
   await signIn(page, user);
   await page.goto("/files");
+  await page.getByRole("button", { name: "Upload files" }).click();
   await page
     .getByLabel(/select files/i)
     .setInputFiles(browserTextFile("preview.txt", 12));
   await page.getByRole("button", { name: /upload queued files/i }).click();
+  await page.getByRole("button", { name: "Close upload" }).click();
   await page.getByRole("button", { name: /preview.txt/i }).click();
   await expect(page.getByTitle(/text preview/i)).toBeVisible();
   const responsePromise = page.waitForResponse((response) =>
@@ -33,8 +35,10 @@ test("DOCX fallback is explicit and deleted content is no longer discoverable", 
   const user = await createVerifiedUser(page);
   await signIn(page, user);
   await page.goto("/files");
+  await page.getByRole("button", { name: "Upload files" }).click();
   await page.getByLabel(/select files/i).setInputFiles(browserDocxFile());
   await page.getByRole("button", { name: /upload queued files/i }).click();
+  await page.getByRole("button", { name: "Close upload" }).click();
   await page.getByRole("button", { name: /fallback.docx/i }).click();
   await expect(page.getByText(/preview is unavailable/i)).toBeVisible();
 });

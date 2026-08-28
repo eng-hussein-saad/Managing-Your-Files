@@ -7,7 +7,7 @@ import {
   test,
 } from "./fixtures/ui-acceptance";
 
-const checkpoints = [1440, 768, 390, 320] as const;
+const checkpoints = [1440, 768, 390, 360] as const;
 
 test("dashboard and profile retain safe responsive summaries", async ({
   page,

@@ -11,7 +11,9 @@ test("theme, motion, zoom, keyboard targets, and reflow remain inclusive", async
 }) => {
   await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
   await page.goto("/");
-  await page.getByLabel("Theme").selectOption("system");
+  await expect(
+    page.getByRole("button", { name: /^Appearance: System/ }),
+  ).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await expect(page.locator("html")).toHaveCSS("scroll-behavior", "auto");
   await tabTo(page, "Create your account");

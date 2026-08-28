@@ -14,6 +14,7 @@ async function openFiles(page: Parameters<typeof createVerifiedUser>[0]) {
   const user = await createVerifiedUser(page);
   await signIn(page, user);
   await page.goto("/files");
+  await page.getByRole("button", { name: "Upload files" }).click();
 }
 
 /** Writes one quota batch to disk so Playwright need not serialize over 50 MB. */
@@ -33,21 +34,24 @@ test("mixed uploads, exact boundaries, extraction outcomes, quota, and batch lim
 }) => {
   await openFiles(page);
   const picker = page.getByLabel(/select files/i);
-  await picker.setInputFiles(mixedUploadFiles());
+  const [accepted, rejected] = mixedUploadFiles();
+  await picker.setInputFiles(accepted);
   await page.getByRole("button", { name: /upload queued files/i }).click();
   await expect(page.getByRole("list", { name: /upload queue/i })).toContainText(
     "accepted.txt: success",
   );
-  await expect(page.getByRole("list", { name: /upload queue/i })).toContainText(
-    "rejected.exe: error",
-  );
+  await picker.setInputFiles(rejected);
+  await expect(page.getByText(
+    "rejected.exe has an unsupported file type.",
+  )).toBeVisible();
 
   await picker.setInputFiles(exactBoundaryUpload());
   await page.getByRole("button", { name: /upload queued files/i }).click();
   await expect(page.getByText(/boundary.txt: success/i)).toBeVisible();
   await picker.setInputFiles(overBoundaryUpload());
-  await page.getByRole("button", { name: /upload queued files/i }).click();
-  await expect(page.getByText(/too-large.txt: error/i)).toBeVisible();
+  await expect(page.getByText(
+    "too-large.txt exceeds the 5 MB file limit.",
+  )).toBeVisible();
 
   await picker.setInputFiles(
     Array.from({ length: 11 }, (_value, index) =>

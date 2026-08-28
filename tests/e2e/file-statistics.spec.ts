@@ -8,6 +8,7 @@ test("known owned dataset and deletion update current 30-day dashboard aggregate
   const user = await createVerifiedUser(page);
   await signIn(page, user);
   await page.goto("/files");
+  await page.getByRole("button", { name: "Upload files" }).click();
   await page
     .getByLabel(/select files/i)
     .setInputFiles([
@@ -15,12 +16,16 @@ test("known owned dataset and deletion update current 30-day dashboard aggregate
       browserTextFile("two.txt", 20),
     ]);
   await page.getByRole("button", { name: /upload queued files/i }).click();
+  await page.getByRole("button", { name: "Close upload" }).click();
   await page.goto("/dashboard");
   await expect(
     page.getByRole("region", { name: /file activity/i }),
   ).toContainText("2 files");
-  await expect(page.getByRole("table")).toBeVisible();
-  await expect(page.getByRole("row")).toHaveCount(31);
+  const activityTable = page.getByRole("table", {
+    name: /uploads by local date/i,
+  });
+  await expect(activityTable).toBeVisible();
+  await expect(activityTable.getByRole("row")).toHaveCount(31);
   await page.goto("/files");
   await page.getByRole("button", { name: /one.txt/i }).click();
   await page.getByRole("button", { name: "Delete file" }).click();

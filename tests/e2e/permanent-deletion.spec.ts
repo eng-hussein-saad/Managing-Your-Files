@@ -8,10 +8,12 @@ test("cancel/confirm file deletion is irreversible and quota-backed", async ({
   const user = await createVerifiedUser(page);
   await signIn(page, user);
   await page.goto("/files");
+  await page.getByRole("button", { name: "Upload files" }).click();
   await page
     .getByLabel(/select files/i)
     .setInputFiles(browserTextFile("delete-me.txt", 32));
   await page.getByRole("button", { name: /upload queued files/i }).click();
+  await page.getByRole("button", { name: "Close upload" }).click();
   const file = page.getByRole("button", { name: /^delete-me\.txt/i });
   await file.click();
   await page.getByRole("button", { name: "Delete file" }).click();
